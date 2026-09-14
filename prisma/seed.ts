@@ -130,6 +130,12 @@ async function main() {
     { code: 'TUBE', line: 'TUBE', note: '7-digit register; ~2,136,930 at 1 Sep 2026' },
     { code: 'BIG_POOL', line: 'BIG_POOL', note: '7-digit register; ~7,280,530 at 1 Sep 2026' },
     {
+      code: 'SMALL_POOL',
+      line: 'SMALL_POOL',
+      note: 'Legacy line, stopped end of January 2026. Register ~2,993,500 at 1 Jan 2026.',
+      active: false,
+    },
+    {
       code: 'COLDROOM',
       line: null,
       // Sub-metered all along. The legacy report back-inferred coldroom kWh by
@@ -141,8 +147,13 @@ async function main() {
   for (const m of meters) {
     await prisma.meter.upsert({
       where: { code: m.code },
-      create: { code: m.code, lineId: m.line ? lineId[m.line] : null, note: m.note },
-      update: { note: m.note },
+      create: {
+        code: m.code,
+        lineId: m.line ? lineId[m.line] : null,
+        note: m.note,
+        active: m.active ?? true,
+      },
+      update: { note: m.note, active: m.active ?? true },
     })
   }
 
@@ -156,6 +167,13 @@ async function main() {
     ['Good Taste', 'OUTSIDE'],
     ['Burger', 'OUTSIDE'],
     ['Ocean Ice', 'SUPPLIER'],
+    // Present only in the Oct/Nov 2025 sheets. Which product each buys is not
+    // recorded anywhere, so the importer reads their quantities but will not
+    // load them until that is confirmed.
+    ['Wai Mah', 'OUTSIDE'],
+    ['The Wet World', 'OUTSIDE'],
+    ['Hypecircus', 'OUTSIDE'],
+    ['Snow Theme Park', 'OUTSIDE'],
   ]
   for (const [name, channel] of customers) {
     await prisma.customer.upsert({ where: { name }, create: { name, channel }, update: { channel } })
@@ -183,40 +201,57 @@ async function main() {
     (await prisma.product.findMany()).map((p) => [p.code, p.id])
   )
 
-  // Prices dated from 2026-01-01, editable in the UI from then on.
-  // Sydney and Good Taste buy 12.5 kg units — a bag, despite the "block" label;
-  // TCC and Burger buy 100 kg blocks. Confirmed by the owner.
-  const prices: [string, string, string, string?][] = [
-    ['Sydney', 'BAG', '3.30'],
-    ['TCC', 'BIG_BLOCK', '21.00'],
-    ['Good Taste', 'CRUSH', '3.30', 'Crushed ice in bags'],
-    ['Good Taste', 'BIG_BLOCK', '22.40', 'Blocks cut into 1/8 — dearer than the crush bags'],
-    ['Burger', 'BIG_BLOCK', '26.00'],
-    ['Ocean Ice', 'BIG_BLOCK', '15.00', 'Purchase price. Block size to confirm.'],
-    // Pasar counter prices. These are what make the shift cash reconcile to the
-    // ringgit: big x RM26 + small x RM13 = recorded shift cash, six for six on
-    // the June sample in report R1.
-    ['Pasar Counter', 'BIG_BLOCK', '26.00', 'Counter price, reconciles shift cash'],
-    ['Pasar Counter', 'SMALL_BLOCK_BIMC', '13.00', 'Counter price, reconciles shift cash'],
+  // Prices, dated from the source workbooks rather than assumed. The rise
+  // landed in JUNE 2026 — Sydney 3.00->3.30, TCC 19.00->21.00, Burger
+  // 24.00->26.00 — which is why the build spec lists Good Taste at
+  // "RM 3.00 / 3.30": those are the old and new prices, not two products.
+  //
+  // Sydney and Good Taste buy the 12.5 kg unit — a bag, despite the "block"
+  // label on the price list. TCC and Burger buy 100 kg blocks. Owner-confirmed.
+  const priceEpochs: [string, [string, string, string, string?][]][] = [
+    ['2025-10-01', [
+      ['Sydney', 'BAG', '3.00'],
+      ['TCC', 'BIG_BLOCK', '19.00'],
+      ['Burger', 'BIG_BLOCK', '24.00'],
+      ['Good Taste', 'CRUSH', '3.00', 'Crushed ice in bags'],
+      ['Good Taste', 'BIG_BLOCK', '22.40', 'Blocks cut into 1/8 — unchanged across the June rise'],
+      ['Ocean Ice', 'BIG_BLOCK', '15.00', 'Purchase price. Block size to confirm.'],
+    ]],
+    ['2026-06-01', [
+      ['Sydney', 'BAG', '3.30'],
+      ['TCC', 'BIG_BLOCK', '21.00'],
+      ['Burger', 'BIG_BLOCK', '26.00'],
+      ['Good Taste', 'CRUSH', '3.30'],
+      ['Good Taste', 'BIG_BLOCK', '22.40'],
+      ['Ocean Ice', 'BIG_BLOCK', '15.00'],
+      // Counter prices. Report R1 proves these reconcile shift cash to the
+      // ringgit on June data: big x RM26 + small x RM13 = recorded shift cash,
+      // six for six. Pre-June counter prices are not evidenced anywhere in the
+      // supplied workbooks, so none is seeded rather than inferred.
+      ['Pasar Counter', 'BIG_BLOCK', '26.00', 'Counter price; reconciles June shift cash exactly'],
+      ['Pasar Counter', 'SMALL_BLOCK_BIMC', '13.00', 'Counter price; reconciles June shift cash exactly'],
+    ]],
   ]
-  for (const [cust, prod, price, note] of prices) {
-    await prisma.price.upsert({
-      where: {
-        customerId_productId_effectiveFrom: {
+  for (const [from, rows] of priceEpochs) {
+    for (const [cust, prod, price, note] of rows) {
+      await prisma.price.upsert({
+        where: {
+          customerId_productId_effectiveFrom: {
+            customerId: custId[cust],
+            productId: prodId[prod],
+            effectiveFrom: date(from),
+          },
+        },
+        create: {
           customerId: custId[cust],
           productId: prodId[prod],
-          effectiveFrom: date('2026-01-01'),
+          unitPrice: price,
+          effectiveFrom: date(from),
+          note: note ?? null,
         },
-      },
-      create: {
-        customerId: custId[cust],
-        productId: prodId[prod],
-        unitPrice: price,
-        effectiveFrom: date('2026-01-01'),
-        note: note ?? null,
-      },
-      update: { unitPrice: price, note: note ?? null },
-    })
+        update: { unitPrice: price, note: note ?? null },
+      })
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -250,6 +285,13 @@ async function main() {
     ],
     ['office_cctv_kwh_per_day', '36.0000', 'kWh/day', false, 'ESTIMATE PENDING MEASUREMENT.'],
     ['crusher_kwh_per_day', '10.0000', 'kWh/day', false, 'ESTIMATE PENDING MEASUREMENT.'],
+    [
+      'small_pool_blocks_per_baris',
+      '23.0000',
+      'blocks',
+      true,
+      'Counted. Small pool ran 23 small blocks to a row; big pool runs 8.',
+    ],
     [
       'blocks_per_baris',
       '8.0000',

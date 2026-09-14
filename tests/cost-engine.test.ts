@@ -67,9 +67,20 @@ describe('cost of ice, computed as a sum of lines', () => {
     '2026-02': { kwhPerKg: '0.1176', rmPerKg: '0.0569', rate: '0.484' },
     '2026-03': { kwhPerKg: '0.1146', rmPerKg: '0.0555', rate: '0.484' },
     '2026-04': { kwhPerKg: '0.1155', rmPerKg: '0.0559', rate: '0.484' },
-    '2026-05': { kwhPerKg: '0.1176', rmPerKg: '0.0569', rate: '0.484' },
+    // May differs from the workbook's own total: row 36 (31 May) books 200 BIMC
+    // blocks but its kg cell holds no formula at all, so the sheet reports zero
+    // kg for that day and understates the month by 9,000 kg. Deriving kg from
+    // blocks x the dated unit weight, as the importer does, is what fixes it.
+    '2026-05': { kwhPerKg: '0.1164', rmPerKg: '0.0563', rate: '0.484' },
     '2026-06': { kwhPerKg: '0.1160', rmPerKg: '0.0604', rate: '0.52071' },
   }
+
+  it('rejects the workbook kg column for BIMC where its formula is missing', () => {
+    const may = production.find((x) => x.month === '2026-05')!
+    // 5,800 blocks x 45 kg = 261,000, but the sheet's own column totals 252,000.
+    expect(d(may.bimcBlocks).times(45).toNumber()).toBe(261000)
+    expect(Number(may.bimcKg)).toBe(252000)
+  })
 
   it.each(production)('$month ties to the meter books', (p) => {
     const want = EXPECTED[p.month]
@@ -78,7 +89,9 @@ describe('cost of ice, computed as a sum of lines', () => {
       meteredKwh('BIG_POOL', p.bigPoolKwh, 0),
       modelledKwh('BIMC', p.bimcBlocks, BIMC_KWH_PER_BLOCK, 'kWh/block'),
     ]
-    const producedKg = d(p.tubeKg).plus(p.bigPoolKg).plus(p.bimcKg)
+    // BIMC kg comes from the block count and the dated unit weight, never from
+    // the workbook's kg column — see the May note above.
+    const producedKg = d(p.tubeKg).plus(p.bigPoolKg).plus(d(p.bimcBlocks).times(45))
     const cost = costOfIce(lines, { producedKg }, want.rate)
 
     expect(cost.kwhPerKg.toFixed(4)).toBe(want.kwhPerKg)
@@ -93,7 +106,7 @@ describe('cost of ice, computed as a sum of lines', () => {
       meteredKwh('BIG_POOL', p.bigPoolKwh, 0),
       modelledKwh('BIMC', p.bimcBlocks, BIMC_KWH_PER_BLOCK, 'kWh/block'),
     ]
-    const producedKg = d(p.tubeKg).plus(p.bigPoolKg).plus(p.bimcKg)
+    const producedKg = d(p.tubeKg).plus(p.bigPoolKg).plus(d(p.bimcBlocks).times(45))
     const cost = costOfIce(lines, { producedKg }, '0.52071')
     // R5 "2026 restated" reports 0.0699 for June.
     expect(cost.rmPerKg.lessThan('0.0699')).toBe(true)

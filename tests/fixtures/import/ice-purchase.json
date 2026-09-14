@@ -1,0 +1,4439 @@
+{
+ "extractedAt": "2026-09-14T11:08:00.695932+00:00",
+ "sha256": "fixture",
+ "sheets": {
+  "dec": {
+   "cells": {
+    "1": {
+     "B": {
+      "f": null,
+      "t": "str",
+      "v": "Ice Purchase & Ice Sales Outside - block/crush  "
+     }
+    },
+    "13": {
+     "AA": {
+      "f": null,
+      "t": "num",
+      "v": 46.0
+     },
+     "AC": {
+      "f": null,
+      "t": "num",
+      "v": 46.0
+     },
+     "AD": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AE": {
+      "f": null,
+      "t": "num",
+      "v": 138.0
+     },
+     "AF": {
+      "f": null,
+      "t": "num",
+      "v": 87.0
+     },
+     "AG": {
+      "f": null,
+      "t": "num",
+      "v": 174.0
+     },
+     "AH": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "AI": {
+      "f": null,
+      "t": "num",
+      "v": 24.0
+     },
+     "B": {
+      "f": null,
+      "t": "num",
+      "v": 8.0
+     },
+     "F": {
+      "f": null,
+      "t": "num",
+      "v": 48.0
+     },
+     "G": {
+      "f": null,
+      "t": "num",
+      "v": 144.0
+     },
+     "H": {
+      "f": null,
+      "t": "num",
+      "v": 31.0
+     },
+     "I": {
+      "f": null,
+      "t": "num",
+      "v": 589.0
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "5/46"
+     },
+     "K": {
+      "f": null,
+      "t": "num",
+      "v": 261.0
+     },
+     "L": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "M": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "N": {
+      "f": null,
+      "t": "num",
+      "v": 994.0
+     },
+     "O": {
+      "f": null,
+      "t": "num",
+      "v": 62.0
+     },
+     "P": {
+      "f": null,
+      "t": "num",
+      "v": 77.0
+     },
+     "Q": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "R": {
+      "f": null,
+      "t": "num",
+      "v": 1.3
+     },
+     "S": {
+      "f": null,
+      "t": "num",
+      "v": 19.0
+     },
+     "T": {
+      "f": null,
+      "t": "num",
+      "v": 41.0
+     },
+     "U": {
+      "f": null,
+      "t": "num",
+      "v": 5.0
+     },
+     "W": {
+      "f": null,
+      "t": "num",
+      "v": 5.0
+     },
+     "X": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "Y": {
+      "f": null,
+      "t": "num",
+      "v": 22.4
+     },
+     "Z": {
+      "f": null,
+      "t": "num",
+      "v": 123.0
+     }
+    },
+    "15": {
+     "AA": {
+      "f": null,
+      "t": "num",
+      "v": 57.0
+     },
+     "AC": {
+      "f": null,
+      "t": "num",
+      "v": 57.0
+     },
+     "AD": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AE": {
+      "f": null,
+      "t": "num",
+      "v": 171.0
+     },
+     "AF": {
+      "f": null,
+      "t": "num",
+      "v": 105.0
+     },
+     "AG": {
+      "f": null,
+      "t": "num",
+      "v": 219.0
+     },
+     "AH": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "AI": {
+      "f": null,
+      "t": "num",
+      "v": 24.0
+     },
+     "B": {
+      "f": null,
+      "t": "num",
+      "v": 10.0
+     },
+     "F": {
+      "f": null,
+      "t": "num",
+      "v": 40.0
+     },
+     "G": {
+      "f": null,
+      "t": "num",
+      "v": 120.0
+     },
+     "H": {
+      "f": null,
+      "t": "num",
+      "v": 32.0
+     },
+     "I": {
+      "f": null,
+      "t": "num",
+      "v": 608.0
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "6.5/57"
+     },
+     "K": {
+      "f": null,
+      "t": "num",
+      "v": 324.0
+     },
+     "L": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "M": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "N": {
+      "f": null,
+      "t": "num",
+      "v": 1052.0
+     },
+     "O": {
+      "f": null,
+      "t": "num",
+      "v": 62.0
+     },
+     "P": {
+      "f": null,
+      "t": "num",
+      "v": 77.0
+     },
+     "Q": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "R": {
+      "f": null,
+      "t": "num",
+      "v": 1.3
+     },
+     "S": {
+      "f": null,
+      "t": "num",
+      "v": 19.0
+     },
+     "T": {
+      "f": null,
+      "t": "num",
+      "v": 51.0
+     },
+     "U": {
+      "f": null,
+      "t": "num",
+      "v": 6.5
+     },
+     "W": {
+      "f": null,
+      "t": "num",
+      "v": 6.5
+     },
+     "X": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "Y": {
+      "f": null,
+      "t": "num",
+      "v": 22.4
+     },
+     "Z": {
+      "f": null,
+      "t": "num",
+      "v": 153.0
+     }
+    },
+    "2": {
+     "M": {
+      "f": null,
+      "t": "str",
+      "v": "Month :"
+     },
+     "N": {
+      "f": null,
+      "t": "str",
+      "v": "Dec'25"
+     }
+    },
+    "3": {
+     "C": {
+      "f": null,
+      "t": "str",
+      "v": "Purchase "
+     },
+     "F": {
+      "f": null,
+      "t": "str",
+      "v": "Sales Ice  "
+     },
+     "N": {
+      "f": null,
+      "t": "str",
+      "v": "TOTAL         (RM)"
+     },
+     "T": {
+      "f": null,
+      "t": "str",
+      "v": "good taste "
+     }
+    },
+    "4": {
+     "AA": {
+      "f": null,
+      "t": "str",
+      "v": "crush"
+     },
+     "AF": {
+      "f": null,
+      "t": "str",
+      "v": "KFI"
+     },
+     "AG": {
+      "f": null,
+      "t": "str",
+      "v": "FM"
+     },
+     "AH": {
+      "f": null,
+      "t": "str",
+      "v": "dif"
+     },
+     "B": {
+      "f": null,
+      "t": "str",
+      "v": "DATE"
+     },
+     "C": {
+      "f": null,
+      "t": "str",
+      "v": "Ocean Ice "
+     },
+     "F": {
+      "f": null,
+      "t": "str",
+      "v": "Sydney"
+     },
+     "H": {
+      "f": null,
+      "t": "str",
+      "v": "TCC"
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "Good Taste (blok/crush)"
+     },
+     "L": {
+      "f": null,
+      "t": "str",
+      "v": "Burger "
+     },
+     "O": {
+      "f": null,
+      "t": "str",
+      "v": "The wet world "
+     },
+     "R": {
+      "f": null,
+      "t": "str",
+      "v": "TCC"
+     },
+     "T": {
+      "f": null,
+      "t": "str",
+      "v": "blok"
+     }
+    },
+    "5": {
+     "AA": {
+      "f": null,
+      "t": "str",
+      "v": "Pro"
+     },
+     "AB": {
+      "f": null,
+      "t": "str",
+      "v": "KFI"
+     },
+     "AC": {
+      "f": null,
+      "t": "str",
+      "v": "FM"
+     },
+     "AD": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "AE": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "AI": {
+      "f": null,
+      "t": "str",
+      "v": "Burger "
+     },
+     "C": {
+      "f": null,
+      "t": "str",
+      "v": "DO No "
+     },
+     "D": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity"
+     },
+     "E": {
+      "f": null,
+      "t": "str",
+      "v": "15/unit"
+     },
+     "F": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "G": {
+      "f": null,
+      "t": "str",
+      "v": "3.00/unit "
+     },
+     "H": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "I": {
+      "f": null,
+      "t": "str",
+      "v": "19.00/unit "
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "K": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "L": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "M": {
+      "f": null,
+      "t": "str",
+      "v": "24.00/unit"
+     },
+     "O": {
+      "f": null,
+      "t": "str",
+      "v": "normal"
+     },
+     "P": {
+      "f": null,
+      "t": "str",
+      "v": "color "
+     },
+     "Q": {
+      "f": null,
+      "t": "str",
+      "v": "sydney"
+     },
+     "R": {
+      "f": null,
+      "t": "str",
+      "v": "crush "
+     },
+     "S": {
+      "f": null,
+      "t": "str",
+      "v": "blok"
+     },
+     "T": {
+      "f": null,
+      "t": "str",
+      "v": "Pro"
+     },
+     "V": {
+      "f": null,
+      "t": "str",
+      "v": "KFI"
+     },
+     "W": {
+      "f": null,
+      "t": "str",
+      "v": "FM"
+     },
+     "X": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "Y": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "Z": {
+      "f": null,
+      "t": "str",
+      "v": "Total "
+     }
+    },
+    "6": {
+     "AA": {
+      "f": null,
+      "t": "num",
+      "v": 66.0
+     },
+     "AC": {
+      "f": null,
+      "t": "num",
+      "v": 66.0
+     },
+     "AD": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AE": {
+      "f": null,
+      "t": "num",
+      "v": 198.0
+     },
+     "AF": {
+      "f": null,
+      "t": "num",
+      "v": 126.0
+     },
+     "AG": {
+      "f": null,
+      "t": "num",
+      "v": 264.0
+     },
+     "AH": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "AI": {
+      "f": null,
+      "t": "num",
+      "v": 24.0
+     },
+     "B": {
+      "f": null,
+      "t": "num",
+      "v": 1.0
+     },
+     "F": {
+      "f": null,
+      "t": "num",
+      "v": 40.0
+     },
+     "G": {
+      "f": null,
+      "t": "num",
+      "v": 120.0
+     },
+     "H": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "I": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "8/66"
+     },
+     "K": {
+      "f": null,
+      "t": "num",
+      "v": 390.0
+     },
+     "L": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "M": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "N": {
+      "f": null,
+      "t": "num",
+      "v": 510.0
+     },
+     "O": {
+      "f": null,
+      "t": "num",
+      "v": 62.0
+     },
+     "P": {
+      "f": null,
+      "t": "num",
+      "v": 77.0
+     },
+     "Q": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "R": {
+      "f": null,
+      "t": "num",
+      "v": 1.3
+     },
+     "S": {
+      "f": null,
+      "t": "num",
+      "v": 19.0
+     },
+     "T": {
+      "f": null,
+      "t": "num",
+      "v": 64.0
+     },
+     "U": {
+      "f": null,
+      "t": "num",
+      "v": 8.0
+     },
+     "W": {
+      "f": null,
+      "t": "num",
+      "v": 8.0
+     },
+     "X": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "Y": {
+      "f": null,
+      "t": "num",
+      "v": 22.4
+     },
+     "Z": {
+      "f": null,
+      "t": "num",
+      "v": 192.0
+     }
+    },
+    "9": {
+     "AA": {
+      "f": null,
+      "t": "num",
+      "v": 68.0
+     },
+     "AC": {
+      "f": null,
+      "t": "num",
+      "v": 68.0
+     },
+     "AD": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AE": {
+      "f": null,
+      "t": "num",
+      "v": 204.0
+     },
+     "AF": {
+      "f": null,
+      "t": "num",
+      "v": 126.0
+     },
+     "AG": {
+      "f": null,
+      "t": "num",
+      "v": 264.0
+     },
+     "AH": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "AI": {
+      "f": null,
+      "t": "num",
+      "v": 24.0
+     },
+     "B": {
+      "f": null,
+      "t": "num",
+      "v": 4.0
+     },
+     "F": {
+      "f": null,
+      "t": "num",
+      "v": 40.0
+     },
+     "G": {
+      "f": null,
+      "t": "num",
+      "v": 120.0
+     },
+     "H": {
+      "f": null,
+      "t": "num",
+      "v": 31.0
+     },
+     "I": {
+      "f": null,
+      "t": "num",
+      "v": 589.0
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "8/68"
+     },
+     "K": {
+      "f": null,
+      "t": "num",
+      "v": 390.0
+     },
+     "L": {
+      "f": null,
+      "t": "num",
+      "v": 14.0
+     },
+     "M": {
+      "f": null,
+      "t": "num",
+      "v": 336.0
+     },
+     "N": {
+      "f": null,
+      "t": "num",
+      "v": 1435.0
+     },
+     "O": {
+      "f": null,
+      "t": "num",
+      "v": 62.0
+     },
+     "P": {
+      "f": null,
+      "t": "num",
+      "v": 77.0
+     },
+     "Q": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "R": {
+      "f": null,
+      "t": "num",
+      "v": 1.3
+     },
+     "S": {
+      "f": null,
+      "t": "num",
+      "v": 19.0
+     },
+     "T": {
+      "f": null,
+      "t": "num",
+      "v": 62.0
+     },
+     "U": {
+      "f": null,
+      "t": "num",
+      "v": 8.0
+     },
+     "W": {
+      "f": null,
+      "t": "num",
+      "v": 8.0
+     },
+     "X": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "Y": {
+      "f": null,
+      "t": "num",
+      "v": 22.4
+     },
+     "Z": {
+      "f": null,
+      "t": "num",
+      "v": 186.0
+     }
+    }
+   },
+   "maxCol": 35,
+   "maxRow": 52
+  },
+  "jan": {
+   "cells": {
+    "1": {
+     "B": {
+      "f": null,
+      "t": "str",
+      "v": "Ice Purchase & Ice Sales Outside - block/crush  "
+     }
+    },
+    "13": {
+     "AA": {
+      "f": null,
+      "t": "num",
+      "v": 68.0
+     },
+     "AB": {
+      "f": null,
+      "t": "num",
+      "v": 22.0
+     },
+     "AC": {
+      "f": null,
+      "t": "num",
+      "v": 46.0
+     },
+     "AD": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AE": {
+      "f": null,
+      "t": "num",
+      "v": 204.0
+     },
+     "AF": {
+      "f": null,
+      "t": "num",
+      "v": 132.0
+     },
+     "AG": {
+      "f": null,
+      "t": "num",
+      "v": 276.0
+     },
+     "AH": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "AI": {
+      "f": null,
+      "t": "num",
+      "v": 24.0
+     },
+     "B": {
+      "f": null,
+      "t": "num",
+      "v": 8.0
+     },
+     "F": {
+      "f": null,
+      "t": "num",
+      "v": 32.0
+     },
+     "G": {
+      "f": null,
+      "t": "num",
+      "v": 96.0
+     },
+     "H": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "I": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "8.5/68"
+     },
+     "K": {
+      "f": null,
+      "t": "num",
+      "v": 408.0
+     },
+     "L": {
+      "f": null,
+      "t": "num",
+      "v": 24.0
+     },
+     "M": {
+      "f": null,
+      "t": "num",
+      "v": 576.0
+     },
+     "N": {
+      "f": null,
+      "t": "num",
+      "v": 1080.0
+     },
+     "Q": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "R": {
+      "f": null,
+      "t": "num",
+      "v": 1.3
+     },
+     "S": {
+      "f": null,
+      "t": "num",
+      "v": 19.0
+     },
+     "T": {
+      "f": null,
+      "t": "num",
+      "v": 68.0
+     },
+     "U": {
+      "f": null,
+      "t": "num",
+      "v": 8.5
+     },
+     "V": {
+      "f": null,
+      "t": "num",
+      "v": 2.75
+     },
+     "W": {
+      "f": null,
+      "t": "num",
+      "v": 5.75
+     },
+     "X": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "Y": {
+      "f": null,
+      "t": "num",
+      "v": 22.4
+     },
+     "Z": {
+      "f": null,
+      "t": "num",
+      "v": 204.0
+     }
+    },
+    "15": {
+     "AA": {
+      "f": null,
+      "t": "num",
+      "v": 56.0
+     },
+     "AB": {
+      "f": null,
+      "t": "num",
+      "v": 18.0
+     },
+     "AC": {
+      "f": null,
+      "t": "num",
+      "v": 38.0
+     },
+     "AD": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AE": {
+      "f": null,
+      "t": "num",
+      "v": 168.0
+     },
+     "AF": {
+      "f": null,
+      "t": "num",
+      "v": 108.0
+     },
+     "AG": {
+      "f": null,
+      "t": "num",
+      "v": 231.0
+     },
+     "AH": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "AI": {
+      "f": null,
+      "t": "num",
+      "v": 24.0
+     },
+     "B": {
+      "f": null,
+      "t": "num",
+      "v": 10.0
+     },
+     "F": {
+      "f": null,
+      "t": "num",
+      "v": 40.0
+     },
+     "G": {
+      "f": null,
+      "t": "num",
+      "v": 120.0
+     },
+     "H": {
+      "f": null,
+      "t": "num",
+      "v": 32.0
+     },
+     "I": {
+      "f": null,
+      "t": "num",
+      "v": 608.0
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "7/56"
+     },
+     "K": {
+      "f": null,
+      "t": "num",
+      "v": 339.0
+     },
+     "L": {
+      "f": null,
+      "t": "num",
+      "v": 24.0
+     },
+     "M": {
+      "f": null,
+      "t": "num",
+      "v": 576.0
+     },
+     "N": {
+      "f": null,
+      "t": "num",
+      "v": 1643.0
+     },
+     "Q": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "R": {
+      "f": null,
+      "t": "num",
+      "v": 1.3
+     },
+     "S": {
+      "f": null,
+      "t": "num",
+      "v": 19.0
+     },
+     "T": {
+      "f": null,
+      "t": "num",
+      "v": 57.0
+     },
+     "U": {
+      "f": null,
+      "t": "num",
+      "v": 7.0
+     },
+     "V": {
+      "f": null,
+      "t": "num",
+      "v": 2.25
+     },
+     "W": {
+      "f": null,
+      "t": "num",
+      "v": 4.75
+     },
+     "X": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "Y": {
+      "f": null,
+      "t": "num",
+      "v": 22.4
+     },
+     "Z": {
+      "f": null,
+      "t": "num",
+      "v": 171.0
+     }
+    },
+    "2": {
+     "M": {
+      "f": null,
+      "t": "str",
+      "v": "Month :"
+     },
+     "N": {
+      "f": null,
+      "t": "str",
+      "v": "Jan'26"
+     }
+    },
+    "3": {
+     "C": {
+      "f": null,
+      "t": "str",
+      "v": "Purchase "
+     },
+     "F": {
+      "f": null,
+      "t": "str",
+      "v": "Sales Ice  "
+     },
+     "N": {
+      "f": null,
+      "t": "str",
+      "v": "TOTAL         (RM)"
+     },
+     "T": {
+      "f": null,
+      "t": "str",
+      "v": "good taste "
+     }
+    },
+    "4": {
+     "AA": {
+      "f": null,
+      "t": "str",
+      "v": "crush"
+     },
+     "AF": {
+      "f": null,
+      "t": "str",
+      "v": "KFI"
+     },
+     "AG": {
+      "f": null,
+      "t": "str",
+      "v": "FM"
+     },
+     "AH": {
+      "f": null,
+      "t": "str",
+      "v": "dif"
+     },
+     "B": {
+      "f": null,
+      "t": "str",
+      "v": "DATE"
+     },
+     "C": {
+      "f": null,
+      "t": "str",
+      "v": "Ocean Ice "
+     },
+     "F": {
+      "f": null,
+      "t": "str",
+      "v": "Sydney"
+     },
+     "H": {
+      "f": null,
+      "t": "str",
+      "v": "TCC"
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "Good Taste (blok/crush)"
+     },
+     "L": {
+      "f": null,
+      "t": "str",
+      "v": "Burger "
+     },
+     "R": {
+      "f": null,
+      "t": "str",
+      "v": "TCC"
+     },
+     "T": {
+      "f": null,
+      "t": "str",
+      "v": "blok"
+     }
+    },
+    "5": {
+     "AA": {
+      "f": null,
+      "t": "str",
+      "v": "Pro"
+     },
+     "AB": {
+      "f": null,
+      "t": "str",
+      "v": "KFI"
+     },
+     "AC": {
+      "f": null,
+      "t": "str",
+      "v": "FM"
+     },
+     "AD": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "AE": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "AI": {
+      "f": null,
+      "t": "str",
+      "v": "Burger "
+     },
+     "C": {
+      "f": null,
+      "t": "str",
+      "v": "DO No "
+     },
+     "D": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity"
+     },
+     "E": {
+      "f": null,
+      "t": "str",
+      "v": "15/unit"
+     },
+     "F": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "G": {
+      "f": null,
+      "t": "str",
+      "v": "3.00/unit "
+     },
+     "H": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "I": {
+      "f": null,
+      "t": "str",
+      "v": "19.00/unit "
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "K": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "L": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "M": {
+      "f": null,
+      "t": "str",
+      "v": "24.00/unit"
+     },
+     "Q": {
+      "f": null,
+      "t": "str",
+      "v": "sydney"
+     },
+     "R": {
+      "f": null,
+      "t": "str",
+      "v": "crush "
+     },
+     "S": {
+      "f": null,
+      "t": "str",
+      "v": "blok"
+     },
+     "T": {
+      "f": null,
+      "t": "str",
+      "v": "Pro"
+     },
+     "V": {
+      "f": null,
+      "t": "str",
+      "v": "KFI"
+     },
+     "W": {
+      "f": null,
+      "t": "str",
+      "v": "FM"
+     },
+     "X": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "Y": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "Z": {
+      "f": null,
+      "t": "str",
+      "v": "Total "
+     }
+    },
+    "6": {
+     "AA": {
+      "f": null,
+      "t": "num",
+      "v": 46.0
+     },
+     "AB": {
+      "f": null,
+      "t": "num",
+      "v": 14.0
+     },
+     "AC": {
+      "f": null,
+      "t": "num",
+      "v": 32.0
+     },
+     "AD": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AE": {
+      "f": null,
+      "t": "num",
+      "v": 138.0
+     },
+     "AF": {
+      "f": null,
+      "t": "num",
+      "v": 84.0
+     },
+     "AG": {
+      "f": null,
+      "t": "num",
+      "v": 192.0
+     },
+     "AH": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "AI": {
+      "f": null,
+      "t": "num",
+      "v": 24.0
+     },
+     "B": {
+      "f": null,
+      "t": "num",
+      "v": 1.0
+     },
+     "F": {
+      "f": null,
+      "t": "num",
+      "v": 32.0
+     },
+     "G": {
+      "f": null,
+      "t": "num",
+      "v": 96.0
+     },
+     "H": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "I": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "6/46"
+     },
+     "K": {
+      "f": null,
+      "t": "num",
+      "v": 276.0
+     },
+     "L": {
+      "f": null,
+      "t": "num",
+      "v": 22.0
+     },
+     "M": {
+      "f": null,
+      "t": "num",
+      "v": 528.0
+     },
+     "N": {
+      "f": null,
+      "t": "num",
+      "v": 900.0
+     },
+     "Q": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "R": {
+      "f": null,
+      "t": "num",
+      "v": 1.3
+     },
+     "S": {
+      "f": null,
+      "t": "num",
+      "v": 19.0
+     },
+     "T": {
+      "f": null,
+      "t": "num",
+      "v": 46.0
+     },
+     "U": {
+      "f": null,
+      "t": "num",
+      "v": 6.0
+     },
+     "V": {
+      "f": null,
+      "t": "num",
+      "v": 1.75
+     },
+     "W": {
+      "f": null,
+      "t": "num",
+      "v": 4.25
+     },
+     "X": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "Y": {
+      "f": null,
+      "t": "num",
+      "v": 22.4
+     },
+     "Z": {
+      "f": null,
+      "t": "num",
+      "v": 138.0
+     }
+    },
+    "9": {
+     "AA": {
+      "f": null,
+      "t": "num",
+      "v": 46.0
+     },
+     "AB": {
+      "f": null,
+      "t": "num",
+      "v": 15.0
+     },
+     "AC": {
+      "f": null,
+      "t": "num",
+      "v": 31.0
+     },
+     "AD": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AE": {
+      "f": null,
+      "t": "num",
+      "v": 138.0
+     },
+     "AF": {
+      "f": null,
+      "t": "num",
+      "v": 87.0
+     },
+     "AG": {
+      "f": null,
+      "t": "num",
+      "v": 183.0
+     },
+     "AH": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "AI": {
+      "f": null,
+      "t": "num",
+      "v": 24.0
+     },
+     "B": {
+      "f": null,
+      "t": "num",
+      "v": 4.0
+     },
+     "F": {
+      "f": null,
+      "t": "num",
+      "v": 40.0
+     },
+     "G": {
+      "f": null,
+      "t": "num",
+      "v": 120.0
+     },
+     "H": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "I": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "5.5/46"
+     },
+     "K": {
+      "f": null,
+      "t": "num",
+      "v": 270.0
+     },
+     "L": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "M": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "N": {
+      "f": null,
+      "t": "num",
+      "v": 390.0
+     },
+     "Q": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "R": {
+      "f": null,
+      "t": "num",
+      "v": 1.3
+     },
+     "S": {
+      "f": null,
+      "t": "num",
+      "v": 19.0
+     },
+     "T": {
+      "f": null,
+      "t": "num",
+      "v": 44.0
+     },
+     "U": {
+      "f": null,
+      "t": "num",
+      "v": 5.5
+     },
+     "V": {
+      "f": null,
+      "t": "num",
+      "v": 1.75
+     },
+     "W": {
+      "f": null,
+      "t": "num",
+      "v": 3.75
+     },
+     "X": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "Y": {
+      "f": null,
+      "t": "num",
+      "v": 22.4
+     },
+     "Z": {
+      "f": null,
+      "t": "num",
+      "v": 132.0
+     }
+    }
+   },
+   "maxCol": 35,
+   "maxRow": 52
+  },
+  "nov": {
+   "cells": {
+    "1": {
+     "B": {
+      "f": null,
+      "t": "str",
+      "v": "Ice Purchase & Ice Sales Outside - block/crush  "
+     }
+    },
+    "13": {
+     "AA": {
+      "f": null,
+      "t": "num",
+      "v": 5.75
+     },
+     "AB": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AC": {
+      "f": null,
+      "t": "num",
+      "v": 22.4
+     },
+     "AD": {
+      "f": null,
+      "t": "num",
+      "v": 198.0
+     },
+     "AE": {
+      "f": null,
+      "t": "num",
+      "v": 68.0
+     },
+     "AF": {
+      "f": null,
+      "t": "num",
+      "v": 23.0
+     },
+     "AG": {
+      "f": null,
+      "t": "num",
+      "v": 45.0
+     },
+     "AH": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AI": {
+      "f": null,
+      "t": "num",
+      "v": 204.0
+     },
+     "AJ": {
+      "f": null,
+      "t": "num",
+      "v": 135.0
+     },
+     "AK": {
+      "f": null,
+      "t": "num",
+      "v": 267.0
+     },
+     "AL": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "AM": {
+      "f": null,
+      "t": "num",
+      "v": 24.0
+     },
+     "B": {
+      "f": null,
+      "t": "num",
+      "v": 8.0
+     },
+     "F": {
+      "f": null,
+      "t": "num",
+      "v": 72.0
+     },
+     "G": {
+      "f": null,
+      "t": "num",
+      "v": 216.0
+     },
+     "H": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "I": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "J": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "K": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "L": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "M": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "N": {
+      "f": null,
+      "t": "str",
+      "v": "8.5/66"
+     },
+     "O": {
+      "f": null,
+      "t": "num",
+      "v": 402.0
+     },
+     "P": {
+      "f": null,
+      "t": "num",
+      "v": 31.0
+     },
+     "Q": {
+      "f": null,
+      "t": "num",
+      "v": 744.0
+     },
+     "R": {
+      "f": null,
+      "t": "num",
+      "v": 1362.0
+     },
+     "S": {
+      "f": null,
+      "t": "num",
+      "v": 62.0
+     },
+     "T": {
+      "f": null,
+      "t": "num",
+      "v": 77.0
+     },
+     "U": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "V": {
+      "f": null,
+      "t": "num",
+      "v": 1.3
+     },
+     "W": {
+      "f": null,
+      "t": "num",
+      "v": 19.0
+     },
+     "X": {
+      "f": null,
+      "t": "num",
+      "v": 66.0
+     },
+     "Y": {
+      "f": null,
+      "t": "num",
+      "v": 8.5
+     },
+     "Z": {
+      "f": null,
+      "t": "num",
+      "v": 2.75
+     }
+    },
+    "15": {
+     "AA": {
+      "f": null,
+      "t": "num",
+      "v": 4.75
+     },
+     "AB": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AC": {
+      "f": null,
+      "t": "num",
+      "v": 22.4
+     },
+     "AD": {
+      "f": null,
+      "t": "num",
+      "v": 171.0
+     },
+     "AE": {
+      "f": null,
+      "t": "num",
+      "v": 57.0
+     },
+     "AF": {
+      "f": null,
+      "t": "num",
+      "v": 18.0
+     },
+     "AG": {
+      "f": null,
+      "t": "num",
+      "v": 39.0
+     },
+     "AH": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AI": {
+      "f": null,
+      "t": "num",
+      "v": 171.0
+     },
+     "AJ": {
+      "f": null,
+      "t": "num",
+      "v": 108.0
+     },
+     "AK": {
+      "f": null,
+      "t": "num",
+      "v": 234.0
+     },
+     "AL": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "AM": {
+      "f": null,
+      "t": "num",
+      "v": 24.0
+     },
+     "B": {
+      "f": null,
+      "t": "num",
+      "v": 10.0
+     },
+     "D": {
+      "f": null,
+      "t": "num",
+      "v": 54.0
+     },
+     "E": {
+      "f": null,
+      "t": "num",
+      "v": 810.0
+     },
+     "F": {
+      "f": null,
+      "t": "num",
+      "v": 32.0
+     },
+     "G": {
+      "f": null,
+      "t": "num",
+      "v": 96.0
+     },
+     "H": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "I": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "J": {
+      "f": null,
+      "t": "num",
+      "v": 54.0
+     },
+     "K": {
+      "f": null,
+      "t": "num",
+      "v": 1728.0
+     },
+     "L": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "M": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "N": {
+      "f": null,
+      "t": "str",
+      "v": "7/57"
+     },
+     "O": {
+      "f": null,
+      "t": "num",
+      "v": 342.0
+     },
+     "P": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "Q": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "R": {
+      "f": null,
+      "t": "num",
+      "v": 2166.0
+     },
+     "S": {
+      "f": null,
+      "t": "num",
+      "v": 62.0
+     },
+     "T": {
+      "f": null,
+      "t": "num",
+      "v": 77.0
+     },
+     "U": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "V": {
+      "f": null,
+      "t": "num",
+      "v": 1.3
+     },
+     "W": {
+      "f": null,
+      "t": "num",
+      "v": 19.0
+     },
+     "X": {
+      "f": null,
+      "t": "num",
+      "v": 57.0
+     },
+     "Y": {
+      "f": null,
+      "t": "num",
+      "v": 7.0
+     },
+     "Z": {
+      "f": null,
+      "t": "num",
+      "v": 2.25
+     }
+    },
+    "2": {
+     "Q": {
+      "f": null,
+      "t": "str",
+      "v": "Month :"
+     },
+     "R": {
+      "f": null,
+      "t": "str",
+      "v": "Nov'25"
+     }
+    },
+    "3": {
+     "C": {
+      "f": null,
+      "t": "str",
+      "v": "Purchase "
+     },
+     "F": {
+      "f": null,
+      "t": "str",
+      "v": "Sales Ice  "
+     },
+     "R": {
+      "f": null,
+      "t": "str",
+      "v": "TOTAL         (RM)"
+     },
+     "X": {
+      "f": null,
+      "t": "str",
+      "v": "good taste "
+     }
+    },
+    "4": {
+     "AE": {
+      "f": null,
+      "t": "str",
+      "v": "crush"
+     },
+     "AJ": {
+      "f": null,
+      "t": "str",
+      "v": "KFI"
+     },
+     "AK": {
+      "f": null,
+      "t": "str",
+      "v": "FM"
+     },
+     "AL": {
+      "f": null,
+      "t": "str",
+      "v": "dif"
+     },
+     "B": {
+      "f": null,
+      "t": "str",
+      "v": "DATE"
+     },
+     "C": {
+      "f": null,
+      "t": "str",
+      "v": "Ocean Ice "
+     },
+     "F": {
+      "f": null,
+      "t": "str",
+      "v": "Sydney"
+     },
+     "H": {
+      "f": null,
+      "t": "str",
+      "v": "TCC"
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "Snow Theme Park"
+     },
+     "L": {
+      "f": null,
+      "t": "str",
+      "v": "The Wet World "
+     },
+     "N": {
+      "f": null,
+      "t": "str",
+      "v": "Good Taste (blok/crush)"
+     },
+     "P": {
+      "f": null,
+      "t": "str",
+      "v": "Burger "
+     },
+     "S": {
+      "f": null,
+      "t": "str",
+      "v": "The wet world "
+     },
+     "V": {
+      "f": null,
+      "t": "str",
+      "v": "TCC"
+     },
+     "X": {
+      "f": null,
+      "t": "str",
+      "v": "blok"
+     }
+    },
+    "5": {
+     "AA": {
+      "f": null,
+      "t": "str",
+      "v": "FM"
+     },
+     "AB": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "AC": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "AD": {
+      "f": null,
+      "t": "str",
+      "v": "Total "
+     },
+     "AE": {
+      "f": null,
+      "t": "str",
+      "v": "Pro"
+     },
+     "AF": {
+      "f": null,
+      "t": "str",
+      "v": "KFI"
+     },
+     "AG": {
+      "f": null,
+      "t": "str",
+      "v": "FM"
+     },
+     "AH": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "AI": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "AM": {
+      "f": null,
+      "t": "str",
+      "v": "Burger "
+     },
+     "C": {
+      "f": null,
+      "t": "str",
+      "v": "DO No "
+     },
+     "D": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity"
+     },
+     "E": {
+      "f": null,
+      "t": "str",
+      "v": "15/unit"
+     },
+     "F": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "G": {
+      "f": null,
+      "t": "str",
+      "v": "3.00/unit "
+     },
+     "H": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "I": {
+      "f": null,
+      "t": "str",
+      "v": "19.00/unit "
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "K": {
+      "f": null,
+      "t": "str",
+      "v": "32.00/unit "
+     },
+     "L": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "M": {
+      "f": null,
+      "t": "str",
+      "v": "C: 77, N:62"
+     },
+     "N": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "O": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "P": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "Q": {
+      "f": null,
+      "t": "str",
+      "v": "24.00/unit"
+     },
+     "S": {
+      "f": null,
+      "t": "str",
+      "v": "normal"
+     },
+     "T": {
+      "f": null,
+      "t": "str",
+      "v": "color "
+     },
+     "U": {
+      "f": null,
+      "t": "str",
+      "v": "sydney"
+     },
+     "V": {
+      "f": null,
+      "t": "str",
+      "v": "crush "
+     },
+     "W": {
+      "f": null,
+      "t": "str",
+      "v": "blok"
+     },
+     "X": {
+      "f": null,
+      "t": "str",
+      "v": "Pro"
+     },
+     "Z": {
+      "f": null,
+      "t": "str",
+      "v": "KFI"
+     }
+    },
+    "6": {
+     "AA": {
+      "f": null,
+      "t": "num",
+      "v": 5.5
+     },
+     "AB": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AC": {
+      "f": null,
+      "t": "num",
+      "v": 22.4
+     },
+     "AD": {
+      "f": null,
+      "t": "num",
+      "v": 189.0
+     },
+     "AE": {
+      "f": null,
+      "t": "num",
+      "v": 62.0
+     },
+     "AF": {
+      "f": null,
+      "t": "num",
+      "v": 20.0
+     },
+     "AG": {
+      "f": null,
+      "t": "num",
+      "v": 42.0
+     },
+     "AH": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AI": {
+      "f": null,
+      "t": "num",
+      "v": 186.0
+     },
+     "AJ": {
+      "f": null,
+      "t": "num",
+      "v": 120.0
+     },
+     "AK": {
+      "f": null,
+      "t": "num",
+      "v": 255.0
+     },
+     "AL": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "AM": {
+      "f": null,
+      "t": "num",
+      "v": 24.0
+     },
+     "B": {
+      "f": null,
+      "t": "num",
+      "v": 1.0
+     },
+     "D": {
+      "f": null,
+      "t": "num",
+      "v": 90.0
+     },
+     "E": {
+      "f": null,
+      "t": "num",
+      "v": 1350.0
+     },
+     "F": {
+      "f": null,
+      "t": "num",
+      "v": 80.0
+     },
+     "G": {
+      "f": null,
+      "t": "num",
+      "v": 240.0
+     },
+     "H": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "I": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "L": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "M": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "N": {
+      "f": null,
+      "t": "str",
+      "v": "8/62"
+     },
+     "O": {
+      "f": null,
+      "t": "num",
+      "v": 375.0
+     },
+     "P": {
+      "f": null,
+      "t": "num",
+      "v": 31.0
+     },
+     "Q": {
+      "f": null,
+      "t": "num",
+      "v": 744.0
+     },
+     "R": {
+      "f": null,
+      "t": "num",
+      "v": 1359.0
+     },
+     "S": {
+      "f": null,
+      "t": "num",
+      "v": 62.0
+     },
+     "T": {
+      "f": null,
+      "t": "num",
+      "v": 77.0
+     },
+     "U": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "V": {
+      "f": null,
+      "t": "num",
+      "v": 1.3
+     },
+     "W": {
+      "f": null,
+      "t": "num",
+      "v": 19.0
+     },
+     "X": {
+      "f": null,
+      "t": "num",
+      "v": 63.0
+     },
+     "Y": {
+      "f": null,
+      "t": "num",
+      "v": 8.0
+     },
+     "Z": {
+      "f": null,
+      "t": "num",
+      "v": 2.5
+     }
+    },
+    "9": {
+     "AA": {
+      "f": null,
+      "t": "num",
+      "v": 5.75
+     },
+     "AB": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AC": {
+      "f": null,
+      "t": "num",
+      "v": 22.4
+     },
+     "AD": {
+      "f": null,
+      "t": "num",
+      "v": 204.0
+     },
+     "AE": {
+      "f": null,
+      "t": "num",
+      "v": 68.0
+     },
+     "AF": {
+      "f": null,
+      "t": "num",
+      "v": 22.0
+     },
+     "AG": {
+      "f": null,
+      "t": "num",
+      "v": 46.0
+     },
+     "AH": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AI": {
+      "f": null,
+      "t": "num",
+      "v": 204.0
+     },
+     "AJ": {
+      "f": null,
+      "t": "num",
+      "v": 132.0
+     },
+     "AK": {
+      "f": null,
+      "t": "num",
+      "v": 276.0
+     },
+     "AL": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "AM": {
+      "f": null,
+      "t": "num",
+      "v": 24.0
+     },
+     "B": {
+      "f": null,
+      "t": "num",
+      "v": 4.0
+     },
+     "D": {
+      "f": null,
+      "t": "num",
+      "v": 54.0
+     },
+     "E": {
+      "f": null,
+      "t": "num",
+      "v": 810.0
+     },
+     "F": {
+      "f": null,
+      "t": "num",
+      "v": 48.0
+     },
+     "G": {
+      "f": null,
+      "t": "num",
+      "v": 144.0
+     },
+     "H": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "I": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "J": {
+      "f": null,
+      "t": "num",
+      "v": 54.0
+     },
+     "K": {
+      "f": null,
+      "t": "num",
+      "v": 1728.0
+     },
+     "L": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "M": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "N": {
+      "f": null,
+      "t": "str",
+      "v": "8.5/68"
+     },
+     "O": {
+      "f": null,
+      "t": "num",
+      "v": 408.0
+     },
+     "P": {
+      "f": null,
+      "t": "num",
+      "v": 27.0
+     },
+     "Q": {
+      "f": null,
+      "t": "num",
+      "v": 648.0
+     },
+     "R": {
+      "f": null,
+      "t": "num",
+      "v": 2928.0
+     },
+     "S": {
+      "f": null,
+      "t": "num",
+      "v": 62.0
+     },
+     "T": {
+      "f": null,
+      "t": "num",
+      "v": 77.0
+     },
+     "U": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "V": {
+      "f": null,
+      "t": "num",
+      "v": 1.3
+     },
+     "W": {
+      "f": null,
+      "t": "num",
+      "v": 19.0
+     },
+     "X": {
+      "f": null,
+      "t": "num",
+      "v": 68.0
+     },
+     "Y": {
+      "f": null,
+      "t": "num",
+      "v": 8.5
+     },
+     "Z": {
+      "f": null,
+      "t": "num",
+      "v": 2.75
+     }
+    }
+   },
+   "maxCol": 39,
+   "maxRow": 52
+  },
+  "oct": {
+   "cells": {
+    "1": {
+     "B": {
+      "f": null,
+      "t": "str",
+      "v": "Ice Purchase & Ice Sales Outside - block/crush  "
+     }
+    },
+    "13": {
+     "AA": {
+      "f": null,
+      "t": "num",
+      "v": 8.5
+     },
+     "AB": {
+      "f": null,
+      "t": "num",
+      "v": 2.75
+     },
+     "AC": {
+      "f": null,
+      "t": "num",
+      "v": 5.75
+     },
+     "AD": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AE": {
+      "f": null,
+      "t": "num",
+      "v": 22.4
+     },
+     "AF": {
+      "f": null,
+      "t": "num",
+      "v": 198.0
+     },
+     "AG": {
+      "f": null,
+      "t": "num",
+      "v": 66.0
+     },
+     "AH": {
+      "f": null,
+      "t": "num",
+      "v": 22.0
+     },
+     "AI": {
+      "f": null,
+      "t": "num",
+      "v": 44.0
+     },
+     "AJ": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AK": {
+      "f": null,
+      "t": "num",
+      "v": 198.0
+     },
+     "AL": {
+      "f": null,
+      "t": "num",
+      "v": 264.0
+     },
+     "AM": {
+      "f": null,
+      "t": "num",
+      "v": 132.0
+     },
+     "AN": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "AO": {
+      "f": null,
+      "t": "num",
+      "v": 24.0
+     },
+     "B": {
+      "f": null,
+      "t": "num",
+      "v": 8.0
+     },
+     "D": {
+      "f": null,
+      "t": "num",
+      "v": 158.0
+     },
+     "E": {
+      "f": null,
+      "t": "num",
+      "v": 2370.0
+     },
+     "F": {
+      "f": null,
+      "t": "num",
+      "v": 48.0
+     },
+     "G": {
+      "f": null,
+      "t": "num",
+      "v": 144.0
+     },
+     "H": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "I": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "J": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "K": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "N": {
+      "f": null,
+      "t": "num",
+      "v": 100.0
+     },
+     "O": {
+      "f": null,
+      "t": "num",
+      "v": 3000.0
+     },
+     "P": {
+      "f": null,
+      "t": "str",
+      "v": "8.5/66"
+     },
+     "Q": {
+      "f": null,
+      "t": "num",
+      "v": 396.0
+     },
+     "R": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "S": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "T": {
+      "f": null,
+      "t": "num",
+      "v": 3540.0
+     },
+     "W": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "X": {
+      "f": null,
+      "t": "num",
+      "v": 1.3
+     },
+     "Y": {
+      "f": null,
+      "t": "num",
+      "v": 19.0
+     },
+     "Z": {
+      "f": null,
+      "t": "num",
+      "v": 66.0
+     }
+    },
+    "15": {
+     "AA": {
+      "f": null,
+      "t": "num",
+      "v": 8.0
+     },
+     "AB": {
+      "f": null,
+      "t": "num",
+      "v": 2.5
+     },
+     "AC": {
+      "f": null,
+      "t": "num",
+      "v": 5.5
+     },
+     "AD": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AE": {
+      "f": null,
+      "t": "num",
+      "v": 22.4
+     },
+     "AF": {
+      "f": null,
+      "t": "num",
+      "v": 186.0
+     },
+     "AG": {
+      "f": null,
+      "t": "num",
+      "v": 66.0
+     },
+     "AH": {
+      "f": null,
+      "t": "num",
+      "v": 22.0
+     },
+     "AI": {
+      "f": null,
+      "t": "num",
+      "v": 44.0
+     },
+     "AJ": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AK": {
+      "f": null,
+      "t": "num",
+      "v": 198.0
+     },
+     "AL": {
+      "f": null,
+      "t": "num",
+      "v": 258.0
+     },
+     "AM": {
+      "f": null,
+      "t": "num",
+      "v": 126.0
+     },
+     "AN": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "AO": {
+      "f": null,
+      "t": "num",
+      "v": 24.0
+     },
+     "B": {
+      "f": null,
+      "t": "num",
+      "v": 10.0
+     },
+     "E": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "F": {
+      "f": null,
+      "t": "num",
+      "v": 88.0
+     },
+     "G": {
+      "f": null,
+      "t": "num",
+      "v": 264.0
+     },
+     "H": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "I": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "J": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "K": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "N": {
+      "f": null,
+      "t": "num",
+      "v": 48.0
+     },
+     "O": {
+      "f": null,
+      "t": "num",
+      "v": 1440.0
+     },
+     "P": {
+      "f": null,
+      "t": "str",
+      "v": "8/66"
+     },
+     "Q": {
+      "f": null,
+      "t": "num",
+      "v": 384.0
+     },
+     "R": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "S": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "T": {
+      "f": null,
+      "t": "num",
+      "v": 2088.0
+     },
+     "W": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "X": {
+      "f": null,
+      "t": "num",
+      "v": 1.3
+     },
+     "Y": {
+      "f": null,
+      "t": "num",
+      "v": 19.0
+     },
+     "Z": {
+      "f": null,
+      "t": "num",
+      "v": 62.0
+     }
+    },
+    "2": {
+     "S": {
+      "f": null,
+      "t": "str",
+      "v": "Month :"
+     },
+     "T": {
+      "f": null,
+      "t": "str",
+      "v": "Oct'25"
+     }
+    },
+    "3": {
+     "C": {
+      "f": null,
+      "t": "str",
+      "v": "Purchase "
+     },
+     "F": {
+      "f": null,
+      "t": "str",
+      "v": "Sales Ice  "
+     },
+     "T": {
+      "f": null,
+      "t": "str",
+      "v": "TOTAL         (RM)"
+     },
+     "Z": {
+      "f": null,
+      "t": "str",
+      "v": "good taste "
+     }
+    },
+    "4": {
+     "AG": {
+      "f": null,
+      "t": "str",
+      "v": "crush"
+     },
+     "AL": {
+      "f": null,
+      "t": "str",
+      "v": "FM"
+     },
+     "AM": {
+      "f": null,
+      "t": "str",
+      "v": "KFI"
+     },
+     "AN": {
+      "f": null,
+      "t": "str",
+      "v": "dif"
+     },
+     "B": {
+      "f": null,
+      "t": "str",
+      "v": "DATE"
+     },
+     "C": {
+      "f": null,
+      "t": "str",
+      "v": "Ocean Ice "
+     },
+     "F": {
+      "f": null,
+      "t": "str",
+      "v": "Sydney"
+     },
+     "H": {
+      "f": null,
+      "t": "str",
+      "v": "TCC"
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "Wai Mah (tube/crush)"
+     },
+     "L": {
+      "f": null,
+      "t": "str",
+      "v": "The Wet World "
+     },
+     "N": {
+      "f": null,
+      "t": "str",
+      "v": "Hypecircus "
+     },
+     "P": {
+      "f": null,
+      "t": "str",
+      "v": "Good Taste (blok/crush)"
+     },
+     "R": {
+      "f": null,
+      "t": "str",
+      "v": "Burger "
+     },
+     "X": {
+      "f": null,
+      "t": "str",
+      "v": "TCC"
+     },
+     "Z": {
+      "f": null,
+      "t": "str",
+      "v": "blok"
+     }
+    },
+    "5": {
+     "AB": {
+      "f": null,
+      "t": "str",
+      "v": "KFI"
+     },
+     "AC": {
+      "f": null,
+      "t": "str",
+      "v": "FM"
+     },
+     "AD": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "AE": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "AF": {
+      "f": null,
+      "t": "str",
+      "v": "Total "
+     },
+     "AG": {
+      "f": null,
+      "t": "str",
+      "v": "Pro"
+     },
+     "AH": {
+      "f": null,
+      "t": "str",
+      "v": "KFI"
+     },
+     "AI": {
+      "f": null,
+      "t": "str",
+      "v": "FM"
+     },
+     "AJ": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "AK": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "AO": {
+      "f": null,
+      "t": "str",
+      "v": "Burger "
+     },
+     "C": {
+      "f": null,
+      "t": "str",
+      "v": "DO No "
+     },
+     "D": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity"
+     },
+     "E": {
+      "f": null,
+      "t": "str",
+      "v": "15/unit"
+     },
+     "F": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "G": {
+      "f": null,
+      "t": "str",
+      "v": "3.00/unit "
+     },
+     "H": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "I": {
+      "f": null,
+      "t": "str",
+      "v": "19.00/unit "
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "K": {
+      "f": null,
+      "t": "str",
+      "v": "1.70/unit"
+     },
+     "L": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "M": {
+      "f": null,
+      "t": "str",
+      "v": "C: 77, N:66"
+     },
+     "N": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "O": {
+      "f": null,
+      "t": "str",
+      "v": "30.00/unit "
+     },
+     "P": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "Q": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "R": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "S": {
+      "f": null,
+      "t": "str",
+      "v": "24.00/unit"
+     },
+     "U": {
+      "f": null,
+      "t": "str",
+      "v": "The wet world "
+     },
+     "W": {
+      "f": null,
+      "t": "str",
+      "v": "sydney"
+     },
+     "X": {
+      "f": null,
+      "t": "str",
+      "v": "crush "
+     },
+     "Y": {
+      "f": null,
+      "t": "str",
+      "v": "blok"
+     },
+     "Z": {
+      "f": null,
+      "t": "str",
+      "v": "Pro"
+     }
+    },
+    "6": {
+     "AA": {
+      "f": null,
+      "t": "num",
+      "v": 8.5
+     },
+     "AB": {
+      "f": null,
+      "t": "num",
+      "v": 2.75
+     },
+     "AC": {
+      "f": null,
+      "t": "num",
+      "v": 5.75
+     },
+     "AD": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AE": {
+      "f": null,
+      "t": "num",
+      "v": 22.4
+     },
+     "AF": {
+      "f": null,
+      "t": "num",
+      "v": 198.0
+     },
+     "AG": {
+      "f": null,
+      "t": "num",
+      "v": 68.0
+     },
+     "AH": {
+      "f": null,
+      "t": "num",
+      "v": 23.0
+     },
+     "AI": {
+      "f": null,
+      "t": "num",
+      "v": 45.0
+     },
+     "AJ": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AK": {
+      "f": null,
+      "t": "num",
+      "v": 204.0
+     },
+     "AL": {
+      "f": null,
+      "t": "num",
+      "v": 267.0
+     },
+     "AM": {
+      "f": null,
+      "t": "num",
+      "v": 135.0
+     },
+     "AN": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "AO": {
+      "f": null,
+      "t": "num",
+      "v": 24.0
+     },
+     "B": {
+      "f": null,
+      "t": "num",
+      "v": 1.0
+     },
+     "F": {
+      "f": null,
+      "t": "num",
+      "v": 64.0
+     },
+     "G": {
+      "f": null,
+      "t": "num",
+      "v": 192.0
+     },
+     "H": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "I": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "J": {
+      "f": null,
+      "t": "num",
+      "v": 500.0
+     },
+     "K": {
+      "f": null,
+      "t": "num",
+      "v": 857.6
+     },
+     "N": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "O": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "P": {
+      "f": null,
+      "t": "str",
+      "v": "8.5/68"
+     },
+     "Q": {
+      "f": null,
+      "t": "num",
+      "v": 402.0
+     },
+     "R": {
+      "f": null,
+      "t": "num",
+      "v": 26.0
+     },
+     "S": {
+      "f": null,
+      "t": "num",
+      "v": 624.0
+     },
+     "T": {
+      "f": null,
+      "t": "num",
+      "v": 2075.6
+     },
+     "W": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "X": {
+      "f": null,
+      "t": "num",
+      "v": 1.3
+     },
+     "Y": {
+      "f": null,
+      "t": "num",
+      "v": 19.0
+     },
+     "Z": {
+      "f": null,
+      "t": "num",
+      "v": 66.0
+     }
+    },
+    "9": {
+     "AA": {
+      "f": null,
+      "t": "num",
+      "v": 6.5
+     },
+     "AB": {
+      "f": null,
+      "t": "num",
+      "v": 2.0
+     },
+     "AC": {
+      "f": null,
+      "t": "num",
+      "v": 4.5
+     },
+     "AD": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AE": {
+      "f": null,
+      "t": "num",
+      "v": 22.4
+     },
+     "AF": {
+      "f": null,
+      "t": "num",
+      "v": 150.0
+     },
+     "AG": {
+      "f": null,
+      "t": "num",
+      "v": 50.0
+     },
+     "AH": {
+      "f": null,
+      "t": "num",
+      "v": 16.0
+     },
+     "AI": {
+      "f": null,
+      "t": "num",
+      "v": 34.0
+     },
+     "AJ": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "AK": {
+      "f": null,
+      "t": "num",
+      "v": 150.0
+     },
+     "AL": {
+      "f": null,
+      "t": "num",
+      "v": 204.0
+     },
+     "AM": {
+      "f": null,
+      "t": "num",
+      "v": 96.0
+     },
+     "AN": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "AO": {
+      "f": null,
+      "t": "num",
+      "v": 24.0
+     },
+     "B": {
+      "f": null,
+      "t": "num",
+      "v": 4.0
+     },
+     "F": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "G": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "H": {
+      "f": null,
+      "t": "num",
+      "v": 32.0
+     },
+     "I": {
+      "f": null,
+      "t": "num",
+      "v": 608.0
+     },
+     "K": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "N": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "O": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "P": {
+      "f": null,
+      "t": "str",
+      "v": "6.5/50"
+     },
+     "Q": {
+      "f": null,
+      "t": "num",
+      "v": 300.0
+     },
+     "R": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "S": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "T": {
+      "f": null,
+      "t": "num",
+      "v": 908.0
+     },
+     "W": {
+      "f": null,
+      "t": "num",
+      "v": 3.0
+     },
+     "X": {
+      "f": null,
+      "t": "num",
+      "v": 1.3
+     },
+     "Y": {
+      "f": null,
+      "t": "num",
+      "v": 19.0
+     },
+     "Z": {
+      "f": null,
+      "t": "num",
+      "v": 50.0
+     }
+    }
+   },
+   "maxCol": 41,
+   "maxRow": 52
+  },
+  "sept": {
+   "cells": {
+    "1": {
+     "B": {
+      "f": null,
+      "t": "str",
+      "v": "Ice Purchase & Ice Sales Outside - block/crush  "
+     }
+    },
+    "13": {
+     "AA": {
+      "f": null,
+      "t": "num",
+      "v": 57.0
+     },
+     "AC": {
+      "f": null,
+      "t": "num",
+      "v": 57.0
+     },
+     "AD": {
+      "f": null,
+      "t": "num",
+      "v": 3.3
+     },
+     "AE": {
+      "f": null,
+      "t": "num",
+      "v": 188.1
+     },
+     "AH": {
+      "f": null,
+      "t": "num",
+      "v": -376.2
+     },
+     "AI": {
+      "f": null,
+      "t": "num",
+      "v": 26.0
+     },
+     "B": {
+      "f": null,
+      "t": "num",
+      "v": 8.0
+     },
+     "F": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "G": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "H": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "I": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "J": {
+      "f": null,
+      "serial": 21002.0,
+      "t": "date",
+      "v": "1957-07-01"
+     },
+     "K": {
+      "f": null,
+      "t": "num",
+      "v": 376.2
+     },
+     "L": {
+      "f": null,
+      "t": "num",
+      "v": 22.0
+     },
+     "M": {
+      "f": null,
+      "t": "num",
+      "v": 572.0
+     },
+     "N": {
+      "f": null,
+      "t": "num",
+      "v": 948.2
+     },
+     "P": {
+      "f": null,
+      "t": "num",
+      "v": 8.0
+     },
+     "Q": {
+      "f": null,
+      "t": "num",
+      "v": 3.3
+     },
+     "R": {
+      "f": null,
+      "t": "num",
+      "v": 1.3
+     },
+     "S": {
+      "f": null,
+      "t": "num",
+      "v": 21.0
+     },
+     "T": {
+      "f": null,
+      "t": "num",
+      "v": 57.0
+     },
+     "U": {
+      "f": null,
+      "t": "num",
+      "v": 7.0
+     },
+     "W": {
+      "f": null,
+      "t": "num",
+      "v": 7.0
+     },
+     "X": {
+      "f": null,
+      "t": "num",
+      "v": 3.3
+     },
+     "Y": {
+      "f": null,
+      "t": "num",
+      "v": 22.4
+     },
+     "Z": {
+      "f": null,
+      "t": "num",
+      "v": 188.1
+     }
+    },
+    "15": {
+     "AA": {
+      "f": null,
+      "t": "num",
+      "v": 55.0
+     },
+     "AC": {
+      "f": null,
+      "t": "num",
+      "v": 55.0
+     },
+     "AD": {
+      "f": null,
+      "t": "num",
+      "v": 3.3
+     },
+     "AE": {
+      "f": null,
+      "t": "num",
+      "v": 181.5
+     },
+     "AH": {
+      "f": null,
+      "t": "num",
+      "v": -346.5
+     },
+     "AI": {
+      "f": null,
+      "t": "num",
+      "v": 26.0
+     },
+     "B": {
+      "f": null,
+      "t": "num",
+      "v": 10.0
+     },
+     "F": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "G": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "H": {
+      "f": null,
+      "t": "num",
+      "v": 20.0
+     },
+     "I": {
+      "f": null,
+      "t": "num",
+      "v": 420.0
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "6.5/55"
+     },
+     "K": {
+      "f": null,
+      "t": "num",
+      "v": 346.5
+     },
+     "L": {
+      "f": null,
+      "t": "num",
+      "v": 21.0
+     },
+     "M": {
+      "f": null,
+      "t": "num",
+      "v": 546.0
+     },
+     "N": {
+      "f": null,
+      "t": "num",
+      "v": 1312.5
+     },
+     "P": {
+      "f": null,
+      "t": "num",
+      "v": 10.0
+     },
+     "Q": {
+      "f": null,
+      "t": "num",
+      "v": 3.3
+     },
+     "R": {
+      "f": null,
+      "t": "num",
+      "v": 1.3
+     },
+     "S": {
+      "f": null,
+      "t": "num",
+      "v": 21.0
+     },
+     "T": {
+      "f": null,
+      "t": "num",
+      "v": 50.0
+     },
+     "U": {
+      "f": null,
+      "t": "num",
+      "v": 6.5
+     },
+     "W": {
+      "f": null,
+      "t": "num",
+      "v": 6.5
+     },
+     "X": {
+      "f": null,
+      "t": "num",
+      "v": 3.3
+     },
+     "Y": {
+      "f": null,
+      "t": "num",
+      "v": 22.4
+     },
+     "Z": {
+      "f": null,
+      "t": "num",
+      "v": 165.0
+     }
+    },
+    "2": {
+     "M": {
+      "f": null,
+      "t": "str",
+      "v": "Month :"
+     },
+     "N": {
+      "f": null,
+      "t": "str",
+      "v": "Sept'26"
+     }
+    },
+    "3": {
+     "C": {
+      "f": null,
+      "t": "str",
+      "v": "Purchase "
+     },
+     "F": {
+      "f": null,
+      "t": "str",
+      "v": "Sales Ice  "
+     },
+     "N": {
+      "f": null,
+      "t": "str",
+      "v": "TOTAL         (RM)"
+     },
+     "T": {
+      "f": null,
+      "t": "str",
+      "v": "good taste "
+     }
+    },
+    "4": {
+     "AA": {
+      "f": null,
+      "t": "str",
+      "v": "crush"
+     },
+     "AF": {
+      "f": null,
+      "t": "str",
+      "v": "KFI"
+     },
+     "AG": {
+      "f": null,
+      "t": "str",
+      "v": "FM"
+     },
+     "AH": {
+      "f": null,
+      "t": "str",
+      "v": "dif"
+     },
+     "B": {
+      "f": null,
+      "t": "str",
+      "v": "DATE"
+     },
+     "C": {
+      "f": null,
+      "t": "str",
+      "v": "Ocean Ice "
+     },
+     "F": {
+      "f": null,
+      "t": "str",
+      "v": "Sydney"
+     },
+     "H": {
+      "f": null,
+      "t": "str",
+      "v": "TCC"
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "Good Taste (blok/crush)"
+     },
+     "L": {
+      "f": null,
+      "t": "str",
+      "v": "Burger "
+     },
+     "R": {
+      "f": null,
+      "t": "str",
+      "v": "TCC"
+     },
+     "T": {
+      "f": null,
+      "t": "str",
+      "v": "blok"
+     }
+    },
+    "5": {
+     "AA": {
+      "f": null,
+      "t": "str",
+      "v": "Pro"
+     },
+     "AB": {
+      "f": null,
+      "t": "str",
+      "v": "KFI"
+     },
+     "AC": {
+      "f": null,
+      "t": "str",
+      "v": "FM"
+     },
+     "AD": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "AE": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "AI": {
+      "f": null,
+      "t": "str",
+      "v": "Burger "
+     },
+     "C": {
+      "f": null,
+      "t": "str",
+      "v": "DO No "
+     },
+     "D": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity"
+     },
+     "E": {
+      "f": null,
+      "t": "str",
+      "v": "15/unit"
+     },
+     "F": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "G": {
+      "f": null,
+      "t": "str",
+      "v": "3.30/unit "
+     },
+     "H": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "I": {
+      "f": null,
+      "t": "str",
+      "v": "21.00/unit "
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "K": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "L": {
+      "f": null,
+      "t": "str",
+      "v": "Quantity "
+     },
+     "M": {
+      "f": null,
+      "t": "str",
+      "v": "26.00/unit"
+     },
+     "P": {
+      "f": null,
+      "t": "str",
+      "v": "date "
+     },
+     "Q": {
+      "f": null,
+      "t": "str",
+      "v": "sydney"
+     },
+     "R": {
+      "f": null,
+      "t": "str",
+      "v": "crush "
+     },
+     "S": {
+      "f": null,
+      "t": "str",
+      "v": "blok"
+     },
+     "T": {
+      "f": null,
+      "t": "str",
+      "v": "Pro"
+     },
+     "V": {
+      "f": null,
+      "t": "str",
+      "v": "KFI"
+     },
+     "W": {
+      "f": null,
+      "t": "str",
+      "v": "FM"
+     },
+     "X": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "Y": {
+      "f": null,
+      "t": "str",
+      "v": "RM"
+     },
+     "Z": {
+      "f": null,
+      "t": "str",
+      "v": "Total "
+     }
+    },
+    "6": {
+     "AA": {
+      "f": null,
+      "t": "num",
+      "v": 55.0
+     },
+     "AC": {
+      "f": null,
+      "t": "num",
+      "v": 55.0
+     },
+     "AD": {
+      "f": null,
+      "t": "num",
+      "v": 3.3
+     },
+     "AE": {
+      "f": null,
+      "t": "num",
+      "v": 181.5
+     },
+     "AH": {
+      "f": null,
+      "t": "num",
+      "v": -363.0
+     },
+     "AI": {
+      "f": null,
+      "t": "num",
+      "v": 26.0
+     },
+     "B": {
+      "f": null,
+      "t": "num",
+      "v": 1.0
+     },
+     "F": {
+      "f": null,
+      "t": "num",
+      "v": 88.0
+     },
+     "G": {
+      "f": null,
+      "t": "num",
+      "v": 290.4
+     },
+     "H": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "I": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "7/55"
+     },
+     "K": {
+      "f": null,
+      "t": "num",
+      "v": 363.0
+     },
+     "L": {
+      "f": null,
+      "t": "num",
+      "v": 19.0
+     },
+     "M": {
+      "f": null,
+      "t": "num",
+      "v": 494.0
+     },
+     "N": {
+      "f": null,
+      "t": "num",
+      "v": 1147.4
+     },
+     "P": {
+      "f": null,
+      "t": "num",
+      "v": 1.0
+     },
+     "Q": {
+      "f": null,
+      "t": "num",
+      "v": 3.3
+     },
+     "R": {
+      "f": null,
+      "t": "num",
+      "v": 1.3
+     },
+     "S": {
+      "f": null,
+      "t": "num",
+      "v": 21.0
+     },
+     "T": {
+      "f": null,
+      "t": "num",
+      "v": 55.0
+     },
+     "U": {
+      "f": null,
+      "t": "num",
+      "v": 7.0
+     },
+     "W": {
+      "f": null,
+      "t": "num",
+      "v": 7.0
+     },
+     "X": {
+      "f": null,
+      "t": "num",
+      "v": 3.3
+     },
+     "Y": {
+      "f": null,
+      "t": "num",
+      "v": 22.4
+     },
+     "Z": {
+      "f": null,
+      "t": "num",
+      "v": 181.5
+     }
+    },
+    "9": {
+     "AA": {
+      "f": null,
+      "t": "num",
+      "v": 68.0
+     },
+     "AC": {
+      "f": null,
+      "t": "num",
+      "v": 68.0
+     },
+     "AD": {
+      "f": null,
+      "t": "num",
+      "v": 3.3
+     },
+     "AE": {
+      "f": null,
+      "t": "num",
+      "v": 224.39999999999998
+     },
+     "AH": {
+      "f": null,
+      "t": "num",
+      "v": -442.19999999999993
+     },
+     "AI": {
+      "f": null,
+      "t": "num",
+      "v": 26.0
+     },
+     "B": {
+      "f": null,
+      "t": "num",
+      "v": 4.0
+     },
+     "F": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "G": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "H": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "I": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "J": {
+      "f": null,
+      "t": "str",
+      "v": "8.5/68"
+     },
+     "K": {
+      "f": null,
+      "t": "num",
+      "v": 442.19999999999993
+     },
+     "L": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "M": {
+      "f": null,
+      "t": "num",
+      "v": 0.0
+     },
+     "N": {
+      "f": null,
+      "t": "num",
+      "v": 442.19999999999993
+     },
+     "P": {
+      "f": null,
+      "t": "num",
+      "v": 4.0
+     },
+     "Q": {
+      "f": null,
+      "t": "num",
+      "v": 3.3
+     },
+     "R": {
+      "f": null,
+      "t": "num",
+      "v": 1.3
+     },
+     "S": {
+      "f": null,
+      "t": "num",
+      "v": 21.0
+     },
+     "T": {
+      "f": null,
+      "t": "num",
+      "v": 66.0
+     },
+     "U": {
+      "f": null,
+      "t": "num",
+      "v": 8.5
+     },
+     "W": {
+      "f": null,
+      "t": "num",
+      "v": 8.5
+     },
+     "X": {
+      "f": null,
+      "t": "num",
+      "v": 3.3
+     },
+     "Y": {
+      "f": null,
+      "t": "num",
+      "v": 22.4
+     },
+     "Z": {
+      "f": null,
+      "t": "num",
+      "v": 217.79999999999998
+     }
+    }
+   },
+   "maxCol": 35,
+   "maxRow": 52
+  }
+ },
+ "sourceFile": "(trimmed fixture)",
+ "workbook": "ice-purchase"
+}

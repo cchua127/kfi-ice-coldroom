@@ -253,8 +253,10 @@ model MeterReading {
   @@map("meter_reading")
 }
 
-/// The block lines run two shifts, M and N, and FOC is heavily skewed between
-/// them (Shift N 35.8% against Shift M 10.0% in H1 2026). Tube is not split.
+/// Report R1 finds FOC heavily skewed between the China machine's two shifts
+/// (N 35.8% against M 10.0% in H1 2026). That split lives in the worker ledger,
+/// which is not among the supplied workbooks, so everything currently imports
+/// as UNSPLIT — the key exists for when that ledger arrives.
 enum Shift {
   M
   N
@@ -277,8 +279,10 @@ model ProductionDaily {
   unitCode       UnitCode       @map("unit_code")
   /// Fractional: big pool runs half-rows, and blok quantities appear as 6.5/8.5.
   quantity       Decimal        @db.Decimal(12, 2)
-  /// Free-of-charge, same unit as `quantity`. Ran 25.6% of blocks moved in H1
-  /// 2026 (RM78,923 on BIMC alone) and is absent from the legacy master file.
+  /// Free-of-charge, in this row's own `unitCode`. Ran 25.6% of blocks moved in
+  /// H1 2026 (RM78,923 on BIMC alone) and is absent from the legacy master file.
+  /// Only the small pool `-baris` sheets record it; big pool FOC sits in the
+  /// worker ledger and tube FOC is not recorded anywhere.
   focQuantity    Decimal        @default(0) @map("foc_quantity") @db.Decimal(12, 2)
   /// BIG_POOL only: empty cans in the row.
   tongKosong     Decimal        @default(0) @map("tong_kosong") @db.Decimal(12, 2)
@@ -296,8 +300,11 @@ model ProductionDaily {
 
 model CashSalesDaily {
   saleDate  DateTime @id @map("sale_date") @db.Date
-  shiftM    Decimal  @default(0) @map("shift_m") @db.Decimal(12, 2)
-  shiftN    Decimal  @default(0) @map("shift_n") @db.Decimal(12, 2)
+  /// The cash book labels these "Shift 1" and "Shift 2". Report R1 labels the
+  /// China machine's two shifts "M" and "N". Whether they are the same two
+  /// shifts is unconfirmed, so the names are kept as each source writes them.
+  shift1    Decimal  @default(0) @map("shift_1") @db.Decimal(12, 2)
+  shift2    Decimal  @default(0) @map("shift_2") @db.Decimal(12, 2)
   /// No `total` column by design. The legacy sheet stored the sum alongside its
   /// parts and column G duplicated column D; a stored total is a thing that can
   /// drift. Read it through cashTotal() in src/lib/domain.ts instead.

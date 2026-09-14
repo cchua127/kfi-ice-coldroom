@@ -371,3 +371,101 @@ columns.
 One narrow ambiguity remains, and it does not block: the two `Pro` columns (`T` and `AA`) disagree on
 roughly a quarter of days (e.g. 50 against 55 on 10 September). The importer will take `Pro` and list
 every disagreement in the dry-run diff for confirmation rather than guessing.
+
+---
+
+## 8. Further findings from the migration build
+
+Found while writing the importers against the actual workbooks. Each is now
+covered by a test.
+
+### 8.1 The ice-purchase workbook runs Oct 2025 to Sept 2026, not Dec 2025 to Nov 2026
+
+§10 of the specification describes the sheets as running "roughly Dec 2025 to
+Nov 2026". For this workbook that is wrong in a way that matters: the sheets
+named `oct` and `nov` are **October and November 2025**, and their own month
+markers say so (`Oct'25`, `Nov'25`). Inferring the year from the sheet name puts
+them a full year out and would have loaded 2025 trading as 2026.
+
+The importer therefore resolves every sheet from its own month marker first and
+falls back to the name only when there is none, reporting which it used.
+
+### 8.2 Column layouts are not stable between sheets
+
+Customers come and go, and everything to their right moves:
+
+| Sheet | Columns | Good Taste at | Extra customers |
+|---|---:|---|---|
+| Oct 2025 | 41 | P | Wai Mah, The Wet World, Hypecircus |
+| Nov 2025 | 39 | N | Snow Theme Park, The Wet World |
+| Dec 2025 – Sept 2026 | 35 | J | — |
+
+The month marker moves with them, from N2 on a 35-column sheet to T2 on the
+41-column one. A fixed column map would have imported one customer's quantities
+as another's, silently. The importer resolves every column by its header label.
+
+**Four customers appear that are in neither the specification nor the price
+list**: Wai Mah, The Wet World, Hypecircus and Snow Theme Park. Their quantities
+are read but not loaded, because nothing records which product they buy — that
+is outstanding input.
+
+### 8.3 The price rise was June 2026, not January
+
+Read from the unit-price labels in the sheet headers:
+
+| | Oct 2025 – May 2026 | From June 2026 |
+|---|---:|---:|
+| Sydney | RM 3.00 | RM 3.30 |
+| TCC | RM 19.00 | RM 21.00 |
+| Burger | RM 24.00 | RM 26.00 |
+| Good Taste crush | RM 3.00 | RM 3.30 |
+| Good Taste blok | RM 22.40 | RM 22.40 |
+| Ocean Ice (purchase) | RM 15.00 | RM 15.00 |
+
+This explains the specification's "Good Taste — RM 3.00 / 3.30": those are the
+old and new prices, not two products. Report R3 sees the same rise in the cash
+data ("+9.4% vs Apr — June price rise realized").
+
+The seed originally dated the current prices from 2026-01-01, which would have
+restated five months of invoices at prices that did not yet apply. Corrected to
+two epochs.
+
+### 8.4 A missing formula understates May 2026 by 9,000 kg
+
+`meter BIG POOL vs elec`, sheet `may`, row 36 (31 May): the BIMC block count is
+present (200) and the 45 kg factor is present, but **the kg cell holds no
+formula at all**. The sheet reports zero kg for that day's China-machine output
+while still booking the blocks.
+
+May total kg is therefore understated by 9,000 kg, which flows into the master's
+TOTAL KG and every May ratio — kWh/kg reads 0.1176 where it should read 0.1164.
+Small, but it is exactly the class of error the rebuild removes: the importer
+derives kg from the block count and the dated unit weight, never from a kg cell
+that may or may not carry its formula.
+
+### 8.5 The earliest day of a meter series needs its opening reading
+
+Each meter row carries a Mula (opening) and an Akhir (closing), and the opening
+is the previous day's closing. For the first row of the earliest sheet there is
+no previous day in the data, so that day's consumption is lost unless the Mula
+itself is imported as a reading. On the tube meter this is 1 January 2026 —
+10 kWh, which report R6 independently records as an idle day.
+
+The importer now imports that opening as a reading dated the day before, and a
+real closing for the same date always takes precedence over it.
+
+### 8.6 The small pool `-baris` sheets are block types, not shifts
+
+Correcting an earlier reading. Each date carries two rows, and they are the BIG
+and SMALL block types, not two shifts: the BIG row books 1 baris of 8 and the
+SMALL row 6 baris of 23, with FOC recorded against each. Report R1's Shift M and
+Shift N split belongs to the China machine worker ledger, which is not among the
+supplied workbooks.
+
+These sheets are the only FOC record in the supplied data.
+
+### 8.7 The master workbook is not an import source
+
+`Daily rekod Ais` is a roll-up of the detail files with the same numbers re-typed
+by hand. Importing it would double-count, so it has no parser. It is the
+comparison target for the parallel-run check in §11.
