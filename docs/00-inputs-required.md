@@ -479,35 +479,55 @@ agree, 31 differ, and every difference is the same one.** Cash, total kilograms,
 tube kilograms, big pool plus BIMC kilograms, tube kWh and big pool kWh all tie
 on all 31 days.
 
-### 9.1 Good Taste blocks are priced two different ways — RM22.40 or RM26.40
+### 9.1 Good Taste blocks — resolved, with a residual worth knowing
 
-The one disagreement, on every day of the month:
+**Resolved by the owner: a Good Taste block is charged at RM26.40.**
 
-| 1 August 2026 | Sheet | System |
+That is eight pieces at the RM3.30 crush rate. The crush rate was RM3.00 before
+June 2026, so the block price is seeded as RM24.00 from October 2025 and RM26.40
+from June 2026 — consistent with every other customer's June rise. The RM22.40 in
+column Y of the source sheet is not what the sheet's own formula charges and is
+not used.
+
+**A residual difference remains, and it is a real one.** The sheet does not bill
+blocks — it bills `(T + AA) x crush rate`, where `AA` is the crush bags and `T`
+is a **counted** tally of the pieces the blocks yielded. `T` is close to eight
+per block but not fixed: across the months checked it runs 7.7 to 8.2. So on days
+where a block did not yield eight usable pieces, the sheet charges less than
+eight pieces' worth and the system charges the full block.
+
+After the correction, against `Daily rekod Ais`:
+
+| Month | Agree | Differ |
 |---|---:|---:|
-| Sydney | 158.40 | 158.40 |
-| TCC | 462.00 | 462.00 |
-| **Good Taste** | **333.30** | **307.30** |
-| Burger | 338.00 | 338.00 |
-| Total | 1,291.70 | 1,265.70 |
+| Jan 2026 | 233 | 15 |
+| Mar 2026 | 230 | 18 |
+| Jun 2026 | 221 | 19 |
+| Jul 2026 | 221 | 27 |
+| Aug 2026 | 223 | 25 |
 
-The Good Taste entry that day is `6.5/49` — six and a half blocks, forty-nine
-crush. The sheet computes `(T + AA) × 3.30` where `T = 52` and `AA = 49`.
+Every remaining difference is an exact multiple of the crush rate of the day —
+RM3.00 before June, RM3.30 after — which is the piece drift and nothing else.
+Roughly half the days agree exactly, on the days a block yielded eight.
 
-**`T` is the blok quantity expressed in eighths**: 6.5 blocks × 8 = 52, and the
-same holds on every row checked (8.5 blocks → 68). So the sheet charges a block
-as eight pieces at RM3.30 — **RM26.40 a block**. The seeded price list takes
-RM22.40 from column Y of the same sheet, which the formula never uses.
+**The question for the owner, before cutover:** is Good Taste invoiced per block
+ordered, as the price implies, or per piece delivered, as the sheet computes? The
+system now does the former. If the answer is the latter, the entry screen needs a
+piece count rather than a block count, and this is a change to how revenue is
+recognised, not a rounding matter.
 
-The gap is RM4.00 a block, about RM26 a day and roughly RM800 a month.
+### 9.2 The seed was not convergent
 
-**Outstanding:** which is the price actually charged — RM26.40 a block (eight
-pieces at the crush rate, as the sheet computes) or RM22.40 (as column Y states)?
-Nothing in the workbooks settles it, and it is revenue, so it is not a judgement
-call to make here. The seeded price is left at RM22.40 until the owner says
-otherwise, and the parallel check will keep reporting the difference until it is
-resolved.
+Found while correcting the price above, and worth recording because it would have
+mis-stated history quietly.
 
-This is precisely what §11 of the specification says the screen is for: a
-disagreement is either a spreadsheet error or an import error, and both are
-worth knowing.
+An earlier version of `prisma/seed.ts` dated every price from 2026-01-01.
+Correcting it to two epochs — 2025-10-01 and 2026-06-01 — added the new rows but
+left the old ones in place, because the seed only ever upserted. A price resolved
+"as at 2026-01-01" then matched the stale January row rather than the October
+one, and five months of history imported at June prices.
+
+The parallel check is what surfaced it: January showed 31 differences where
+August showed 25, with gaps that were not multiples of any rate. The seed now
+deletes any epoch it no longer declares, for the pairs it manages, so re-seeding
+converges instead of accumulating.

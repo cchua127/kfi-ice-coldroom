@@ -214,7 +214,12 @@ async function main() {
       ['TCC', 'BIG_BLOCK', '19.00'],
       ['Burger', 'BIG_BLOCK', '24.00'],
       ['Good Taste', 'CRUSH', '3.00', 'Crushed ice in bags'],
-      ['Good Taste', 'BIG_BLOCK', '22.40', 'Blocks cut into 1/8 — unchanged across the June rise'],
+      // Owner-confirmed: Good Taste blocks are charged per block, at eight
+      // times the crush rate of the day. RM26.40 from June; before that the
+      // crush rate was RM3.00, so RM24.00. The RM22.40 in column Y of the
+      // source sheet is not what the sheet's own formula charges, and is not
+      // used here.
+      ['Good Taste', 'BIG_BLOCK', '24.00', 'Blocks cut into 1/8, charged per block at 8 x the RM3.00 crush rate'],
       ['Ocean Ice', 'BIG_BLOCK', '15.00', 'Purchase price. Block size to confirm.'],
     ]],
     ['2026-06-01', [
@@ -222,7 +227,7 @@ async function main() {
       ['TCC', 'BIG_BLOCK', '21.00'],
       ['Burger', 'BIG_BLOCK', '26.00'],
       ['Good Taste', 'CRUSH', '3.30'],
-      ['Good Taste', 'BIG_BLOCK', '22.40'],
+      ['Good Taste', 'BIG_BLOCK', '26.40', 'Blocks cut into 1/8, charged per block at 8 x the RM3.30 crush rate'],
       ['Ocean Ice', 'BIG_BLOCK', '15.00'],
       // Counter prices. Report R1 proves these reconcile shift cash to the
       // ringgit on June data: big x RM26 + small x RM13 = recorded shift cash,
@@ -232,6 +237,21 @@ async function main() {
       ['Pasar Counter', 'SMALL_BLOCK_BIMC', '13.00', 'Counter price; reconciles June shift cash exactly'],
     ]],
   ]
+  // Re-seeding must CONVERGE, not accumulate. An earlier version of this file
+  // dated every price from 2026-01-01; correcting it to two epochs left those
+  // rows behind, and `as at 2026-01-01` then picked the stale one — which
+  // silently mis-priced five months of history. Remove any epoch this file no
+  // longer declares, for the pairs it manages.
+  const declaredEpochs = priceEpochs.map(([from]) => date(from))
+  const managedPairs = priceEpochs.flatMap(([, rows]) =>
+    rows.map(([cust, prod]) => ({ customerId: custId[cust], productId: prodId[prod] }))
+  )
+  for (const pair of managedPairs) {
+    await prisma.price.deleteMany({
+      where: { ...pair, effectiveFrom: { notIn: declaredEpochs } },
+    })
+  }
+
   for (const [from, rows] of priceEpochs) {
     for (const [cust, prod, price, note] of rows) {
       await prisma.price.upsert({
