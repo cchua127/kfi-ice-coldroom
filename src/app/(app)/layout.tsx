@@ -13,6 +13,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         <Link href="/" className="brand">KFI Ice Ops</Link>
         <nav>
           <Link href="/">Dashboard</Link>
+          <Link href="/entry">Daily entry</Link>
         </nav>
         <form action={signOut} className="whoami">
           <span>

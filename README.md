@@ -3,10 +3,10 @@
 Ice production, sales and electricity costing for KFI Cold Storage Sdn Bhd,
 Pasar Borong Selangor. Replaces six hand-maintained Excel workbooks.
 
-**Status:** schema, tariff and cost engines, importers, auth and the management
-dashboard are built and tested against the real bills and meter books. The staff
-entry screens, the reports with Excel export, the bill-upload parser and the
-parallel-check screen are next. See `docs/00-inputs-required.md` for the source
+**Status:** schema, tariff and cost engines, importers, auth, the management
+dashboard and the daily entry screen are built and tested against the real bills
+and meter books. The reports with Excel export, the TNB bill upload and parser,
+and the parallel-check screen are next. See `docs/00-inputs-required.md` for the source
 review and what is still outstanding.
 
 ---
@@ -138,6 +138,27 @@ Three stages, because the source workbooks are messier than they look:
 
 The master workbook is deliberately not a source: it re-types the detail files,
 so importing it would double-count. It is the parallel-run comparison target.
+
+## Daily entry
+
+One screen per day, not one per workbook: `/entry/2026-09-01` holds the meters,
+production, counter cash, outside sales and purchases for that date. Openings
+auto-fill from the previous reading and are read-only, so the two can never
+disagree. Everything computes live — kWh per meter, kg per row, the day total,
+cash and sale amounts — and the month strip shows at a glance which days are
+still missing.
+
+Labels keep her vocabulary: Mula and Akhir, Baris, Tong Kosong, Tong Kecil.
+
+Validation lives in `src/lib/validation.ts` and runs in both places. The browser
+copy is for immediate feedback; the server copy decides, because a form post is
+not a trusted input. Hard stops are the things that corrupted the spreadsheets —
+a closing below the previous reading, empty cans exceeding the cans filled, FOC
+above production. Everything else warns and lets her past with a note: she knows
+the plant better than the rule does.
+
+Autosave runs about two seconds after the last keystroke, but never writes while
+a blocking error stands. Enter moves to the next field and saves.
 
 ## Dashboard
 

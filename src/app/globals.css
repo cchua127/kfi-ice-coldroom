@@ -240,3 +240,130 @@ td.num, th.num { text-align: right; }
   .topbar { gap: .6rem; }
   .whoami { width: 100%; margin-left: 0; justify-content: space-between; }
 }
+
+/* ---- daily entry ----------------------------------------------------------- */
+.daynav { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.daynav h1 { flex: 1; min-width: 12rem; }
+
+.calendar {
+  display: flex; flex-wrap: wrap; gap: .25rem; margin: .75rem 0 .35rem;
+}
+.calendar .day {
+  min-width: 1.9rem; padding: .25rem .3rem; text-align: center; border-radius: 6px;
+  font-size: .78rem; text-decoration: none; border: 1px solid var(--line);
+  color: var(--text-secondary); font-variant-numeric: tabular-nums;
+}
+.calendar .day.has-data { background: var(--surface); border-color: var(--good); color: var(--text-primary); }
+.calendar .day.missing { border-color: var(--warn); color: var(--warn); }
+.calendar .day.future { opacity: .45; }
+.calendar .day.current { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.legend-inline {
+  display: flex; align-items: center; gap: .4rem; flex-wrap: wrap;
+  font-size: .75rem; color: var(--text-muted); margin: 0 0 1.25rem;
+}
+.legend-inline .key {
+  width: .7rem; height: .7rem; border-radius: 3px; border: 1px solid var(--line);
+  display: inline-block; margin-left: .6rem;
+}
+.legend-inline .key.has-data { border-color: var(--good); }
+.legend-inline .key.missing { border-color: var(--warn); }
+.legend-inline .key.future { opacity: .45; }
+
+.entry fieldset {
+  border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
+  padding: .9rem 1rem 1.1rem; margin: 0 0 1rem; min-width: 0;
+}
+.entry legend { font-weight: 650; padding: 0 .35rem; font-size: .95rem; }
+.entry .bm { color: var(--text-muted); font-weight: 400; font-size: .85em; }
+.entry fieldset[disabled] { opacity: .72; }
+
+.savebar {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
+  padding: .5rem .2rem .7rem; background: var(--bg);
+}
+.save-state { font-size: .82rem; color: var(--text-secondary); }
+.save-state.saved { color: var(--good); }
+.save-state.error { color: var(--critical); }
+.save-state.saving { color: var(--text-muted); }
+.savebar button {
+  margin-left: auto; padding: .4rem .9rem; border: 0; border-radius: 7px;
+  background: var(--accent); color: #fff; font: inherit; font-weight: 600; cursor: pointer;
+}
+.savebar button:disabled { opacity: .5; cursor: default; }
+.readonly-note { margin-left: auto; font-size: .8rem; color: var(--text-muted); }
+
+table.grid { width: 100%; }
+table.grid th[scope='row'] { font-weight: 600; color: var(--text-primary); text-transform: none;
+  font-size: .88rem; letter-spacing: 0; white-space: normal; }
+table.grid .unit { display: block; font-weight: 400; font-size: .76rem; color: var(--text-muted); }
+table.grid td { vertical-align: top; }
+table.grid input, table.grid select, .row input {
+  width: 100%; min-width: 4.5rem; padding: .35rem .45rem; border-radius: 6px;
+  border: 1px solid var(--line-strong); background: var(--bg); color: var(--text-primary);
+  font: inherit; font-variant-numeric: tabular-nums;
+}
+table.grid td.num input { text-align: right; }
+table.grid input:focus-visible, table.grid select:focus-visible, .row input:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 1px;
+}
+table.grid input[aria-invalid='true'] { border-color: var(--critical); }
+td.strong, .strong { font-weight: 650; }
+td.muted { color: var(--text-muted); }
+
+.row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; }
+.stacked { display: flex; flex-direction: column; gap: .2rem; font-size: .78rem;
+  color: var(--text-secondary); min-width: 7rem; }
+.stacked output { font-size: 1rem; color: var(--text-primary); }
+.inline { display: flex; align-items: center; gap: .4rem; font-size: .78rem; margin-top: .3rem; }
+.inline input { width: auto; min-width: 0; }
+
+.issues { margin-top: .35rem; text-align: left; }
+.issue, .issues p {
+  font-size: .78rem; margin: .2rem 0; line-height: 1.35; white-space: normal;
+}
+.issue.error, .issues p.error { color: var(--critical); }
+.issue.warn, .issues p.warn { color: var(--warn); }
+.note-input { display: block; margin-top: .3rem; width: 100%; max-width: 22rem;
+  padding: .3rem .45rem; border-radius: 6px; border: 1px solid var(--line-strong);
+  background: var(--bg); color: var(--text-primary); font: inherit; }
+.server-issues {
+  border: 1px solid var(--critical); border-radius: 8px; padding: .6rem .8rem;
+  background: var(--surface);
+}
+
+/* Entry is desktop-first — she works from a paper sheet at a keyboard — but it
+   still has to be usable on a phone. Below this width the grids stop being
+   tables and become stacked rows, each cell carrying its own label. */
+@media (max-width: 40rem) {
+  .entry table.grid,
+  .entry table.grid tbody,
+  .entry table.grid tfoot,
+  .entry table.grid tr,
+  .entry table.grid th,
+  .entry table.grid td {
+    display: block;
+    width: auto;
+    white-space: normal;
+  }
+  .entry table.grid thead { display: none; }
+  .entry table.grid tr {
+    border: 1px solid var(--line); border-radius: 8px;
+    padding: .5rem .6rem; margin-bottom: .6rem;
+  }
+  .entry table.grid td, .entry table.grid th { border-bottom: 0; padding: .2rem 0; }
+  .entry table.grid th[scope='row'] {
+    font-size: .92rem; margin-bottom: .3rem;
+    border-bottom: 1px solid var(--line); padding-bottom: .3rem;
+  }
+  .entry table.grid td[data-label]::before {
+    content: attr(data-label);
+    display: block; font-size: .7rem; text-transform: uppercase;
+    letter-spacing: .04em; color: var(--text-muted); margin-bottom: .15rem;
+  }
+  .entry table.grid td.num { text-align: left; }
+  .entry table.grid td.num input { text-align: left; }
+  .entry table.grid input, .entry table.grid select { min-width: 0; }
+  .entry table.grid td:empty { display: none; }
+}
