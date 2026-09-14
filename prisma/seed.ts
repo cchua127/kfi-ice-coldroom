@@ -39,9 +39,9 @@ async function main() {
       name: 'Small Pool (stopped)',
       nameBm: 'Kolam Kecil',
       activeFrom: '2022-01-01',
-      // Only dec25 and jan sheets exist, so it stopped at end of January 2026.
-      // Inferred from the workbook, not from an owner instruction.
-      activeTo: '2026-01-31',
+      // The last day with production in the meter book is 5 January 2026 —
+      // the `jan` sheet has entries for days 1-5 and nothing after.
+      activeTo: '2026-01-05',
     },
   ]
 
@@ -257,64 +257,68 @@ async function main() {
   // -------------------------------------------------------------------------
   // Cost assumptions. Dated, editable, never hardcoded.
   // -------------------------------------------------------------------------
-  const assumptions: [string, string, string, boolean, string][] = [
+  // Physical constants of the plant date from the start of the record.
+  // Calibrated energy figures date from the earliest month with data, because
+  // they have to cover it — but they were derived against the Jan-Jun 2026
+  // bills, and their notes say so rather than implying they were measured then.
+  const PHYSICAL_FROM = '2022-01-01'
+  const CALIBRATED_FROM = '2025-10-01'
+
+  const assumptions: [string, string, string, string, boolean, string][] = [
     [
-      'bimc_kwh_per_block',
-      '5.0000',
-      'kWh/block',
-      false,
-      'ESTIMATE PENDING MEASUREMENT. Bill-reconciled on BOOKED output of 200/day. ' +
-        'On sellable output (~177/fill) the same energy is 5.65 kWh/block — see the ' +
-        'block ledger gap in report R1. Replaces the old flat 429 kWh/day booking.',
+      'bimc_kwh_per_block', CALIBRATED_FROM,
+      '5.0000', 'kWh/block', false,
+      'ESTIMATE PENDING MEASUREMENT. Calibrated against the Jan-Jun 2026 bills on ' +
+        'BOOKED output of 200/day, and applied to earlier months on the same basis ' +
+        'for want of anything better. On sellable output (~177/fill) the same ' +
+        'energy is 5.65 kWh/block — see the block ledger gap in report R1. ' +
+        'Replaces the old flat 429 kWh/day booking.',
     ],
     [
-      'brine_compressor_kwh_per_day',
-      '340.0000',
-      'kWh/day',
-      false,
-      'ESTIMATE PENDING MEASUREMENT. 30HP, -8C cut-out with manual restart, so not a 24h load. ' +
-        'Part of what the retired x1.2 loader represented, now named and adjustable.',
+      'brine_compressor_kwh_per_day', CALIBRATED_FROM,
+      '340.0000', 'kWh/day', false,
+      'ESTIMATE PENDING MEASUREMENT. 30HP, -8C cut-out with manual restart, so not ' +
+        'a 24h load. Part of what the retired x1.2 loader represented, now named ' +
+        'and individually adjustable.',
     ],
     [
-      'water_kwh_per_tonne',
-      '0.6500',
-      'kWh/tonne',
-      false,
-      'ESTIMATE. KFI-side only. Full operation is about 0.75; part of the pumping sits on ' +
-        "another company's TNB account.",
+      'water_kwh_per_tonne', CALIBRATED_FROM,
+      '0.6500', 'kWh/tonne', false,
+      'ESTIMATE. KFI-side only. Full operation is about 0.75; part of the pumping ' +
+        "sits on another company's TNB account.",
     ],
-    ['office_cctv_kwh_per_day', '36.0000', 'kWh/day', false, 'ESTIMATE PENDING MEASUREMENT.'],
-    ['crusher_kwh_per_day', '10.0000', 'kWh/day', false, 'ESTIMATE PENDING MEASUREMENT.'],
+    ['office_cctv_kwh_per_day', CALIBRATED_FROM, '36.0000', 'kWh/day', false,
+      'ESTIMATE PENDING MEASUREMENT.'],
+    ['crusher_kwh_per_day', CALIBRATED_FROM, '10.0000', 'kWh/day', false,
+      'ESTIMATE PENDING MEASUREMENT.'],
     [
-      'small_pool_blocks_per_baris',
-      '23.0000',
-      'blocks',
-      true,
-      'Counted. Small pool ran 23 small blocks to a row; big pool runs 8.',
+      'blocks_per_baris', PHYSICAL_FROM, '8.0000', 'blocks', true,
+      'Counted. A physical property of the big pool. The number of rows filled is ' +
+        'a real, varying count including half-rows; this is cans per row.',
     ],
     [
-      'blocks_per_baris',
-      '8.0000',
-      'blocks',
-      true,
-      'Counted. Big pool runs a real, varying number of rows including half-rows.',
+      'small_pool_blocks_per_baris', PHYSICAL_FROM, '23.0000', 'blocks', true,
+      'Counted. The small pool ran 23 small blocks to a row; the big pool runs 8.',
     ],
     [
-      'bimc_blocks_per_fill_convention',
-      '200.0000',
-      'blocks',
-      false,
-      'CONVENTION, NOT A COUNT. The legacy sheets book a flat 200/day. Report R1 finds ' +
-        'implied yield of 174.5-180.7 every month. Open question: mould count or harvest count.',
+      'bimc_blocks_per_fill_convention', CALIBRATED_FROM, '200.0000', 'blocks', false,
+      'CONVENTION, NOT A COUNT. The legacy sheets book a flat 200/day. Report R1 ' +
+        'finds implied yield of 174.5-180.7 every month. Open question: mould ' +
+        'count or harvest count.',
     ],
   ]
-  for (const [key, value, unit, measured, note] of assumptions) {
+  for (const [key, from, value, unit, measured, note] of assumptions) {
     await prisma.costAssumption.upsert({
-      where: { key_effectiveFrom: { key, effectiveFrom: date('2026-01-01') } },
-      create: { key, value, unit, measured, effectiveFrom: date('2026-01-01'), note },
+      where: { key_effectiveFrom: { key, effectiveFrom: date(from) } },
+      create: { key, value, unit, measured, effectiveFrom: date(from), note },
       update: { value, unit, measured, note },
     })
   }
+  // Remove any rows left by the earlier 2026-01-01 dating, so re-seeding does
+  // not leave two epochs of the same assumption in place.
+  await prisma.costAssumption.deleteMany({
+    where: { effectiveFrom: date('2026-01-01'), key: { in: assumptions.map((a) => a[0]) } },
+  })
 
   // -------------------------------------------------------------------------
   // AFA as billed. The only component of this tariff that moves.

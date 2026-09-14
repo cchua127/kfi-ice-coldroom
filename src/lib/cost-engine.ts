@@ -9,6 +9,7 @@ export type RateBasis =
   | 'CONFIRMED_BILL' // both accounts have a confirmed bill covering this date
   | 'AFA_FORECAST' // no bill yet, but the month's AFA is published
   | 'CARRIED_FORWARD' // neither — the most recent confirmed rate, held over
+  | 'NO_RATE' // nothing to cost with: no bill, no AFA, nothing earlier
 
 export interface DailyRate {
   date: string
@@ -138,12 +139,16 @@ export function buildDailyRateSeries(
       }
     }
 
+    // Nothing to cost with. Record the fact rather than emitting a zero rate
+    // that would read as "electricity was free that day".
     return {
       date,
       ratePerKwh: d(0),
       status: 'PROVISIONAL',
-      basis: 'CARRIED_FORWARD',
-      note: 'No confirmed bill and no published AFA for this date.',
+      basis: 'NO_RATE',
+      note:
+        'No confirmed bill, no published AFA, and no earlier rate to carry. ' +
+        'Consumption is recorded; cost is not available for this date.',
     }
   })
 }

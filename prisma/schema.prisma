@@ -498,8 +498,21 @@ model DailyLineCost {
   kwh          Decimal    @db.Decimal(14, 2)
   kwhSource    KwhSource  @map("kwh_source")
   kg           Decimal    @db.Decimal(14, 2)
-  /// Site blended rate for the bill period containing this date.
+  /// Free-of-charge tonnage inside `kg`, so cost per kg can be reported on a
+  /// produced, moved or sold basis without recomputing from scratch.
+  focKg        Decimal    @default(0) @map("foc_kg") @db.Decimal(14, 2)
+  /// How many days the metered delta covers. Greater than one means entry was
+  /// missed and this day carries its neighbours' consumption too.
+  spansDays    Int        @default(1) @map("spans_days")
+  /// True when an input was a standing convention rather than a count — the
+  /// flat BIMC per-day figure being the one that matters.
+  fromConvention Boolean  @default(false) @map("from_convention")
+  /// Site blended rate for the bill period containing this date. Zero only
+  /// when `rateBasis` is NO_RATE, which means uncosted, not free.
   rateRmPerKwh Decimal    @map("rate_rm_per_kwh") @db.Decimal(8, 5)
+  /// CONFIRMED_BILL | AFA_FORECAST | CARRIED_FORWARD | NO_RATE. Kept so a
+  /// report can say why a day carries the rate it does.
+  rateBasis    String     @default("CONFIRMED_BILL") @map("rate_basis")
   costRm       Decimal    @map("cost_rm") @db.Decimal(14, 2)
   status       CostStatus
   /// Null while provisional; set to the bill that finalised the day.
