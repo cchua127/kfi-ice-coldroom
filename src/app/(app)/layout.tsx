@@ -14,6 +14,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         <nav>
           <Link href="/">Dashboard</Link>
           <Link href="/entry">Daily entry</Link>
+          <Link href="/bills">TNB bills</Link>
         </nav>
         <form action={signOut} className="whoami">
           <span>

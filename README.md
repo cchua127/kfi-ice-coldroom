@@ -4,8 +4,8 @@ Ice production, sales and electricity costing for KFI Cold Storage Sdn Bhd,
 Pasar Borong Selangor. Replaces six hand-maintained Excel workbooks.
 
 **Status:** schema, tariff and cost engines, importers, auth, the management
-dashboard and the daily entry screen are built and tested against the real bills
-and meter books. The reports with Excel export, the TNB bill upload and parser,
+dashboard, the daily entry screen and the TNB bill upload and review are built
+and tested against the real bills and meter books. The reports with Excel export
 and the parallel-check screen are next. See `docs/00-inputs-required.md` for the source
 review and what is still outstanding.
 
@@ -159,6 +159,27 @@ the plant better than the rule does.
 
 Autosave runs about two seconds after the last keystroke, but never writes while
 a blocking error stands. Enter moves to the next field and saves.
+
+## TNB bills
+
+Drop the PDF on `/bills`. The document is stored by content hash and kept
+forever — it is the evidence behind every costed month. Claude reads it into a
+schema-constrained shape (`output_config.format`, not "please reply with JSON"),
+the reconstruction checks every line, and the review form shows the bill and the
+arithmetic side by side with each difference in sen.
+
+**Nothing is ever confirmed automatically.** The model extracts, the
+reconstruction checks, a person confirms — and the Confirm button stays disabled
+while any line disagrees or the meter rows do not sum to billed consumption.
+Confirming re-validates everything server-side, because the form is not trusted.
+
+Parsing is an accelerator, not a gate. With no `ANTHROPIC_API_KEY` the upload
+still stores the PDF and the review form opens for manual keying; `reparseBill`
+picks it up again once a key is configured. The model is set by
+`BILL_PARSER_MODEL` and defaults to the one the build spec chose.
+
+After confirming a bill, run `npx tsx scripts/recompute.ts` to restate the days
+it covers from provisional to final.
 
 ## Dashboard
 
