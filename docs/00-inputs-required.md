@@ -469,3 +469,45 @@ These sheets are the only FOC record in the supplied data.
 `Daily rekod Ais` is a roll-up of the detail files with the same numbers re-typed
 by hand. Importing it would double-count, so it has no parser. It is the
 comparison target for the parallel-run check in §11.
+
+---
+
+## 9. Found by the parallel check
+
+Running the rebuilt system against `Daily rekod Ais` for August 2026: **186 fields
+agree, 31 differ, and every difference is the same one.** Cash, total kilograms,
+tube kilograms, big pool plus BIMC kilograms, tube kWh and big pool kWh all tie
+on all 31 days.
+
+### 9.1 Good Taste blocks are priced two different ways — RM22.40 or RM26.40
+
+The one disagreement, on every day of the month:
+
+| 1 August 2026 | Sheet | System |
+|---|---:|---:|
+| Sydney | 158.40 | 158.40 |
+| TCC | 462.00 | 462.00 |
+| **Good Taste** | **333.30** | **307.30** |
+| Burger | 338.00 | 338.00 |
+| Total | 1,291.70 | 1,265.70 |
+
+The Good Taste entry that day is `6.5/49` — six and a half blocks, forty-nine
+crush. The sheet computes `(T + AA) × 3.30` where `T = 52` and `AA = 49`.
+
+**`T` is the blok quantity expressed in eighths**: 6.5 blocks × 8 = 52, and the
+same holds on every row checked (8.5 blocks → 68). So the sheet charges a block
+as eight pieces at RM3.30 — **RM26.40 a block**. The seeded price list takes
+RM22.40 from column Y of the same sheet, which the formula never uses.
+
+The gap is RM4.00 a block, about RM26 a day and roughly RM800 a month.
+
+**Outstanding:** which is the price actually charged — RM26.40 a block (eight
+pieces at the crush rate, as the sheet computes) or RM22.40 (as column Y states)?
+Nothing in the workbooks settles it, and it is revenue, so it is not a judgement
+call to make here. The seeded price is left at RM22.40 until the owner says
+otherwise, and the parallel check will keep reporting the difference until it is
+resolved.
+
+This is precisely what §11 of the specification says the screen is for: a
+disagreement is either a spreadsheet error or an import error, and both are
+worth knowing.

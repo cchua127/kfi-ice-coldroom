@@ -3,10 +3,14 @@
 Ice production, sales and electricity costing for KFI Cold Storage Sdn Bhd,
 Pasar Borong Selangor. Replaces six hand-maintained Excel workbooks.
 
-**Status:** schema, tariff and cost engines, importers, auth, the management
-dashboard, the daily entry screen, the TNB bill upload and review, and the seven
-reports are built and tested against the real bills and meter books. The
-parallel-check screen is next. See `docs/00-inputs-required.md` for the source
+**Status:** feature-complete against the build specification. Schema, tariff and
+cost engines, importers, auth, the management dashboard, the daily entry screen,
+the TNB bill upload and review, the seven reports and the parallel check are all
+built and tested against the real bills and meter books.
+
+Outstanding inputs and open questions are in `docs/00-inputs-required.md`,
+including one the parallel check turned up: Good Taste blocks are priced two
+different ways in the source workbook, a difference of about RM800 a month. See `docs/00-inputs-required.md` for the source
 review and what is still outstanding.
 
 ---
@@ -180,6 +184,27 @@ picks it up again once a key is configured. The model is set by
 
 After confirming a bill, run `npx tsx scripts/recompute.ts` to restate the days
 it covers from provisional to final.
+
+## Parallel check
+
+`/parallel` takes a month and the `Daily Rekod Ais` workbook she is still keeping
+by hand, and reports field by field where the two disagree. Anything that differs
+is either a spreadsheet error or an import error, and both are worth knowing.
+
+What makes it useful rather than noise is what it does NOT flag. The legacy
+Big Pool column holds big pool and the China machine added together, so it is
+compared against the pair. The "kWh" columns hold ringgit at a frozen tariff, so
+they are inverted back into consumption — the only way to check a meter reading
+against a sheet that never stored one. Ratio and total rows are excluded with the
+reason stated on screen. A screen that cries wolf thirty times a month gets
+ignored, and then a real break goes unseen.
+
+Against August 2026 it reports 217 fields agreeing and 31 differing, all of them
+the one open pricing question in `docs/00-inputs-required.md` §9.
+
+It reads `.xlsx`. A legacy `.xls` is refused with an explanation rather than a
+stack trace; `Daily Rekod Ais` is already `.xlsx` and its columns carry the cash
+and outside-sales figures from the two `.xls` books anyway.
 
 ## Reports
 

@@ -447,3 +447,17 @@ tr.emphasis td { font-weight: 650; border-top: 1px solid var(--line-strong); }
   .footnotes { font-size: 7.5pt; color: #333; }
   a { color: #000; text-decoration: none; }
 }
+
+/* ---- parallel check -------------------------------------------------------- */
+.summary.clean { border-color: var(--good); }
+.counts { display: flex; gap: 1.25rem; flex-wrap: wrap; font-size: .9rem; margin: .4rem 0; }
+.counts span { font-weight: 600; }
+.row input[type='month'], .row input[type='file'] {
+  padding: .4rem .5rem; border-radius: 6px; border: 1px solid var(--line-strong);
+  background: var(--bg); color: var(--text-primary); font: inherit;
+}
+.row button {
+  padding: .45rem .9rem; border: 0; border-radius: 7px; background: var(--accent);
+  color: #fff; font: inherit; font-weight: 600; cursor: pointer;
+}
+.row button:disabled { opacity: .6; cursor: default; }
