@@ -258,14 +258,25 @@ The fixtures are generated from source documents, not typed by hand:
 Local-first by design. `deploy/` carries the droplet stack with every
 credential as a `REPLACE_ME` placeholder; nothing sensitive lives in the repo.
 
-Before the first start on the droplet:
+`docs/01-production.md` is the full walkthrough, from a bare droplet to the day
+the workbooks are archived. The short version:
 
-1. Point `SITE_DOMAIN` at the droplet in DNS, or Caddy's ACME challenge fails.
-2. Copy `.env.example` to `.env` on the host and fill every `REPLACE_ME`.
-   Generate `AUTH_SECRET` with `openssl rand -base64 32`.
-3. Confirm ports 80 and 443 are free — check for an existing reverse proxy.
-4. `docker compose -f deploy/docker-compose.prod.yml up -d`
-5. `docker compose -f deploy/docker-compose.prod.yml exec app npx prisma migrate deploy`
+```bash
+cp .env.example .env          # then fill every REPLACE_ME
+bash scripts/preflight.sh     # DNS, ports, secrets, capacity — read-only
+docker compose --env-file .env -f deploy/docker-compose.prod.yml up -d --build
+bash scripts/ops.sh npx prisma migrate deploy
+```
+
+Two things are easy to get wrong:
+
+- **Always pass `--env-file .env`.** Compose looks for `.env` beside the
+  compose file — that is `deploy/`, not the repo root. Without the flag every
+  `${VAR}` interpolates empty and the stack starts with no password.
+- **Administration runs in the `ops` image, not in `app`.** The runtime image
+  carries no Prisma CLI, no `tsx` and no sources, so `migrate`, `db:seed`,
+  `create-user` and `recompute` go through `scripts/ops.sh`. A web server that
+  can rewrite its own schema is a bigger target than it needs to be.
 
 ### Backups
 

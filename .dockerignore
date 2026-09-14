@@ -9,6 +9,8 @@
 # docker-compose's `env_file`, never through the image.
 .env
 .env.*
+**/.env
+**/.env.*
 !.env.example
 
 # Rebuilt inside the image; copying a host build in risks a stale or

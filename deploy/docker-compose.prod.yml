@@ -22,6 +22,9 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile
+      # Pinned: `ops` is the last stage in the Dockerfile, and an untargeted
+      # build takes the last stage. The runtime must be the slim one.
+      target: runner
     restart: unless-stopped
     depends_on:
       postgres: { condition: service_healthy }
@@ -30,6 +33,28 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       AUTH_SECRET: ${AUTH_SECRET}
       UPLOAD_DIR: /data/uploads
+      TZ: UTC
+      DISPLAY_TZ: Asia/Kuala_Lumpur
+    volumes:
+      - uploads:/data/uploads
+
+  # One-off administration: migrate, seed, create an account, import, recompute.
+  # Behind a profile, so `up -d` ignores it. See scripts/ops.sh for the wrapper.
+  #   bash scripts/ops.sh npx prisma migrate deploy
+  ops:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: ops
+    profiles: ['ops']
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      AUTH_SECRET: ${AUTH_SECRET}
+      UPLOAD_DIR: /data/uploads
+      SEED_DEV_USERS: ${SEED_DEV_USERS:-false}
       TZ: UTC
       DISPLAY_TZ: Asia/Kuala_Lumpur
     volumes:

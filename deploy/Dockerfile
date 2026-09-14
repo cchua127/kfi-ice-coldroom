@@ -23,3 +23,13 @@ RUN mkdir -p /data/uploads && chown -R nextjs:nodejs /data/uploads
 USER nextjs
 EXPOSE 3000
 CMD ["node", "server.js"]
+
+# Migrations, seeding, account creation, import and recompute need the Prisma
+# CLI, tsx and the TypeScript sources. None of those belong in the runtime
+# image — a web server that can rewrite its own schema is a bigger target than
+# it needs to be — so they live here, built from the same builder stage and run
+# on demand. Compose keeps this behind the `ops` profile, so a plain `up` never
+# starts it.
+FROM builder AS ops
+WORKDIR /app
+CMD ["node", "--version"]
