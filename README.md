@@ -4,9 +4,9 @@ Ice production, sales and electricity costing for KFI Cold Storage Sdn Bhd,
 Pasar Borong Selangor. Replaces six hand-maintained Excel workbooks.
 
 **Status:** schema, tariff and cost engines, importers, auth, the management
-dashboard, the daily entry screen and the TNB bill upload and review are built
-and tested against the real bills and meter books. The reports with Excel export
-and the parallel-check screen are next. See `docs/00-inputs-required.md` for the source
+dashboard, the daily entry screen, the TNB bill upload and review, and the seven
+reports are built and tested against the real bills and meter books. The
+parallel-check screen is next. See `docs/00-inputs-required.md` for the source
 review and what is still outstanding.
 
 ---
@@ -180,6 +180,31 @@ picks it up again once a key is configured. The model is set by
 
 After confirming a bill, run `npx tsx scripts/recompute.ts` to restate the days
 it covers from provisional to final.
+
+## Reports
+
+Seven reports at `/reports/<slug>?month=YYYY-MM`, each rendering three ways from
+one structure — on screen, as Excel, and printed A4 landscape. That is
+deliberate: during the parallel run she will be holding a printout against a
+spreadsheet against a screen, and three renderers over one data shape cannot
+disagree the way three implementations eventually would.
+
+| Report | What it adds over the workbook it replaces |
+|---|---|
+| Daily Rekod Ais | The master layout column for column, plus electricity RM, RM/kg, and correctly labelled ratios |
+| Tube plant | Meter, kWh, production, kg, RM, kWh/kg |
+| Big pool | The same, with no `+429` booking and no `x1.2` loader |
+| Daily cash | Shifts, cumulative, running average, prior month |
+| Outside sales and purchases | By customer, at the price in force on the day |
+| Monthly electricity reconciliation | Both bills, each checked against the reconstruction, then the site bridge |
+| Cost of ice | Per line and combined, with the month-on-month move split into tariff and plant |
+
+Every export carries the company, the period, the generation timestamp and
+whether the figures are final. A provisional number must never leave the
+building unlabelled.
+
+Excel number formats are the ones the spec names: `#,##0.00` money, `#,##0` kWh
+and kg, `0.0000` RM/kWh, `0.000` kWh/kg.
 
 ## Dashboard
 

@@ -387,3 +387,63 @@ td.muted { color: var(--text-muted); }
 
 .review .savebar { position: static; padding-top: 1rem; }
 .review table.grid th[scope='row'] { max-width: 16rem; }
+
+/* ---- reports --------------------------------------------------------------- */
+.reportnav {
+  display: flex; flex-wrap: wrap; gap: .3rem; margin-bottom: 1rem;
+}
+.reportnav a {
+  padding: .3rem .6rem; border-radius: 999px; text-decoration: none;
+  font-size: .8rem; border: 1px solid var(--line); color: var(--text-secondary);
+}
+.reportnav a.current {
+  border-color: var(--accent); color: var(--accent); font-weight: 600;
+}
+.reportbar {
+  display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;
+}
+.reportbar h1 { flex: 1; min-width: 12rem; margin: 0; }
+.button {
+  padding: .4rem .8rem; border-radius: 7px; background: var(--accent); color: #fff;
+  text-decoration: none; font-size: .85rem; font-weight: 600;
+}
+.statusline {
+  margin: 0 0 1rem; padding: .5rem .8rem; border-radius: 8px; font-size: .85rem;
+  border: 1px solid var(--line); border-left: 3px solid var(--warn);
+  background: var(--surface);
+}
+.statusline.no_rate { border-left-color: var(--text-muted); }
+tr.emphasis td { font-weight: 650; border-top: 1px solid var(--line-strong); }
+.footnotes {
+  margin: .8rem 0 0; padding-left: 1.1rem; font-size: .78rem; color: var(--text-muted);
+}
+.footnotes li { margin: .2rem 0; }
+.printhead { display: none; }
+
+/* A4 landscape. Ink is expensive and these get read at a desk, so the chrome
+   goes and the table gets the page. */
+@media print {
+  @page { size: A4 landscape; margin: 12mm 10mm; }
+  body { background: #fff; color: #000; font-size: 9pt; }
+  .topbar, .noprint, .reportnav, .reportbar { display: none !important; }
+  .printhead {
+    display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+    border-bottom: 1pt solid #000; padding-bottom: 3mm; margin-bottom: 4mm;
+    font-size: 9pt;
+  }
+  main { max-width: none; padding: 0; }
+  .panel {
+    border: 0; padding: 0; margin: 0 0 6mm; background: none;
+    break-inside: auto;
+  }
+  .panel h2 { font-size: 11pt; margin-bottom: 1mm; }
+  .scroll { overflow: visible; }
+  table { font-size: 8pt; width: 100%; }
+  th, td { padding: 1mm 1.5mm; border-bottom: 0.25pt solid #999; }
+  /* Repeat the column headers on every page of a long month. */
+  thead { display: table-header-group; }
+  tr { break-inside: avoid; }
+  .statusline { border: 1pt solid #000; border-left-width: 3pt; }
+  .footnotes { font-size: 7.5pt; color: #333; }
+  a { color: #000; text-decoration: none; }
+}
