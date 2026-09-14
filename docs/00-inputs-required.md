@@ -123,26 +123,43 @@ are excluded per owner instruction.
 
 ## 4. Findings that change the specification
 
-### 4.1 §4.5's regression targets are on the legacy lumped basis and must not be reused
+### 4.1 §4.5's regression band is a residual calculation, not a sum of lines
 
-This resolves decision 2 without needing the reconciled model. Using Sept 2026 day 1:
+**Correction to the first review.** I previously reported that the RM0.0617–0.0699/kg band was the
+tube line alone. That was wrong. `KFI Management Reports DRAFT v6`, sheet `R5 Cost Trend`, column
+"2026 restated" reads Jan 0.0617, Feb 0.0638, Mar 0.0654, Apr 0.0646, May 0.0687, Jun 0.0699 — the
+band exactly. It is a combined cost-of-ice figure.
 
-| Spec §4.5 target | What it actually is | Value on the rebuilt model |
-|---|---|---|
-| tube ≈ 0.135 kWh/kg | Correct — true kWh/kg (710 ÷ 5,225 = 0.1359) | **keep** |
-| big pool ≈ 0.060 kWh/kg | Metered big pool kWh ÷ **lumped** kg (1,300 ÷ 21,800 = 0.0596) | **0.1016** (1,300 ÷ 12,800) |
-| cost of ice RM0.0617–0.0699/kg | **Tube line RM/kg at the frozen 0.484 rate** — `Meter - tube ice` col J (Sept avg 0.0643, Jun 0.0657) | **≈ RM0.058–0.059/kg** |
+The band is still unusable as a regression test, for a stronger reason. R5 states its own method:
 
-The big pool figure divides metered energy that **excludes** BIMC by a tonnage that **includes** it.
-The cost-of-ice band is not a combined figure at all — it is the tube line alone.
+> Legacy method = (Total TNB − coldroom @0.484 − RM5,200) / produced kg
 
-Correct combined baseline, Sept day 1: `710 + 1,300 + (200 × 5.0) = 3,010 kWh` over `27,025 kg`
-= **0.1114 kWh/kg**, giving **RM0.0580/kg** at the June site rate and **RM0.0593/kg** at August's.
-Against the legacy master's RM0.0499/kg, restated cost of ice rises roughly **16%** — directionally
-what §10 predicts, and the variance report should carry this number.
+This is a **residual**: every kWh on site that is not coldroom or water is charged to ice. That is
+precisely the practice §4.4 forbids — *"the residual is flagged as unaccounted, never pushed into the
+ice line… the legacy report's fatal flaw was using 'Ice' as a balancing figure."* The restated column
+re-runs the same residual at actual tariff rather than 0.484; it does not change the method.
 
-**Action:** replace §4.5's sanity band with the tube 0.135 kWh/kg check (which is sound) plus the
-combined RM0.058–0.060/kg figure above. Do not gate on 0.060 kWh/kg or RM0.0617–0.0699/kg.
+Computed from the workbooks as the rebuilt engine will compute it — `tube + big pool` metered plus
+`BIMC blocks × 5.0`, over `tube + big-pool + BIMC` kg:
+
+| 2026 | Jan | Feb | Mar | Apr | May | Jun |
+|---|---:|---:|---:|---:|---:|---:|
+| Sum-of-lines kWh/kg | 0.1177 | 0.1176 | 0.1146 | 0.1155 | 0.1176 | 0.1160 |
+| Sum-of-lines RM/kg | 0.0570 | 0.0569 | 0.0555 | 0.0559 | 0.0569 | **0.0604** |
+| R5 "2026 restated" RM/kg | 0.0617 | 0.0638 | 0.0654 | 0.0646 | 0.0687 | **0.0699** |
+
+The June gap is **15.7%**, and it is the unaccounted balance landing on ice. Reproducing the band
+would mean reproducing the defect.
+
+**Action:** the regression test is the sum-of-lines row above, not the band. Keep the tube
+0.135 kWh/kg check — `R6 Tube Machine` independently reports 0.1336–0.1355 for Jan–Jun against my
+0.1353–0.1355, and its kWh and kg totals match my extraction to the kilogram, which validates the
+importer arithmetic. Expect §10's variance report to show cost of ice **falling** ~14% against the
+legacy figure, not rising: the legacy number was inflated by the residual, and the tariff rise only
+partly offsets that.
+
+Also note the still-live §4.5 target for big pool: at 0.060 kWh/kg it remains the lumped ratio.
+On the separated model big pool runs ≈0.105 kWh/kg (Jun: 37,360 kWh ÷ 354,000 kg).
 
 ### 4.2 Defect 7 is worse than the spec states
 
@@ -203,24 +220,22 @@ from these as at the earliest migrated month, exactly as §2 anticipates.
 
 ## 5. Still outstanding
 
+Resolved since the first review: the small pool workbook, the Good Taste rule, and the cost-model
+provenance are all now closed.
+
 | # | Item | Blocks |
 |---|---|---|
-| 1 | `meter SMALL POOL vs elec.xlsx` | §10 — SMALL_POOL history for Dec 2025 / Jan 2026 |
-| 2 | Coldroom sub-meter: meter number, CT multiplier, and readings for Jan–Aug 2026 | §4.4 site bridge has no baseline without it |
-| 3 | Good Taste structure per §4.5: are `Pro` and `KFI`/`FM` two separate buyers each taking the crush quantity, or is `K` double-counting? What is the RM22.40 rate in column Y, and where do the blok go? | Outside sales migration and reported revenue |
-| 4 | `SMALL_POOL.active_to`; `BIMC.active_from`; which TNB account each meter sits on | Reference seeding |
-| 5 | Ocean Ice block size at RM15.00, and whether purchased ice enters `ice_kg` for cost per kg | §4.5 denominator |
-| 6 | Public holiday source (Selangor) for the zero-cash soft warning | §7 |
-| 7 | Whether dashboard "total sales RM" includes outside sales, and whether purchases are netted | §8 |
-| 8 | Names, emails and roles for the three or four accounts; admin-set passwords acceptable? | Auth |
-| 9 | Agreed parallel-run length and target cutover date | §11 |
+| 1 | **Coldroom sub-meter**: number, CT multiplier, readings Jan–Aug 2026 | §4.4 site bridge has no baseline. R5 shows the legacy model valued coldroom by dividing an RM allocation by 0.484 — the circularity §4.4 calls out — so there may be no reading history at all. Needs confirming. |
+| 2 | **The block ledger gap** (§7.2): is 200 a mould count or a harvest count? | Decides whether BIMC production is overstated 11.5% and whether ~RM39.5k H1 of ice left unpapered. One watched harvest or one stock count settles it. |
+| 3 | **CCTV audit sheets** — source of the pasar product split in R3 | Channel-mix reporting (§8) and the pasar price list |
+| 4 | **Worker ledger** — source of big pool FOC and the Feb purchase discrepancy (274 vs 218 blocks) | FOC history for BIG_POOL |
+| 5 | **2025 records** — R5 notes they were not provided | Year-on-year trend before 2026 |
+| 6 | `SMALL_POOL.active_to`; `BIMC.active_from` (R5 implies the China machine arrived 2025 and the 30HP compressor Mar 2024 — exact dates needed) | Reference seeding |
+| 7 | Ocean Ice block size at RM15.00, and whether purchased ice enters `ice_kg` | §4.5 denominator |
+| 8 | Public holiday source (Selangor); whether dashboard "total sales RM" includes outside sales and nets purchases | §7, §8 |
+| 9 | Names, emails and roles for the three or four accounts; parallel-run length and cutover date | Auth, §11 |
 
-Deployment credentials are deliberately excluded — per decision 4 the build is local-first.
-
-Items 3, 4 and 5 block parts of the migration. Items 1 and 2 block specific history. Everything else
-in §10 can now proceed: the layouts in §3 are complete enough to write the importers against.
-
----
+Only items 1 and 4 block migration, and only for specific history. Everything else in §10 can proceed.
 
 ## 6. Schema gaps to resolve during the build
 
@@ -244,3 +259,100 @@ in §10 can now proceed: the layouts in §3 are complete enough to write the imp
 | §8 wants a max-demand-over-declared-load alert; §5.3 says build no alerts off those fields | Follow §5.3 — capture for the record, no alert. Confirm at review. |
 | §4.2 assumes non-calendar bill periods; all six bills are calendar-aligned | Build the daily rate series anyway; read the AFA rate from the charge line, never the information box (§1.1) |
 | §3.4 quotes Jun 7610 at RM35,521.00; §5.2 worked check gives RM35,520.98 | Both are right — 35,520.98 is `Caj Semasa`, 35,521.00 is `Jumlah Bil` after `Pelarasan Penggenapan`. Fixtures must distinguish the two. |
+
+---
+
+## 7. New scope from `KFI Management Reports DRAFT v6` and the small pool workbook
+
+These two files introduce domains the build specification does not model at all. They are
+requirements input, not data sources, and they materially widen v1.
+
+### 7.1 FOC (free-of-charge) ice is a first-class quantity and is not in the schema
+
+| Line | H1 2026 FOC | Value | Where recorded |
+|---|---:|---:|---|
+| BIMC (China machine) | 6,272 blocks, 282.24 t | RM78,923 | Per shift in the `-baris` sheets |
+| BIG_POOL | 103.5 blocks | — | Worker ledger only, never transcribed |
+| TUBE | unknown | — | **Not recorded anywhere** |
+
+FOC runs at **25.6% of blocks moved** and is flat across every day of the week (23.9–27.0%), which
+the report reads as systemic rather than demand-driven. It concentrates in one shift: **Shift N 35.8%
+against Shift M 10.0%**.
+
+The schema needs an FOC quantity per line per shift per day, and every kg, RM/kg and kWh/kg figure
+must state whether it is on **produced**, **sold** or **moved** volume. The spec's `production_daily`
+has one `quantity` column and no concept of FOC, so cost per kg is currently ambiguous by ~25% on the
+block lines.
+
+### 7.2 Shifts exist at the production level, not just at the cash counter
+
+The `-baris` sheets carry **two rows per date — Shift M and Shift N** — with per-baris detail
+(`Baris 1`…`Baris 8`), quantity, FOC, total and % FOC. `cash_sales_daily` models two shifts, but
+`production_daily` does not. Given the Shift M/N FOC split above, production must be keyed by shift
+or the single most actionable control finding in the report becomes invisible.
+
+The report also verifies shift cash to the ringgit: `big × RM26 + small × RM13 = recorded shift cash`,
+six for six on the June sample. **Those two pasar unit prices are not in the §2 price table** and must
+be seeded — they are what makes the reconciliation possible.
+
+### 7.3 The block ledger gap — an open control question, not a modelling one
+
+3,130 blocks H1 (~23 per fill, 11.5% of the 200 positions) are produced-but-never-moved, worth
+~RM39,460. The report tests and rejects storage loss, time-based loss and counter loss, and narrows to
+two readings: either 200 is a mould count and real yield is ~177 (bookkeeping fix, cost of ice
+restates +2.7%), or 200 real blocks exist and ~141 t left unpapered (floor investigation).
+
+This is **decision-relevant to the build**: if the harvest count wins, `BIMC` production should be
+captured as rows actually harvested — which is a different entry field from the flat 200 — and the
+`bimc_kwh_per_block` assumption moves from 5.0 (booked) to **5.65 (sellable)**, a figure the report
+already derives. Both are single-row edits in `cost_assumption`, exactly as §12 item 2 anticipates.
+
+### 7.4 Two more data sources exist that were not in the §10 file list
+
+- **CCTV audit sheets** — the source of R3's pasar product split (Big+Small blocks / Tube tong /
+  Crushed / Bags & misc, monthly RM). The report notes the verification column has been **empty for
+  all 7 months**, so the variance column compares against nothing.
+- **Worker ledger** — holds big pool FOC and shows Feb purchases of 274 blocks against 218 in the
+  outside-sales file (RM840 timing difference, unverified).
+
+### 7.5 Small pool: a second small-block weight, and a different loader
+
+`meter SMALL POOL vs elec.xlsx` has four sheets — `jan`, `dec25` and their `-baris` counterparts.
+The daily sheets mirror big pool but with **`K = 38` kg per small block** (against BIMC's 45 kg) and
+**`Q = 0.38`** as the cost loader (against big pool's 1.2). R5 confirms the drift: *"small-block weight
+convention 38 kg (2024) vs 45 kg (2026) inflates recent kg ~1–3%"*.
+
+`production_unit` must therefore carry both weights with correct `effective_from` dates, and they
+belong to different lines — this is not one product that changed weight.
+
+### 7.6 Quantities are fractional
+
+Big pool runs "14.7 rows avg × 8 cans, **a real, varying count incl. half-rows**", and Good Taste blok
+quantities appear as 6.5 and 8.5. `production_daily.quantity` is already `numeric(12,2)`, but the
+`blocks = baris × blocks_per_baris − tong_kosong` derivation and the `tong_kosong <= baris ×
+blocks_per_baris` check must both tolerate fractions.
+
+### 7.7 An operations finding the dashboard should carry
+
+`R6 Tube Machine` fits 193 days: **49.1 kWh/day fixed, 0.1292 kWh/kg variable**, with an idle day at
+10 kWh and zero production. It concludes the tube meter is clean — no passengers — so 0.134 kWh/kg is
+genuinely the machine, against a textbook 0.06–0.09, and July drifted to 0.1362, the worst on record.
+This is exactly the "flat kWh/kg with rising RM/kg means tariff, not plant" decomposition §8 asks for,
+except here the plant signal is real. The kWh/kg-by-line chart should make this visible.
+
+### 7.8 Good Taste — resolved
+
+Owner rule: Good Taste buys two products — **bags of crushed ice**, and **ice blocks cut into 1/8**,
+the blocks slightly dearer. **Take the production (`Pro`) columns; `KFI` and `FM` are an internal
+split of the same figures, not separate customers**, so they must not be summed.
+
+This settles the apparent double-count: `K = Z + AE` adds an internal split to itself. Migrated
+Good Taste revenue must come from the Pro columns alone, priced at **RM3.30 per crush bag** and
+**RM22.40 per block** (column Y — between TCC's RM21.00 and Burger's RM26.00, consistent with
+"slightly more expensive"). The free-text `blok/crush` cell resolves to blok = first number,
+crush = second; the corrupted `1957-07-01` reverses to `7/57` and cross-checks against the working
+columns.
+
+One narrow ambiguity remains, and it does not block: the two `Pro` columns (`T` and `AA`) disagree on
+roughly a quarter of days (e.g. 50 against 55 on 10 September). The importer will take `Pro` and list
+every disagreement in the dry-run diff for confirmation rather than guessing.
