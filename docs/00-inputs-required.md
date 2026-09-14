@@ -151,6 +151,21 @@ Computed from the workbooks as the rebuilt engine will compute it — `tube + bi
 The June gap is **15.7%**, and it is the unaccounted balance landing on ice. Reproducing the band
 would mean reproducing the defect.
 
+**Three different cost-of-ice figures are in circulation for the same months.** The master workbook
+she maintains and the management report disagree by 36% on June:
+
+| 2026 RM/kg | Jan | Feb | Mar | Apr | May | Jun | Basis |
+|---|---:|---:|---:|---:|---:|---:|---|
+| `Daily rekod` F38/E38 | 0.0562 | 0.0644 | 0.0577 | 0.0549 | 0.0539 | **0.0522** | Sum of lines at frozen 0.484, with `+429` and `×1.2` |
+| Rebuilt engine | 0.0570 | 0.0569 | 0.0555 | 0.0559 | 0.0569 | **0.0604** | Sum of lines at actual site rate, loads itemised |
+| R5 "2026 restated" | 0.0617 | 0.0638 | 0.0654 | 0.0646 | 0.0687 | **0.0699** | Site residual at actual rate |
+| R5 "2026 legacy" | 0.0597 | 0.0594 | 0.0582 | 0.0632 | 0.0673 | **0.0711** | Site residual at 0.484 |
+
+The kg base agrees across all four (June: master 879,992 against computed 879,988). The spread is
+entirely in the RM. The variance report in §10 should present this four-way reconciliation, because
+the rebuilt figure is **+15.7% against the master** and **−13.6% against the management report** —
+whichever one a reader has in mind, the other direction will look like an error unless both are shown.
+
 **Action:** the regression test is the sum-of-lines row above, not the band. Keep the tube
 0.135 kWh/kg check — `R6 Tube Machine` independently reports 0.1336–0.1355 for Jan–Jun against my
 0.1353–0.1355, and its kWh and kg totals match my extraction to the kilogram, which validates the
