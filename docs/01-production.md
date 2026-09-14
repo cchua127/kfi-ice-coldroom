@@ -224,7 +224,7 @@ Do this **before** cutover, not after.
 # Nightly, via cron on the droplet
 docker compose --env-file .env -f deploy/docker-compose.prod.yml \
   exec -T postgres pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB" > "kfi-$(date +%F).dump"
-tar czf "uploads-$(date +%F).tar.gz" -C /var/lib/docker/volumes/deploy_uploads/_data .
+tar czf "uploads-$(date +%F).tar.gz" -C /var/lib/docker/volumes/kfi_uploads/_data .
 ```
 
 Both matter. The dump carries the numbers; the tarball carries the original bill

@@ -1,5 +1,11 @@
 # Droplet stack. Copy .env.example to .env on the host and fill every REPLACE_ME
 # before the first `docker compose up`. Nothing here carries a real credential.
+# An explicit project name. Without it compose derives one from the directory
+# holding this file — `deploy` — so the volumes would be named deploy_pgdata,
+# deploy_uploads, and a later reorganisation of the repo would quietly orphan
+# the data. Backup paths in docs/02-setup-runbook.md depend on these names.
+name: kfi
+
 services:
   postgres:
     image: postgres:16-alpine

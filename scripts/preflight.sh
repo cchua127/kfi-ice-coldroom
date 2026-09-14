@@ -41,8 +41,22 @@ else
     soft "deploy/.env also exists. Two config files is one too many — delete the one you are not using."
   fi
 
-  # shellcheck disable=SC1090
-  set -a; . "./$ENV_FILE"; set +a
+  # Read values without sourcing. Sourcing a .env executes it — a stray
+  # backtick or $(...) in a password would run as a command — and it breaks on
+  # an absolute ENV_FILE. This just reads the assignment.
+  getval() {
+    sed -n "s/^[[:space:]]*$1=//p" "$ENV_FILE" | tail -1 \
+      | sed -e 's/^"\(.*\)"$/\1/' -e "s/^'\\(.*\\)'$/\\1/"
+  }
+  POSTGRES_USER=$(getval POSTGRES_USER)
+  POSTGRES_PASSWORD=$(getval POSTGRES_PASSWORD)
+  POSTGRES_DB=$(getval POSTGRES_DB)
+  DATABASE_URL=$(getval DATABASE_URL)
+  AUTH_SECRET=$(getval AUTH_SECRET)
+  SITE_DOMAIN=$(getval SITE_DOMAIN)
+  ACME_EMAIL=$(getval ACME_EMAIL)
+  ANTHROPIC_API_KEY=$(getval ANTHROPIC_API_KEY)
+  SEED_DEV_USERS=$(getval SEED_DEV_USERS)
 
   left=$(grep -c 'REPLACE_ME' "$ENV_FILE" || true)
   if [ "$left" -gt 0 ]; then
@@ -92,14 +106,18 @@ fi
 
 section "DNS and ports"
 if [ -n "${SITE_DOMAIN:-}" ] && [ "${SITE_DOMAIN}" != "REPLACE_ME.example.com" ]; then
-  resolved=$(getent hosts "$SITE_DOMAIN" 2>/dev/null | awk '{print $1}' | head -1)
-  public=$(curl -s --max-time 5 https://api.ipify.org 2>/dev/null)
+  # Compare like with like: the A record against this host's IPv4. Mixing an
+  # AAAA lookup with an IPv4 public address reports a mismatch that is not one.
+  resolved=$(getent ahostsv4 "$SITE_DOMAIN" 2>/dev/null | awk '{print $1}' | head -1)
+  public=$(curl -s4 --max-time 5 https://api.ipify.org 2>/dev/null)
   if [ -z "$resolved" ]; then
-    bad "$SITE_DOMAIN does not resolve. Caddy's ACME challenge will fail and you will get no certificate."
-  elif [ -n "$public" ] && [ "$resolved" != "$public" ]; then
+    bad "$SITE_DOMAIN has no A record. Caddy's ACME challenge will fail and you will get no certificate."
+  elif [ -z "$public" ]; then
+    soft "$SITE_DOMAIN resolves to $resolved, but this host's public IP could not be determined — check it by eye."
+  elif [ "$resolved" != "$public" ]; then
     bad "$SITE_DOMAIN resolves to $resolved but this host is $public. Point the A record here first."
   else
-    ok "$SITE_DOMAIN resolves to $resolved"
+    ok "$SITE_DOMAIN resolves to $resolved, which is this host"
   fi
 fi
 

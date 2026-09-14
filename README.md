@@ -286,7 +286,7 @@ Nightly `pg_dump` plus a `/data/uploads` tarball to DO Spaces, 30-day retention.
 # Backup
 docker compose -f deploy/docker-compose.prod.yml exec -T postgres \
   pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB" > "kfi-$(date +%F).dump"
-tar czf "uploads-$(date +%F).tar.gz" -C /var/lib/docker/volumes/deploy_uploads/_data .
+tar czf "uploads-$(date +%F).tar.gz" -C /var/lib/docker/volumes/kfi_uploads/_data .
 
 # Restore
 docker compose -f deploy/docker-compose.prod.yml exec -T postgres \
