@@ -1,3 +1,4 @@
+import { businessToday } from '@/lib/clock'
 import { loadDashboard } from '@/lib/dashboard'
 import { LineChart, Bars, Legend } from '@/components/charts'
 import { requireUser } from '@/lib/session'
@@ -18,7 +19,7 @@ function StatusBadge({ status }: { status: 'PROVISIONAL' | 'FINAL' | 'NO_RATE' }
 
 export default async function Dashboard() {
   await requireUser()
-  const today = new Date().toISOString().slice(0, 10)
+  const today = businessToday()
   const { kpi, months, series, alerts } = await loadDashboard(today)
 
   const monthLabels = months.map((m) => m.month)

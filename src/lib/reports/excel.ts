@@ -2,6 +2,7 @@
  * Excel export. Same report structure as the screen and the printout, so the
  * three can never disagree — which is the whole point during a parallel run.
  */
+import { formatStamp } from '@/lib/clock'
 import ExcelJS from 'exceljs'
 import { EXCEL_FORMAT, type Report, type ReportTable } from './types'
 
@@ -41,7 +42,7 @@ function addSheet(ws: ExcelJS.Worksheet, report: Report, table: ReportTable) {
 
   // Provisional figures must never leave the building unlabelled.
   const stamp = ws.addRow([
-    `Generated ${new Date(report.meta.generatedAt).toLocaleString('en-MY')}` +
+    `Generated ${formatStamp(report.meta.generatedAt)}` +
       (report.meta.status ? ` · ${statusLabel(report.meta.status)}` : ''),
   ])
   stamp.font = { size: 9, color: { argb: 'FF666666' } }

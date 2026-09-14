@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
+import { businessToday } from '@/lib/clock'
 
 /** Opening "Entry" means today, which is what she wants nine times in ten. */
 export default function EntryIndex() {
-  redirect(`/entry/${new Date().toISOString().slice(0, 10)}`)
+  redirect(`/entry/${businessToday()}` as never)
 }

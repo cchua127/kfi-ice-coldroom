@@ -7,7 +7,7 @@
  * estimate that reads like a measurement is how the old system went wrong.
  */
 import { PrismaClient, Role, LineCode, UnitCode, Channel, BillStatus } from '@prisma/client'
-import bcrypt from 'bcryptjs'
+import { hashPassword } from '../src/lib/auth'
 import billFixtures from '../tests/fixtures/tnb-bills.json'
 
 const prisma = new PrismaClient()
@@ -431,7 +431,8 @@ async function main() {
   // and a password policy still to come from the owner.
   // -------------------------------------------------------------------------
   if (process.env.SEED_DEV_USERS !== 'false') {
-    const hash = await bcrypt.hash('change-me-on-first-login', 10)
+    // Same cost factor as the login path — one place decides it.
+    const hash = await hashPassword('change-me-on-first-login')
     for (const u of [
       { email: 'staff@kfi.local', name: 'Entry Staff', role: Role.STAFF },
       { email: 'manager@kfi.local', name: 'Manager', role: Role.MANAGER },

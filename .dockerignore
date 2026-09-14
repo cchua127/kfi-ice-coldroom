@@ -1,0 +1,39 @@
+# The builder stage runs `COPY . .`. Anything not excluded here lands in the
+# build context, in the builder image, and — for files Next copies into
+# `.next/standalone` — in the runner image itself.
+
+# Secrets. Next copies a `.env` it finds at the project root into the
+# standalone output, which the runner stage copies wholesale. Without this
+# line the real AUTH_SECRET, database password and API key are baked into a
+# published image layer. Config reaches the container through
+# docker-compose's `env_file`, never through the image.
+.env
+.env.*
+!.env.example
+
+# Rebuilt inside the image; copying a host build in risks a stale or
+# wrong-architecture artifact silently winning.
+node_modules
+.next
+dist
+
+# History and local state, none of which the build needs.
+.git
+.gitignore
+.github
+
+# Uploaded bills and supplier DOs live on a mounted volume, not in the image.
+data
+uploads
+
+# Working files that have no business in a production image.
+docs
+scripts/import/out
+tests
+test-results
+playwright-report
+coverage
+*.log
+.DS_Store
+.vscode
+.idea

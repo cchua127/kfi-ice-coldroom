@@ -1,3 +1,4 @@
+import { businessMonth, formatStamp, shiftMonth } from '@/lib/clock'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireUser } from '@/lib/session'
@@ -22,14 +23,11 @@ export default async function ReportPage({
   if (!REPORTS.some((r) => r.slug === slug)) notFound()
   const month = /^\d{4}-\d{2}$/.test(raw ?? '')
     ? raw!
-    : new Date().toISOString().slice(0, 7)
+    : businessMonth()
 
   const report = await buildReport(slug as ReportSlug, month)
 
-  const shift = (delta: number) => {
-    const [y, m] = month.split('-').map(Number)
-    return new Date(Date.UTC(y, m - 1 + delta, 1)).toISOString().slice(0, 7)
-  }
+  const shift = (delta: number) => shiftMonth(month, delta)
 
   return (
     <main className="report">
@@ -38,7 +36,7 @@ export default async function ReportPage({
       <header className="printhead">
         <strong>{COMPANY}</strong>
         <span>{report.meta.name} · {report.meta.period}</span>
-        <span>Generated {new Date(report.meta.generatedAt).toLocaleString('en-MY')}</span>
+        <span>Generated {formatStamp(report.meta.generatedAt)}</span>
       </header>
 
       <nav className="reportnav noprint" aria-label="Reports">

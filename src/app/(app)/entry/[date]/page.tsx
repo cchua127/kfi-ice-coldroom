@@ -1,3 +1,4 @@
+import { businessToday } from '@/lib/clock'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { loadDay, nextDay, prevDay } from '@/lib/entry'
@@ -23,7 +24,7 @@ export default async function EntryPage({ params }: { params: Promise<{ date: st
 
   const [y, m] = date.split('-').map(Number)
   const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate()
-  const today = new Date().toISOString().slice(0, 10)
+  const today = businessToday()
   const withData = new Set(day.monthDaysWithData)
   const thisDay = Number(date.slice(8, 10))
 
