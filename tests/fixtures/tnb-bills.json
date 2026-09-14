@@ -1,0 +1,452 @@
+[
+  {
+    "source": "98d027d2-1fd404e01FA11D98-F3A5-40D7-BE45-5845E83960E5smart.pdf",
+    "accountNo": "220275147610",
+    "invoiceNo": "001293081050",
+    "billDate": "2026-07-01",
+    "periodStart": "2026-06-01",
+    "periodEnd": "2026-06-30",
+    "days": 30,
+    "kwh": "68207.00",
+    "energyRate": "0.2703",
+    "energyRm": "18436.35",
+    "afaRatePerKwh": "0.0259",
+    "afaRm": "1766.56",
+    "capacityRate": "0.0883",
+    "capacityRm": "6022.68",
+    "networkRate": "0.1482",
+    "networkRm": "10108.28",
+    "retailRm": "20.00",
+    "rebateRate": "-0.02",
+    "rebateRm": "-1364.14",
+    "currentUsageRm": "34989.73",
+    "kwtbbRm": "531.25",
+    "currentChargesRm": "35520.98",
+    "previousBalanceRm": "0.00",
+    "roundingRm": "0.02",
+    "totalRm": "35521.00",
+    "declaredKw": "80.50",
+    "maxDemandKw": "375.00",
+    "loadFactor": "0.50",
+    "powerFactor": "0.95",
+    "meterReadings": [
+      {
+        "meterNo": "218503197",
+        "unit": "kWh",
+        "previous": "3488943",
+        "current": "3522203",
+        "usage": "33260"
+      },
+      {
+        "meterNo": "218503197",
+        "unit": "kW",
+        "previous": "7798",
+        "current": "7891",
+        "usage": "93"
+      },
+      {
+        "meterNo": "218503197",
+        "unit": "kVARh",
+        "previous": "1225783",
+        "current": "1236482",
+        "usage": "10699"
+      },
+      {
+        "meterNo": "808503793",
+        "unit": "kWh",
+        "previous": "12664542",
+        "current": "12699489",
+        "usage": "34947"
+      },
+      {
+        "meterNo": "808503793",
+        "unit": "kW",
+        "previous": "23129",
+        "current": "23226",
+        "usage": "97"
+      },
+      {
+        "meterNo": "808503793",
+        "unit": "kVARh",
+        "previous": "4267123",
+        "current": "4278276",
+        "usage": "11153"
+      }
+    ]
+  },
+  {
+    "source": "d7eb442d-LPC2_220275147610_20260802.pdf",
+    "accountNo": "220275147610",
+    "invoiceNo": "001557527189",
+    "billDate": "2026-08-02",
+    "periodStart": "2026-07-01",
+    "periodEnd": "2026-07-31",
+    "days": 31,
+    "kwh": "67782.00",
+    "energyRate": "0.2703",
+    "energyRm": "18321.47",
+    "afaRatePerKwh": "0.0359",
+    "afaRm": "2433.37",
+    "capacityRate": "0.0883",
+    "capacityRm": "5985.15",
+    "networkRate": "0.1482",
+    "networkRm": "10045.29",
+    "retailRm": "20.00",
+    "rebateRate": "-0.02",
+    "rebateRm": "-1355.64",
+    "currentUsageRm": "35449.64",
+    "kwtbbRm": "527.94",
+    "currentChargesRm": "35977.58",
+    "previousBalanceRm": "0.00",
+    "roundingRm": "0.02",
+    "totalRm": "35977.60",
+    "declaredKw": "80.50",
+    "maxDemandKw": "375.00",
+    "loadFactor": "0.48",
+    "powerFactor": "0.96",
+    "meterReadings": [
+      {
+        "meterNo": "218503197",
+        "unit": "kWh",
+        "previous": "3522203",
+        "current": "3555241",
+        "usage": "33038"
+      },
+      {
+        "meterNo": "218503197",
+        "unit": "kW",
+        "previous": "7891",
+        "current": "7984",
+        "usage": "93"
+      },
+      {
+        "meterNo": "218503197",
+        "unit": "kVARh",
+        "previous": "1236482",
+        "current": "1246743",
+        "usage": "10261"
+      },
+      {
+        "meterNo": "808503793",
+        "unit": "kWh",
+        "previous": "12699489",
+        "current": "12734233",
+        "usage": "34744"
+      },
+      {
+        "meterNo": "808503793",
+        "unit": "kW",
+        "previous": "23226",
+        "current": "23323",
+        "usage": "97"
+      },
+      {
+        "meterNo": "808503793",
+        "unit": "kVARh",
+        "previous": "4278276",
+        "current": "4288991",
+        "usage": "10715"
+      }
+    ]
+  },
+  {
+    "source": "68d107fb-LPC2_220275147610_20260901.pdf",
+    "accountNo": "220275147610",
+    "invoiceNo": "000224149072",
+    "billDate": "2026-09-01",
+    "periodStart": "2026-08-01",
+    "periodEnd": "2026-08-31",
+    "days": 31,
+    "kwh": "69507.00",
+    "energyRate": "0.2703",
+    "energyRm": "18787.74",
+    "afaRatePerKwh": "0.038",
+    "afaRm": "2641.27",
+    "capacityRate": "0.0883",
+    "capacityRm": "6137.47",
+    "networkRate": "0.1482",
+    "networkRm": "10300.94",
+    "retailRm": "20.00",
+    "rebateRate": "-0.02",
+    "rebateRm": "-1390.14",
+    "currentUsageRm": "36497.28",
+    "kwtbbRm": "541.38",
+    "currentChargesRm": "37038.66",
+    "previousBalanceRm": "0.00",
+    "roundingRm": "-0.01",
+    "totalRm": "37038.65",
+    "declaredKw": "80.50",
+    "maxDemandKw": "375.00",
+    "loadFactor": "0.50",
+    "powerFactor": "0.95",
+    "meterReadings": [
+      {
+        "meterNo": "218503197",
+        "unit": "kWh",
+        "previous": "3555241",
+        "current": "3589152",
+        "usage": "33911"
+      },
+      {
+        "meterNo": "218503197",
+        "unit": "kW",
+        "previous": "7984",
+        "current": "8076",
+        "usage": "92"
+      },
+      {
+        "meterNo": "218503197",
+        "unit": "kVARh",
+        "previous": "1246743",
+        "current": "1257614",
+        "usage": "10871"
+      },
+      {
+        "meterNo": "808503793",
+        "unit": "kWh",
+        "previous": "12734233",
+        "current": "12769829",
+        "usage": "35596"
+      },
+      {
+        "meterNo": "808503793",
+        "unit": "kW",
+        "previous": "23323",
+        "current": "23419",
+        "usage": "96"
+      },
+      {
+        "meterNo": "808503793",
+        "unit": "kVARh",
+        "previous": "4288991",
+        "current": "4300291",
+        "usage": "11300"
+      }
+    ]
+  },
+  {
+    "source": "d27dfa62-1fd404e04FAE265C-0C1E-4F98-BD8C-CC19C1E546E0smart.pdf",
+    "accountNo": "220278867506",
+    "invoiceNo": "000821784971",
+    "billDate": "2026-07-01",
+    "periodStart": "2026-06-01",
+    "periodEnd": "2026-06-30",
+    "days": 30,
+    "kwh": "113129.00",
+    "energyRate": "0.2703",
+    "energyRm": "30578.77",
+    "afaRatePerKwh": "0.0259",
+    "afaRm": "2930.04",
+    "capacityRate": "0.0883",
+    "capacityRm": "9989.29",
+    "networkRate": "0.1482",
+    "networkRm": "16765.72",
+    "retailRm": "20.00",
+    "rebateRate": "-0.02",
+    "rebateRm": "-2262.58",
+    "currentUsageRm": "58021.24",
+    "kwtbbRm": "881.14",
+    "currentChargesRm": "58902.38",
+    "previousBalanceRm": "0.00",
+    "roundingRm": "0.02",
+    "totalRm": "58902.40",
+    "declaredKw": "500.00",
+    "maxDemandKw": "347.00",
+    "loadFactor": "0.64",
+    "powerFactor": "0.95",
+    "meterReadings": [
+      {
+        "meterNo": "719501030",
+        "unit": "kWh",
+        "previous": "4289634",
+        "current": "4370086",
+        "usage": "80452"
+      },
+      {
+        "meterNo": "719501030",
+        "unit": "kW",
+        "previous": "7840",
+        "current": "8013",
+        "usage": "173"
+      },
+      {
+        "meterNo": "719501030",
+        "unit": "kVARh",
+        "previous": "1244133",
+        "current": "1271591",
+        "usage": "27458"
+      },
+      {
+        "meterNo": "720502609",
+        "unit": "kWh",
+        "previous": "3110322",
+        "current": "3142999",
+        "usage": "32677"
+      },
+      {
+        "meterNo": "720502609",
+        "unit": "kW",
+        "previous": "5709",
+        "current": "5780",
+        "usage": "71"
+      },
+      {
+        "meterNo": "720502609",
+        "unit": "kVARh",
+        "previous": "975753",
+        "current": "986107",
+        "usage": "10354"
+      }
+    ]
+  },
+  {
+    "source": "1df58df5-LPC2_220278867506_20260803.pdf",
+    "accountNo": "220278867506",
+    "invoiceNo": "001366873650",
+    "billDate": "2026-08-03",
+    "periodStart": "2026-07-01",
+    "periodEnd": "2026-07-31",
+    "days": 31,
+    "kwh": "116372.00",
+    "energyRate": "0.2703",
+    "energyRm": "31455.35",
+    "afaRatePerKwh": "0.0359",
+    "afaRm": "4177.75",
+    "capacityRate": "0.0883",
+    "capacityRm": "10275.65",
+    "networkRate": "0.1482",
+    "networkRm": "17246.33",
+    "retailRm": "20.00",
+    "rebateRate": "-0.02",
+    "rebateRm": "-2327.44",
+    "currentUsageRm": "60847.64",
+    "kwtbbRm": "906.40",
+    "currentChargesRm": "61754.04",
+    "previousBalanceRm": "0.00",
+    "roundingRm": "0.01",
+    "totalRm": "61754.05",
+    "declaredKw": "500.00",
+    "maxDemandKw": "347.00",
+    "loadFactor": "0.63",
+    "powerFactor": "0.95",
+    "meterReadings": [
+      {
+        "meterNo": "719501030",
+        "unit": "kWh",
+        "previous": "4370086",
+        "current": "4452918",
+        "usage": "82832"
+      },
+      {
+        "meterNo": "719501030",
+        "unit": "kW",
+        "previous": "8013",
+        "current": "8189",
+        "usage": "176"
+      },
+      {
+        "meterNo": "719501030",
+        "unit": "kVARh",
+        "previous": "1271591",
+        "current": "1299875",
+        "usage": "28284"
+      },
+      {
+        "meterNo": "720502609",
+        "unit": "kWh",
+        "previous": "3142999",
+        "current": "3176539",
+        "usage": "33540"
+      },
+      {
+        "meterNo": "720502609",
+        "unit": "kW",
+        "previous": "5780",
+        "current": "5853",
+        "usage": "73"
+      },
+      {
+        "meterNo": "720502609",
+        "unit": "kVARh",
+        "previous": "986107",
+        "current": "996683",
+        "usage": "10576"
+      }
+    ]
+  },
+  {
+    "source": "17af4d95-LPC2_220278867506_20260901.pdf",
+    "accountNo": "220278867506",
+    "invoiceNo": "000797285908",
+    "billDate": "2026-09-01",
+    "periodStart": "2026-08-01",
+    "periodEnd": "2026-08-31",
+    "days": 31,
+    "kwh": "125536.00",
+    "energyRate": "0.2703",
+    "energyRm": "33932.38",
+    "afaRatePerKwh": "0.038",
+    "afaRm": "4770.37",
+    "capacityRate": "0.0883",
+    "capacityRm": "11084.83",
+    "networkRate": "0.1482",
+    "networkRm": "18604.44",
+    "retailRm": "20.00",
+    "rebateRate": "-0.02",
+    "rebateRm": "-2510.72",
+    "currentUsageRm": "65901.30",
+    "kwtbbRm": "977.77",
+    "currentChargesRm": "66879.07",
+    "previousBalanceRm": "0.00",
+    "roundingRm": "-0.02",
+    "totalRm": "66879.05",
+    "declaredKw": "500.00",
+    "maxDemandKw": "347.00",
+    "loadFactor": "0.64",
+    "powerFactor": "0.95",
+    "meterReadings": [
+      {
+        "meterNo": "719501030",
+        "unit": "kWh",
+        "previous": "4452918",
+        "current": "4542180",
+        "usage": "89262"
+      },
+      {
+        "meterNo": "719501030",
+        "unit": "kW",
+        "previous": "8189",
+        "current": "8376",
+        "usage": "187"
+      },
+      {
+        "meterNo": "719501030",
+        "unit": "kVARh",
+        "previous": "1299875",
+        "current": "1330333",
+        "usage": "30458"
+      },
+      {
+        "meterNo": "720502609",
+        "unit": "kWh",
+        "previous": "3176539",
+        "current": "3212813",
+        "usage": "36274"
+      },
+      {
+        "meterNo": "720502609",
+        "unit": "kW",
+        "previous": "5853",
+        "current": "5931",
+        "usage": "78"
+      },
+      {
+        "meterNo": "720502609",
+        "unit": "kVARh",
+        "previous": "996683",
+        "current": "1008084",
+        "usage": "11401"
+      }
+    ]
+  }
+]

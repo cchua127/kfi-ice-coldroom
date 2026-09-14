@@ -1,0 +1,25 @@
+# Automatic TLS via Let's Encrypt. SITE_DOMAIN must resolve to this droplet
+# before the first start, or the ACME challenge fails and Caddy will retry.
+{
+	email {$ACME_EMAIL}
+}
+
+{$SITE_DOMAIN} {
+	encode gzip
+
+	# Bill PDFs and Excel exports are large; allow a generous body size.
+	request_body {
+		max_size 50MB
+	}
+
+	reverse_proxy app:3000 {
+		header_up X-Real-IP {remote_host}
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+}

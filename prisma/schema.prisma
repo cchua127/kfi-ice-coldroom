@@ -1,0 +1,507 @@
+// KFI Ice Ops — schema.
+//
+// Money, kWh and kg are Decimal throughout. No floats anywhere: the bill
+// reconstruction in src/lib/tariff.ts has to tie to the cent, and a float
+// round-trip loses that.
+//
+// Business dates are `@db.Date`. Instants are `@db.Timestamptz`. The database
+// runs in UTC and the UI renders Asia/Kuala_Lumpur, so a host timezone change
+// can never move a reading to another day.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Users
+// ---------------------------------------------------------------------------
+
+enum Role {
+  STAFF
+  MANAGER
+}
+
+model AppUser {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         Role
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(6)
+  lastLoginAt  DateTime? @db.Timestamptz(6)
+
+  meterReadings MeterReading[]
+  documents     Document[]
+  confirmedBill TnbBill[]
+  changes       ChangeLog[]
+
+  @@map("app_user")
+}
+
+/// Every edit to an entry row lands here before the row changes. The system
+/// restates itself instead of the operator, so a restatement must stay auditable.
+model ChangeLog {
+  id        BigInt   @id @default(autoincrement())
+  tableName String   @map("table_name")
+  rowPk     String   @map("row_pk")
+  action    String // INSERT | UPDATE | DELETE
+  before    Json?
+  after     Json?
+  reason    String?
+  changedBy Int?     @map("changed_by")
+  changedAt DateTime @default(now()) @map("changed_at") @db.Timestamptz(6)
+  user      AppUser? @relation(fields: [changedBy], references: [id])
+
+  @@index([tableName, rowPk])
+  @@index([changedAt])
+  @@map("change_log")
+}
+
+// ---------------------------------------------------------------------------
+// Reference
+// ---------------------------------------------------------------------------
+
+enum LineCode {
+  TUBE
+  BIG_POOL
+  BIMC
+  SMALL_POOL
+}
+
+model ProductionLine {
+  id         Int       @id @default(autoincrement())
+  code       LineCode  @unique
+  name       String
+  /// BM label as it appears on her sheets, shown alongside the English one.
+  nameBm     String?   @map("name_bm")
+  activeFrom DateTime  @map("active_from") @db.Date
+  activeTo   DateTime? @map("active_to") @db.Date
+
+  units      ProductionUnit[]
+  meters     Meter[]
+  production ProductionDaily[]
+  dailyCosts DailyLineCost[]
+
+  @@map("production_line")
+}
+
+enum UnitCode {
+  BAG // tube ice, 12.5 kg
+  TONG // tube ice, 100 kg
+  BARIS // big pool row; kg derives via blocks_per_baris
+  SMALL_TONG // BIMC 45 kg, small pool 38 kg — the weight differs BY LINE
+  BLOK // big pool block, 100 kg
+}
+
+/// Dated pack sizes. SMALL_POOL small tong is 38 kg and BIMC is 45 kg: these are
+/// different products on different lines, not one product that changed weight.
+/// R5 of the management pack flags the 38/45 drift as inflating recent kg 1-3%.
+model ProductionUnit {
+  id            Int      @id @default(autoincrement())
+  lineId        Int      @map("line_id")
+  unitCode      UnitCode @map("unit_code")
+  /// Null for BARIS, whose kg derives from blocks_per_baris x block weight.
+  kgPerUnit     Decimal? @map("kg_per_unit") @db.Decimal(10, 3)
+  effectiveFrom DateTime @map("effective_from") @db.Date
+  note          String?
+
+  line ProductionLine @relation(fields: [lineId], references: [id])
+
+  @@unique([lineId, unitCode, effectiveFrom])
+  @@map("production_unit")
+}
+
+model TnbAccount {
+  id          Int      @id @default(autoincrement())
+  accountNo   String   @unique @map("account_no")
+  lot         String?
+  declaredKw  Decimal? @map("declared_kw") @db.Decimal(10, 2)
+  depositRm   Decimal? @map("deposit_rm") @db.Decimal(14, 2)
+  description String?
+
+  meters Meter[]
+  bills  TnbBill[]
+
+  @@map("tnb_account")
+}
+
+model Meter {
+  id           Int     @id @default(autoincrement())
+  code         String  @unique
+  /// Physical meter number as printed under Maklumat Meter, where known.
+  meterNo      String? @map("meter_no")
+  lineId       Int?    @map("line_id")
+  tnbAccountId Int?    @map("tnb_account_id")
+  ctMultiplier Decimal @default(1) @map("ct_multiplier") @db.Decimal(10, 4)
+  /// Register width, for rollover detection.
+  digits       Int     @default(7)
+  active       Boolean @default(true)
+  note         String?
+
+  line     ProductionLine? @relation(fields: [lineId], references: [id])
+  account  TnbAccount?     @relation(fields: [tnbAccountId], references: [id])
+  readings MeterReading[]
+
+  @@map("meter")
+}
+
+enum Channel {
+  PASAR
+  OUTSIDE
+  SUPPLIER
+}
+
+model Customer {
+  id      Int     @id @default(autoincrement())
+  name    String  @unique
+  channel Channel
+
+  prices    Price[]
+  sales     OutsideSale[]
+  purchases IcePurchase[]
+
+  @@map("customer")
+}
+
+model Product {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique
+  name      String
+  /// Nominal kg per unit, for converting sales into kg moved.
+  kgPerUnit Decimal? @map("kg_per_unit") @db.Decimal(10, 3)
+
+  prices Price[]
+  sales  OutsideSale[]
+
+  @@map("product")
+}
+
+model Price {
+  id            Int      @id @default(autoincrement())
+  customerId    Int      @map("customer_id")
+  productId     Int      @map("product_id")
+  unitPrice     Decimal  @map("unit_price") @db.Decimal(10, 2)
+  effectiveFrom DateTime @map("effective_from") @db.Date
+  note          String?
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  product  Product  @relation(fields: [productId], references: [id])
+
+  @@unique([customerId, productId, effectiveFrom])
+  @@map("price")
+}
+
+/// Every number that used to be frozen inside a formula lives here with an
+/// effective date, so restating an assumption never silently rewrites history.
+model CostAssumption {
+  id            Int      @id @default(autoincrement())
+  key           String
+  value         Decimal  @db.Decimal(14, 4)
+  unit          String
+  effectiveFrom DateTime @map("effective_from") @db.Date
+  /// Must say plainly whether the figure is measured or calibrated.
+  note          String?
+  measured      Boolean  @default(false)
+
+  @@unique([key, effectiveFrom])
+  @@map("cost_assumption")
+}
+
+/// AFA is published monthly by Suruhanjaya Tenaga and is the only component of
+/// this tariff that moves. Held separately from the bill so a month can be
+/// costed provisionally before its PDF arrives.
+model AfaRate {
+  id          Int      @id @default(autoincrement())
+  periodMonth DateTime @unique @map("period_month") @db.Date
+  ratePerKwh  Decimal  @map("rate_per_kwh") @db.Decimal(8, 4)
+  published   Boolean  @default(true)
+  note        String?
+
+  @@map("afa_rate")
+}
+
+// ---------------------------------------------------------------------------
+// Daily entry
+// ---------------------------------------------------------------------------
+
+model MeterReading {
+  id          BigInt   @id @default(autoincrement())
+  readingDate DateTime @map("reading_date") @db.Date
+  meterId     Int      @map("meter_id")
+  /// "Akhir". The opening is the prior reading, not a stored column, so the two
+  /// can never disagree. A blank closing must stay NULL: the legacy sheets
+  /// computed 0 - opening and produced seven-figure negatives.
+  closing     Decimal  @db.Decimal(14, 2)
+  /// Set only when the register has wrapped past `meter.digits`.
+  rollover    Boolean  @default(false)
+  note        String?
+  enteredBy   Int?     @map("entered_by")
+  enteredAt   DateTime @default(now()) @map("entered_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  meter Meter    @relation(fields: [meterId], references: [id])
+  user  AppUser? @relation(fields: [enteredBy], references: [id])
+
+  @@unique([readingDate, meterId])
+  @@index([meterId, readingDate])
+  @@map("meter_reading")
+}
+
+/// The block lines run two shifts, M and N, and FOC is heavily skewed between
+/// them (Shift N 35.8% against Shift M 10.0% in H1 2026). Tube is not split.
+enum Shift {
+  M
+  N
+  UNSPLIT
+}
+
+/// Whether the quantity was counted or is a standing convention. The BIMC
+/// "200 per day" in the legacy sheets is a mould count, not a harvest count —
+/// recording which is which is what makes the block-ledger gap visible.
+enum QuantitySource {
+  COUNTED
+  CONVENTION
+}
+
+model ProductionDaily {
+  id             BigInt         @id @default(autoincrement())
+  prodDate       DateTime       @map("prod_date") @db.Date
+  lineId         Int            @map("line_id")
+  shift          Shift          @default(UNSPLIT)
+  unitCode       UnitCode       @map("unit_code")
+  /// Fractional: big pool runs half-rows, and blok quantities appear as 6.5/8.5.
+  quantity       Decimal        @db.Decimal(12, 2)
+  /// Free-of-charge, same unit as `quantity`. Ran 25.6% of blocks moved in H1
+  /// 2026 (RM78,923 on BIMC alone) and is absent from the legacy master file.
+  focQuantity    Decimal        @default(0) @map("foc_quantity") @db.Decimal(12, 2)
+  /// BIG_POOL only: empty cans in the row.
+  tongKosong     Decimal        @default(0) @map("tong_kosong") @db.Decimal(12, 2)
+  quantitySource QuantitySource @default(COUNTED) @map("quantity_source")
+  note           String?
+  enteredAt      DateTime       @default(now()) @map("entered_at") @db.Timestamptz(6)
+  updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  line ProductionLine @relation(fields: [lineId], references: [id])
+
+  @@unique([prodDate, lineId, shift, unitCode])
+  @@index([prodDate])
+  @@map("production_daily")
+}
+
+model CashSalesDaily {
+  saleDate  DateTime @id @map("sale_date") @db.Date
+  shiftM    Decimal  @default(0) @map("shift_m") @db.Decimal(12, 2)
+  shiftN    Decimal  @default(0) @map("shift_n") @db.Decimal(12, 2)
+  /// No `total` column by design. The legacy sheet stored the sum alongside its
+  /// parts and column G duplicated column D; a stored total is a thing that can
+  /// drift. Read it through cashTotal() in src/lib/domain.ts instead.
+  note      String?
+  enteredAt DateTime @default(now()) @map("entered_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("cash_sales_daily")
+}
+
+model OutsideSale {
+  id         BigInt   @id @default(autoincrement())
+  saleDate   DateTime @map("sale_date") @db.Date
+  customerId Int      @map("customer_id")
+  productId  Int      @map("product_id")
+  quantity   Decimal  @db.Decimal(12, 2)
+  /// Snapshot at entry, never a live lookup: a price change next year must not
+  /// restate last year's invoices.
+  unitPrice  Decimal  @map("unit_price") @db.Decimal(10, 2)
+  amount     Decimal  @db.Decimal(12, 2)
+  note       String?
+  enteredAt  DateTime @default(now()) @map("entered_at") @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  product  Product  @relation(fields: [productId], references: [id])
+
+  /// One line per customer/product/day. The legacy sheet had no such guard and
+  /// a double submit was invisible.
+  @@unique([saleDate, customerId, productId])
+  @@index([saleDate])
+  @@map("outside_sale")
+}
+
+model IcePurchase {
+  id         BigInt   @id @default(autoincrement())
+  buyDate    DateTime @map("buy_date") @db.Date
+  supplierId Int      @map("supplier_id")
+  doNo       String?  @map("do_no")
+  quantity   Decimal  @db.Decimal(12, 2)
+  unitPrice  Decimal  @map("unit_price") @db.Decimal(10, 2)
+  amount     Decimal  @db.Decimal(12, 2)
+  note       String?
+  enteredAt  DateTime @default(now()) @map("entered_at") @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  supplier Customer @relation(fields: [supplierId], references: [id])
+
+  @@index([buyDate])
+  @@map("ice_purchase")
+}
+
+model WaterDelivery {
+  id          BigInt   @id @default(autoincrement())
+  periodMonth DateTime @unique @map("period_month") @db.Date
+  tonnes      Decimal  @db.Decimal(12, 2)
+  note        String?
+
+  @@map("water_delivery")
+}
+
+// ---------------------------------------------------------------------------
+// Documents and bills
+// ---------------------------------------------------------------------------
+
+enum DocumentKind {
+  TNB_BILL
+  SUPPLIER_DO
+  OTHER
+}
+
+model Document {
+  id          BigInt       @id @default(autoincrement())
+  kind        DocumentKind
+  filename    String
+  storagePath String       @map("storage_path")
+  /// Rejects a duplicate upload of the same PDF.
+  sha256      String       @unique
+  byteSize    Int?         @map("byte_size")
+  uploadedBy  Int?         @map("uploaded_by")
+  uploadedAt  DateTime     @default(now()) @map("uploaded_at") @db.Timestamptz(6)
+
+  user  AppUser?  @relation(fields: [uploadedBy], references: [id])
+  bills TnbBill[]
+
+  @@map("document")
+}
+
+enum BillStatus {
+  PENDING_REVIEW
+  CONFIRMED
+}
+
+/// Mirrors the printed bill line for line. `previousBalanceRm` and `roundingRm`
+/// are not optional extras: Caj Semasa plus Baki Terdahulu plus Pelarasan
+/// Penggenapan is what makes Jumlah Bil, and without them the reconstruction in
+/// section 5.2 cannot tie (June 7610: 35,520.98 + 0.00 + 0.02 = 35,521.00).
+model TnbBill {
+  id          BigInt    @id @default(autoincrement())
+  accountId   Int       @map("account_id")
+  invoiceNo   String?   @map("invoice_no")
+  billDate    DateTime? @map("bill_date") @db.Date
+  periodStart DateTime  @map("period_start") @db.Date
+  periodEnd   DateTime  @map("period_end") @db.Date
+  days        Int?
+  kwh         Decimal   @db.Decimal(14, 2)
+
+  // Rates as printed inside the label text, kept for the free cross-check.
+  energyRate    Decimal? @map("energy_rate") @db.Decimal(8, 4)
+  energyRm      Decimal? @map("energy_rm") @db.Decimal(14, 2)
+  /// RM per kWh, NOT sen. 0.0380 means 3.80 sen.
+  afaRatePerKwh Decimal? @map("afa_rate_per_kwh") @db.Decimal(8, 4)
+  afaRm         Decimal? @map("afa_rm") @db.Decimal(14, 2)
+  capacityRate  Decimal? @map("capacity_rate") @db.Decimal(8, 4)
+  capacityRm    Decimal? @map("capacity_rm") @db.Decimal(14, 2)
+  networkRate   Decimal? @map("network_rate") @db.Decimal(8, 4)
+  networkRm     Decimal? @map("network_rm") @db.Decimal(14, 2)
+  retailRm      Decimal? @map("retail_rm") @db.Decimal(14, 2)
+  rebateRate    Decimal? @map("rebate_rate") @db.Decimal(8, 4)
+  rebateRm      Decimal? @map("rebate_rm") @db.Decimal(14, 2)
+
+  currentUsageRm    Decimal? @map("current_usage_rm") @db.Decimal(14, 2)
+  kwtbbRm           Decimal? @map("kwtbb_rm") @db.Decimal(14, 2)
+  sstRm             Decimal  @default(0) @map("sst_rm") @db.Decimal(14, 2)
+  currentChargesRm  Decimal? @map("current_charges_rm") @db.Decimal(14, 2)
+  previousBalanceRm Decimal  @default(0) @map("previous_balance_rm") @db.Decimal(14, 2)
+  roundingRm        Decimal  @default(0) @map("rounding_rm") @db.Decimal(14, 2)
+  totalRm           Decimal  @map("total_rm") @db.Decimal(14, 2)
+
+  // Informational on this tariff — they carry no charge. Captured, never alerted on.
+  declaredKw  Decimal? @map("declared_kw") @db.Decimal(10, 2)
+  maxDemandKw Decimal? @map("max_demand_kw") @db.Decimal(10, 2)
+  loadFactor  Decimal? @map("load_factor") @db.Decimal(5, 3)
+  powerFactor Decimal? @map("power_factor") @db.Decimal(5, 3)
+
+  documentId  BigInt?    @map("document_id")
+  /// Raw model output, kept untouched so a parser regression can be audited.
+  parsedJson  Json?      @map("parsed_json")
+  status      BillStatus @default(PENDING_REVIEW)
+  confirmedBy Int?       @map("confirmed_by")
+  confirmedAt DateTime?  @map("confirmed_at") @db.Timestamptz(6)
+
+  account  TnbAccount            @relation(fields: [accountId], references: [id])
+  document Document?             @relation(fields: [documentId], references: [id])
+  user     AppUser?              @relation(fields: [confirmedBy], references: [id])
+  readings TnbBillMeterReading[]
+
+  @@unique([accountId, periodStart, periodEnd])
+  @@index([periodStart, periodEnd])
+  @@map("tnb_bill")
+}
+
+/// Each account carries two physical meters, each reporting kWh, kW and kVARh.
+/// Only the kWh rows sum to billed consumption — capture all, sum kWh alone.
+model TnbBillMeterReading {
+  id       BigInt  @id @default(autoincrement())
+  billId   BigInt  @map("bill_id")
+  meterNo  String  @map("meter_no")
+  unit     String // kWh | kW | kVARh
+  previous Decimal @db.Decimal(14, 2)
+  current  Decimal @db.Decimal(14, 2)
+  usage    Decimal @db.Decimal(14, 2)
+
+  bill TnbBill @relation(fields: [billId], references: [id], onDelete: Cascade)
+
+  @@unique([billId, meterNo, unit])
+  @@map("tnb_bill_meter_reading")
+}
+
+// ---------------------------------------------------------------------------
+// Derived costs
+// ---------------------------------------------------------------------------
+
+enum CostStatus {
+  PROVISIONAL
+  FINAL
+}
+
+enum KwhSource {
+  METERED
+  MODELLED
+}
+
+/// Recomputed whenever a bill is confirmed or an assumption changes. Stored
+/// rather than derived on read so a report can state, per day, which rate it
+/// used and whether that rate was final.
+model DailyLineCost {
+  id           BigInt     @id @default(autoincrement())
+  costDate     DateTime   @map("cost_date") @db.Date
+  lineId       Int        @map("line_id")
+  kwh          Decimal    @db.Decimal(14, 2)
+  kwhSource    KwhSource  @map("kwh_source")
+  kg           Decimal    @db.Decimal(14, 2)
+  /// Site blended rate for the bill period containing this date.
+  rateRmPerKwh Decimal    @map("rate_rm_per_kwh") @db.Decimal(8, 5)
+  costRm       Decimal    @map("cost_rm") @db.Decimal(14, 2)
+  status       CostStatus
+  /// Null while provisional; set to the bill that finalised the day.
+  billId       BigInt?    @map("bill_id")
+  computedAt   DateTime   @default(now()) @map("computed_at") @db.Timestamptz(6)
+
+  line ProductionLine @relation(fields: [lineId], references: [id])
+
+  @@unique([costDate, lineId])
+  @@index([costDate])
+  @@map("daily_line_cost")
+}

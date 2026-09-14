@@ -1,0 +1,62 @@
+[
+  {
+    "month": "2026-01",
+    "tubeKwh": "28940.00",
+    "tubeKg": "213812.50",
+    "bigPoolKwh": "39500.00",
+    "bigPoolKg": "354800.00",
+    "bimcBlocks": "5200.00",
+    "bimcKg": "234000.00",
+    "legacyLumpedKg": "588800.00"
+  },
+  {
+    "month": "2026-02",
+    "tubeKwh": "49260.00",
+    "tubeKg": "368837.50",
+    "bigPoolKwh": "33230.00",
+    "bigPoolKg": "328400.00",
+    "bimcBlocks": "1800.00",
+    "bimcKg": "81000.00",
+    "legacyLumpedKg": "409400.00"
+  },
+  {
+    "month": "2026-03",
+    "tubeKwh": "36610.00",
+    "tubeKg": "273562.50",
+    "bigPoolKwh": "33370.00",
+    "bigPoolKg": "332000.00",
+    "bimcBlocks": "3800.00",
+    "bimcKg": "171000.00",
+    "legacyLumpedKg": "503000.00"
+  },
+  {
+    "month": "2026-04",
+    "tubeKwh": "48830.00",
+    "tubeKg": "365087.50",
+    "bigPoolKwh": "37020.00",
+    "bigPoolKg": "370000.00",
+    "bimcBlocks": "5000.00",
+    "bimcKg": "225000.00",
+    "legacyLumpedKg": "595000.00"
+  },
+  {
+    "month": "2026-05",
+    "tubeKwh": "38560.00",
+    "tubeKg": "286862.50",
+    "bigPoolKwh": "37340.00",
+    "bigPoolKg": "353200.00",
+    "bimcBlocks": "5800.00",
+    "bimcKg": "252000.00",
+    "legacyLumpedKg": "605200.00"
+  },
+  {
+    "month": "2026-06",
+    "tubeKwh": "34680.00",
+    "tubeKg": "255987.50",
+    "bigPoolKwh": "37360.00",
+    "bigPoolKg": "354000.00",
+    "bimcBlocks": "6000.00",
+    "bimcKg": "270000.00",
+    "legacyLumpedKg": "624000.00"
+  }
+]
