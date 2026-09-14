@@ -1,35 +1,242 @@
+/* Light is the base; dark redefines only the tokens, under both the OS setting
+   and an explicit theme stamp. No colour is defined only inside a media block. */
 :root {
-  color-scheme: light dark;
-  --bg: #fbfbfa;
-  --fg: #1a1a19;
-  --muted: #6b6b66;
-  --line: #e3e3df;
-  --accent: #1f6feb;
+  color-scheme: light;
+  --bg: #fcfcfb;
+  --surface: #ffffff;
+  --line: #e4e3de;
+  --line-strong: #c9c8c1;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #78776f;
+  --accent: #2a78d6;
+
+  /* Validated categorical order — never cycled, assigned per line. */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --diverge-warm: #d1495b;
+  --diverge-cool: #2a78d6;
+
+  --good: #1a7f37;
+  --warn: #9a6700;
+  --serious: #bc4c00;
+  --critical: #cf222e;
 }
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #16171a;
-    --fg: #ececea;
-    --muted: #9a9a94;
-    --line: #2c2e33;
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #131412;
+    --surface: #1a1a19;
+    --line: #2c2e2b;
+    --line-strong: #44453f;
+    --text-primary: #f4f3ef;
+    --text-secondary: #c3c2b7;
+    --text-muted: #94938a;
     --accent: #6ea8ff;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --diverge-warm: #e5646f;
+    --diverge-cool: #3987e5;
+    --good: #4ac26b;
+    --warn: #d4a72c;
+    --serious: #f0883e;
+    --critical: #ff7b72;
   }
 }
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #131412;
+  --surface: #1a1a19;
+  --line: #2c2e2b;
+  --line-strong: #44453f;
+  --text-primary: #f4f3ef;
+  --text-secondary: #c3c2b7;
+  --text-muted: #94938a;
+  --accent: #6ea8ff;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --diverge-warm: #e5646f;
+  --diverge-cool: #3987e5;
+  --good: #4ac26b;
+  --warn: #d4a72c;
+  --serious: #f0883e;
+  --critical: #ff7b72;
+}
+
 * { box-sizing: border-box; }
 body {
   margin: 0;
   background: var(--bg);
-  color: var(--fg);
-  font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--text-primary);
+  font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  -webkit-text-size-adjust: 100%;
 }
-main { max-width: 60rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
-h1 { font-size: 1.5rem; margin: 0 0 .25rem; letter-spacing: -0.01em; }
-h2 { font-size: 1rem; margin: 2rem 0 .75rem; }
-.sub { color: var(--muted); margin: 0 0 2rem; }
-table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
-th, td { text-align: left; padding: .5rem .75rem; border-bottom: 1px solid var(--line); }
-th { font-weight: 600; color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
+a { color: var(--accent); }
+
+/* ---- shell ---------------------------------------------------------------- */
+.topbar {
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  padding: .75rem 1rem; border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.brand { font-weight: 650; text-decoration: none; color: var(--text-primary); }
+.topbar nav { display: flex; gap: 1rem; }
+.topbar nav a { text-decoration: none; color: var(--text-secondary); }
+.topbar nav a:hover { color: var(--text-primary); }
+.whoami {
+  margin-left: auto; display: flex; align-items: center; gap: .75rem;
+  color: var(--text-secondary); font-size: .85rem;
+}
+.role {
+  margin-left: .4rem; padding: .1rem .4rem; border: 1px solid var(--line-strong);
+  border-radius: 999px; font-size: .7rem; color: var(--text-muted);
+}
+.linkish {
+  background: none; border: 0; padding: 0; color: var(--accent);
+  cursor: pointer; font: inherit;
+}
+
+main { max-width: 68rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+h1 { font-size: 1.4rem; margin: 0 0 .2rem; letter-spacing: -.01em; }
+h2 { font-size: 1.02rem; margin: 0 0 .3rem; }
+h3 { font-size: .85rem; margin: 1.4rem 0 .2rem; color: var(--text-secondary); font-weight: 600; }
+.sub { color: var(--text-secondary); margin: 0 0 1.5rem; }
+.note { color: var(--text-secondary); font-size: .85rem; margin: 0 0 1rem; max-width: 46rem; }
+.axis-unit {
+  color: var(--text-muted); font-size: .72rem; text-transform: uppercase;
+  letter-spacing: .05em; margin: 0 0 .2rem;
+}
+.empty { color: var(--text-muted); font-size: .85rem; }
+.note.retired {
+  margin: 1rem 0 0; padding: .6rem .8rem; border-radius: 8px;
+  background: var(--bg); border: 1px solid var(--line);
+}
+
+/* ---- KPI row -------------------------------------------------------------- */
+.kpis {
+  display: grid; gap: .75rem; margin-bottom: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+}
+.kpi {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: .8rem .9rem; display: flex; flex-direction: column; gap: .35rem;
+}
+.kpi-label {
+  font-size: .75rem; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--text-muted); display: flex; align-items: center; gap: .4rem;
+}
+.kpi-value {
+  font-size: 1.5rem; font-weight: 600; letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums; line-height: 1.1;
+}
+.kpi-value small {
+  font-size: .72rem; font-weight: 500; color: var(--text-muted); margin: 0 .2rem;
+}
+
+.badge {
+  font-size: .65rem; text-transform: none; letter-spacing: 0;
+  padding: .1rem .4rem; border-radius: 999px; border: 1px solid currentColor;
+  font-weight: 600;
+}
+.badge.final { color: var(--good); }
+.badge.provisional { color: var(--warn); }
+.badge.no_rate { color: var(--text-muted); }
+
+/* ---- alerts --------------------------------------------------------------- */
+.alerts { display: grid; gap: .5rem; margin-bottom: 1.75rem; }
+.alert {
+  display: flex; flex-direction: column; gap: .15rem;
+  padding: .6rem .8rem; border-radius: 8px; font-size: .85rem;
+  border: 1px solid var(--line); border-left-width: 3px; background: var(--surface);
+}
+.alert strong { font-weight: 600; }
+.alert span { color: var(--text-secondary); }
+.alert.info { border-left-color: var(--text-muted); }
+.alert.warn { border-left-color: var(--warn); }
+.alert.error { border-left-color: var(--critical); }
+
+/* ---- panels and charts ---------------------------------------------------- */
+.panel {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 1.1rem; margin-bottom: 1.25rem;
+}
+/* Clipped to its own box: a direct label must never be able to push the page
+   wider than the screen. */
+.chart { width: 100%; height: auto; display: block; overflow: hidden; }
+.grid { stroke: var(--line); stroke-width: 1; }
+.grid.strong { stroke: var(--line-strong); }
+.axis { fill: var(--text-muted); font-size: 10px; font-variant-numeric: tabular-nums; }
+.line { fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+/* A 2px surface ring keeps overlapping markers separable. */
+.dot { fill: currentColor; stroke: var(--surface); stroke-width: 2; }
+.direct-label { fill: var(--text-secondary); font-size: 10.5px; font-weight: 600; }
+.leader { stroke: var(--line-strong); stroke-width: 1; }
+/* AFA has a meaningful zero, so it gets the diverging pair — blue and red
+   around a neutral axis — not two categorical hues. Red is the surcharge:
+   it is the direction that costs money. */
+.bar { fill: var(--series-1); }
+.bar.surcharge { fill: var(--diverge-warm); }
+.bar.rebate { fill: var(--diverge-cool); }
+
+.legend {
+  list-style: none; display: flex; flex-wrap: wrap; gap: .9rem;
+  margin: 0 0 .5rem; padding: 0; font-size: .8rem; color: var(--text-secondary);
+}
+.legend li { display: flex; align-items: center; gap: .35rem; }
+.swatch { width: .7rem; height: .7rem; border-radius: 3px; display: inline-block; }
+
+/* ---- tables --------------------------------------------------------------- */
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: .85rem; }
+th, td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th {
+  font-weight: 600; color: var(--text-muted); font-size: .72rem;
+  text-transform: uppercase; letter-spacing: .04em;
+}
 td.num, th.num { text-align: right; }
-.ok { color: #1a7f37; }
-@media (prefers-color-scheme: dark) { .ok { color: #4ac26b; } }
-.note { color: var(--muted); font-size: .85rem; margin-top: 2rem; }
+
+/* ---- login ---------------------------------------------------------------- */
+.auth { display: flex; min-height: 100vh; align-items: center; justify-content: center; }
+.card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+  padding: 1.5rem; width: min(22rem, 100%); display: flex; flex-direction: column;
+}
+.card h1 { margin-bottom: .1rem; }
+.card .sub { margin-bottom: 1.25rem; }
+.card label {
+  font-size: .78rem; color: var(--text-secondary); margin-bottom: .25rem; font-weight: 500;
+}
+.card input {
+  padding: .55rem .6rem; margin-bottom: .9rem; border: 1px solid var(--line-strong);
+  border-radius: 7px; background: var(--bg); color: var(--text-primary); font: inherit;
+}
+.card input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.card button[type='submit'] {
+  padding: .6rem; border: 0; border-radius: 7px; background: var(--accent);
+  color: #fff; font: inherit; font-weight: 600; cursor: pointer;
+}
+.card button[type='submit']:disabled { opacity: .6; cursor: default; }
+.error { color: var(--critical); font-size: .82rem; margin: 0 0 .8rem; }
+.hint { color: var(--text-muted); font-size: .75rem; margin: .9rem 0 0; }
+
+@media (max-width: 40rem) {
+  /* SVG text scales with the viewBox, so at phone width a 10px label renders
+     around 6px. Bump the user-space size so it lands back near 10px on screen. */
+  .axis { font-size: 13px; }
+  /* At this width a direct label would need more room than the plot can spare.
+     The legend above and the table below both carry identity, so the relief
+     rule is still satisfied without them. */
+  .direct-label, .leader { display: none; }
+}
+
+@media (max-width: 32rem) {
+  .kpi-value { font-size: 1.25rem; }
+  .topbar { gap: .6rem; }
+  .whoami { width: 100%; margin-left: 0; justify-content: space-between; }
+}

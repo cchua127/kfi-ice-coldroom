@@ -3,10 +3,11 @@
 Ice production, sales and electricity costing for KFI Cold Storage Sdn Bhd,
 Pasar Borong Selangor. Replaces six hand-maintained Excel workbooks.
 
-**Status: foundation complete.** Schema, tariff engine, cost engine and seed are
-built and tested against the real bills and meter books. Entry screens,
-dashboard, reports and importers are next. See `docs/00-inputs-required.md` for
-the source review and what is still outstanding.
+**Status:** schema, tariff and cost engines, importers, auth and the management
+dashboard are built and tested against the real bills and meter books. The staff
+entry screens, the reports with Excel export, the bill-upload parser and the
+parallel-check screen are next. See `docs/00-inputs-required.md` for the source
+review and what is still outstanding.
 
 ---
 
@@ -22,6 +23,24 @@ npm test
 npm run dev
 ```
 
+Then create an account — there is no self-registration:
+
+```bash
+npx tsx scripts/create-user.ts --email you@kfi.local --name "Your Name" --role STAFF
+```
+
+To load the historical workbooks, put them in `data/source/` and run:
+
+```bash
+python3 scripts/import/extract.py data/source data/extract   # needs openpyxl, xlrd
+npx tsx scripts/import/load.ts                               # dry run
+npx tsx scripts/import/load.ts --write
+npx tsx scripts/recompute.ts --summary
+```
+
+`data/` is git-ignored: the source workbooks and everything extracted from them
+are the business's trading history and do not belong in the repository.
+
 Without Docker, point `DATABASE_URL` at any PostgreSQL 16 instance.
 
 ## Layout
@@ -33,6 +52,14 @@ src/lib/money.ts          Decimal helpers — half-up to the sen, set once
 src/lib/tariff.ts         rate card and bill reconstruction
 src/lib/bill-validation.ts  the checks that run before a bill review form opens
 src/lib/cost-engine.ts    rate series, line energy, site bridge, cost of ice
+src/lib/cost-recompute.ts pure recompute: entry in, dated cost rows out
+src/lib/domain.ts         dated lookups — pack sizes, assumptions, prices
+src/lib/import/           workbook parsers; layout resolved by label, not position
+src/lib/auth.ts           signed sessions, bcrypt, role checks
+src/components/charts.tsx server-rendered SVG charts
+scripts/import/           extract.py (stage 1), load.ts (stages 2-3)
+scripts/recompute.ts      rebuild daily costs after a bill or an assumption changes
+scripts/create-user.ts    the only way an account is created
 tests/fixtures/           extracted from the six bill PDFs and the meter books
 docs/                     source review and outstanding inputs
 deploy/                   droplet compose, Caddyfile, Dockerfile
@@ -95,10 +122,38 @@ every account has a confirmed bill covering it. Confirming a bill recomputes the
 affected days and flips them. She keys in daily; the truth arrives monthly; the
 system restates itself instead of her.
 
+## Migration
+
+Three stages, because the source workbooks are messier than they look:
+
+1. **`scripts/import/extract.py`** dumps every cell to JSON and interprets
+   nothing. Two of the six workbooks are legacy BIFF, which no maintained
+   JavaScript library reads; the intermediate is also what makes the migration
+   reviewable before anything is written.
+2. **`src/lib/import/`** turns cells into records, under test. Sheet months come
+   from each sheet's own marker before its name, and columns are resolved by
+   header label — that workbook grows from 35 to 41 columns as customers come
+   and go, and two of its sheets are a year older than their names suggest.
+3. **`scripts/import/load.ts`** writes, idempotently, and only with `--write`.
+
+The master workbook is deliberately not a source: it re-types the detail files,
+so importing it would double-count. It is the parallel-run comparison target.
+
+## Dashboard
+
+Mobile-first, same URL for both roles. Colour follows the validated categorical
+order and is assigned per production line, so a line keeps its colour when
+another is filtered out. Two of the light-mode hues sit below 3:1 against the
+surface, so every chart ships direct labels and the same figures as a table.
+
+There is no dual-axis chart anywhere. Cost per kg and the AFA rate share an
+x-axis as two stacked panels instead: a second y-scale would let the reader
+infer a relationship from whatever the scaling happened to produce.
+
 ## Testing
 
 ```bash
-npm test          # 109 tests
+npm test          # 186 tests
 npm run typecheck
 ```
 
