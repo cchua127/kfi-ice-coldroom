@@ -63,10 +63,42 @@ const LINE_LABELS: Record<string, string> = {
   SMALL_POOL: 'Small Pool',
 }
 
+/**
+ * Which of the coldroom's three sources actually backs this month — the same
+ * precedence `coldroomSplit()` applies, stated once so the dashboard cannot
+ * drift from the engine.
+ *
+ * This has been wrong twice, both times by asking about fewer sources than the
+ * engine ranks. First it compared a meter id against -1, which no row can hold,
+ * so it reported the coldroom missing however much had been entered. Then it
+ * knew the WHOLE_METER reading and the ringgit compilation but not the per-room
+ * REGISTER — which outranks both — and so announced "back-inferred" over June
+ * 2026, a month whose 29 rooms are on the register and whose stored lines say
+ * METERED. Telling an operator a metered figure is a guess is the same class of
+ * defect as the reverse, and it teaches them to ignore the banner.
+ *
+ * Pure, so adding a fourth source means adding a case here and a case in the
+ * test, rather than finding every branch that happened to enumerate three.
+ */
+export type ColdroomBridge = 'REGISTER' | 'WHOLE_METER' | 'BACK_INFERRED' | 'ABSENT'
+
+export function coldroomBridgeState(present: {
+  register: boolean
+  wholeMeter: boolean
+  /** A ringgit compilation with no kWh of its own — the circular path. */
+  ringgit: boolean
+}): ColdroomBridge {
+  if (present.register) return 'REGISTER'
+  if (present.wholeMeter) return 'WHOLE_METER'
+  if (present.ringgit) return 'BACK_INFERRED'
+  return 'ABSENT'
+}
+
 export async function loadDashboard(today: string) {
   const month = today.slice(0, 7)
 
-  const [costs, lines, afaRows, cash, sales, bills, readings, energy, energyRefs, coldroomRows] =
+  const [costs, lines, afaRows, cash, sales, bills, readings, energy, energyRefs, coldroomRows,
+    registerMonths] =
     await Promise.all([
     prisma.dailyLineCost.findMany({ orderBy: { costDate: 'asc' } }),
     prisma.productionLine.findMany(),
@@ -78,6 +110,7 @@ export async function loadDashboard(today: string) {
     prisma.dailyEnergyUse.findMany({ orderBy: { costDate: 'asc' } }),
     prisma.energyUse.findMany(),
     prisma.coldroomMonthly.findMany(),
+    prisma.coldroomReading.findMany({ select: { periodMonth: true }, distinct: ['periodMonth'] }),
   ])
 
   // Which consumers belong in cost of ice is the owner's convention, held on
@@ -295,12 +328,14 @@ export async function loadDashboard(today: string) {
     })
   }
 
-  // How the coldroom got into the bridge, if it did at all. An earlier version
-  // of this test compared a meter id against -1, which no row can ever hold, so
-  // it reported the coldroom missing however much had been entered.
-  const coldroomMeter = readings.some((r) => meterIsColdroom.has(r.meterId))
-  const coldroomMonth = coldroomRows.find((c) => iso(c.periodMonth).startsWith(month))
-  if (!coldroomMeter && !coldroomMonth) {
+  const bridge = coldroomBridgeState({
+    register: registerMonths.some((r) => iso(r.periodMonth).startsWith(month)),
+    wholeMeter: readings.some((r) => meterIsColdroom.has(r.meterId)),
+    ringgit: coldroomRows.some(
+      (c) => iso(c.periodMonth).startsWith(month) && c.meteredKwh === null
+    ),
+  })
+  if (bridge === 'ABSENT') {
     alerts.push({
       level: 'WARN',
       title: 'Coldroom missing from the site bridge',
@@ -309,7 +344,7 @@ export async function loadDashboard(today: string) {
         'the unaccounted balance. Key the compilations on the monthly inputs ' +
         'screen, or read the sub-meter.',
     })
-  } else if (!coldroomMeter && coldroomMonth && coldroomMonth.meteredKwh === null) {
+  } else if (bridge === 'BACK_INFERRED') {
     alerts.push({
       level: 'INFO',
       title: 'Coldroom kWh is back-inferred',
