@@ -17,14 +17,14 @@ anything in `ANGLE BRACKETS`.
 
 ```bash
 laptop$ cd kfi-ice-coldroom
-laptop$ git checkout claude/confident-newton-h1fvca
+laptop$ git checkout main
 laptop$ git pull
 laptop$ npm ci
 laptop$ npm run typecheck
 laptop$ npm test
 ```
 
-**Check:** typecheck silent, 265 tests pass.
+**Check:** typecheck silent, 452 tests pass.
 
 ### A2. Take the verified database dump
 
@@ -152,10 +152,9 @@ you did not log out and back in.
 ```bash
 droplet$ git clone https://github.com/cchua127/kfi-ice-coldroom.git kfi-ice-ops
 droplet$ cd kfi-ice-ops
-droplet$ git checkout claude/confident-newton-h1fvca
 ```
 
-(Once the branch is merged, use the default branch instead.)
+`main` is the repository's default branch, so the clone lands on it.
 
 ### C2. Configuration
 

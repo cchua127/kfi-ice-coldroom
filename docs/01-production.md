@@ -13,7 +13,7 @@ comes up, looks right, and quietly reports a different number than the sheet.
 **Verified, on real data.** All six TNB bills reconstruct component by component
 to the cent. The full history is migrated: 582 meter readings, 1,093 production
 rows, 287 cash days, 1,235 outside sales, 21 purchases. Monthly tube and big-pool
-kWh tie to the workbooks for every month January to June. 265 tests pass and the
+kWh tie to the workbooks for every month January to June. 452 tests pass and the
 typecheck is clean.
 
 **Verified against the runtime the container actually runs.** `node
