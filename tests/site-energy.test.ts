@@ -150,6 +150,9 @@ describe('the site statement', () => {
   })
 
   it('lets the owner’s convention override the seeded default', () => {
+    // Ice-feed water is ON by default now (owner decision, docs §10.3). The
+    // override has to work in BOTH directions, so this turns it off — that is
+    // the direction the workbook-template test depends on.
     const s = siteStatement({
       billedKwh: '100000',
       billedRm: '52071',
@@ -157,10 +160,10 @@ describe('the site statement', () => {
       energyUses: [
         { useCode: 'WATER_ICE_FEED', kwh: d('400'), kwhSource: 'MODELLED', basis: 'feed' },
       ],
-      countsAsIce: { WATER_ICE_FEED: true },
+      countsAsIce: { WATER_ICE_FEED: false },
     })
-    expect(DEFAULT_COUNTS_AS_ICE.WATER_ICE_FEED).toBe(false)
-    expect(s.iceKwh.toString()).toBe('400')
+    expect(DEFAULT_COUNTS_AS_ICE.WATER_ICE_FEED).toBe(true)
+    expect(s.iceKwh.toString()).toBe('0')
   })
 
   it('ties to the bill in kWh exactly, and in ringgit to within rounding', () => {
@@ -309,9 +312,10 @@ describe('cost of ice now carries its support plant', () => {
     const withSupport = summariseMonths(lineCosts, { energyUses })[0]
     const without = summariseMonths(lineCosts)[0]
 
-    // 340 compressor + 1,000 D10-D12, and nothing from the 9,000 tenant kWh.
-    expect(withSupport.supportKwh.toString()).toBe('1340')
-    expect(withSupport.iceKwh.toString()).toBe('2340')
+    // 340 compressor + 1,000 D10-D12 + 3.6 ice-feed water, and nothing from
+    // the 9,000 tenant kWh.
+    expect(withSupport.supportKwh.toString()).toBe('1343.6')
+    expect(withSupport.iceKwh.toString()).toBe('2343.6')
     expect(without.iceKwh.toString()).toBe('1000')
     expect(withSupport.rmPerKg!.greaterThan(without.rmPerKg!)).toBe(true)
   })
@@ -325,10 +329,10 @@ describe('cost of ice now carries its support plant', () => {
       lineCosts,
       uses: ['WATER_ICE_FEED'],
     })
-    const off = summariseMonths(lineCosts, { energyUses })[0]
-    const on = summariseMonths(lineCosts, { energyUses, countsAsIce: { WATER_ICE_FEED: true } })[0]
-    expect(off.supportKwh.toString()).toBe('0')
+    const on = summariseMonths(lineCosts, { energyUses })[0]
+    const off = summariseMonths(lineCosts, { energyUses, countsAsIce: { WATER_ICE_FEED: false } })[0]
     expect(on.supportKwh.toString()).toBe('3.6')
+    expect(off.supportKwh.toString()).toBe('0')
   })
 })
 

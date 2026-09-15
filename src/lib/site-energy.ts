@@ -51,10 +51,12 @@ export interface EnergyUseRow {
  *   - The crusher is out because crushing acts on ice that has already been
  *     made and already been costed; putting it back in would charge the same
  *     tonnage's energy twice.
- *   - Ice-feed water is out on the template's convention alone. That water
- *     physically becomes the ice, so there is a real argument for including it;
- *     at 0.45 kWh/t it moves cost of ice by roughly a third of a sen per kg.
- *     Recorded as an open question in docs/00-inputs-required.md §10.3.
+ *   - Ice-feed water is IN, by owner decision (docs §10.3), against the
+ *     template's convention. The water itself is free — it comes out of the
+ *     tubewell — so what is being allocated is only the electricity of pumping
+ *     and filtering it, and that water becomes the ice. It moves cost of ice by
+ *     0.023 sen/kg, which is small enough that the decision is about being right
+ *     rather than about the money.
  *
  * The live answer is the `counts_as_ice` column on `energy_use`, which the
  * owner can change without a deployment. This constant is the seeded default
@@ -63,9 +65,9 @@ export interface EnergyUseRow {
 export const DEFAULT_COUNTS_AS_ICE: Record<EnergyUseCode, boolean> = {
   BRINE_COMPRESSOR: true,
   COLDROOM_ICE_STORE: true,
+  WATER_ICE_FEED: true,
   COLDROOM_TENANT: false,
   WATER_DELIVERED: false,
-  WATER_ICE_FEED: false,
   OFFICE_CCTV: false,
   CRUSHER: false,
 }
@@ -183,8 +185,12 @@ export interface WaterMonthInput {
  *
  * Delivered water is pumped, filtered and transferred to a client's tank — the
  * full 0.65 kWh/t. Ice-feed water stops short of that last transfer and runs at
- * 0.45. Keeping them apart is what lets the ice-feed question in
- * DEFAULT_COUNTS_AS_ICE be decided later without re-deriving anything.
+ * 0.45. Keeping them apart is what makes the owner's decision expressible at
+ * all: one water line could only be all ice or none, and it is neither.
+ *
+ * Nobody keys the split. Delivered tonnage is entered monthly; the ice-feed
+ * side is struck against the ice each day actually made. The extra precision
+ * costs the office nothing.
  */
 export function waterKwh(
   input: WaterMonthInput,

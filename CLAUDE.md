@@ -66,10 +66,13 @@ it. Don't relax one without understanding which.
   and hold ice while making none. Leaving them out understated cost of ice by
   about a sen per kilogram and parked the difference in the site residual —
   a quieter version of the legacy report's fatal habit of treating ice as the
-  balancing figure. Which consumers count is `energy_use.counts_as_ice`, a
-  column, not a constant in the cost engine: two of the seven are genuinely
-  arguable (see `docs/00-inputs-required.md` §10.3) and a convention frozen into
-  code is how RM0.484/kWh survived a decade.
+  balancing figure. It also carries the ice-feed water, by owner decision —
+  the water is free, the electricity that pumps it is not, and it becomes the
+  ice (§10.3). Which consumers count is `energy_use.counts_as_ice`, a column,
+  not a constant in the cost engine, because a convention frozen into code is
+  how RM0.484/kWh survived a decade. `tests/workbook-template.test.ts` pins the
+  template's own convention explicitly rather than inheriting the default, so
+  changing ours does not read as an arithmetic break.
 - **A back-inferred quantity announces itself.** Where the coldroom sub-meter
   has not been read, kWh is recovered by dividing ringgit compilations by the
   frozen RM0.484/kWh factor. That is circular — a quantity from a price — so
@@ -160,14 +163,11 @@ number that disagrees with the old sheet.
 
 Still open, and worth knowing before you touch related code:
 
-- **Does ice-feed water belong in cost of ice?** The owner's template says no;
-  the water physically becomes the ice, which argues yes. Worth a third of a sen
-  per kilogram, and settled by one boolean on `energy_use` plus a recompute.
-  §10.3.
-- **Pre-June counter prices.** The owner's template prefills them for Jan–May
-  and its own note calls them inferred, so they are NOT seeded — §8.3 and §10.5.
-  Confirming them is a one-line seed change and five months of restated channel
-  margin.
+- **The pre-June counter small-block price is an inference**, not a reading:
+  RM12, from the June rise moving every other product 8–10% and three of five
+  months saying 12 (§10.5). The counter-reconciliation check in
+  `src/lib/checks.ts` will contradict it the moment counter units are recorded
+  for any month from January to May. Load one and look.
 - **Good Taste billing.** The system bills per block (RM26.40). The sheet bills
   counted pieces plus crush bags at RM3.30, and the tally runs 7.7–8.2 per block,
   not a fixed 8. That gap is the entire residual in the parallel check. Unresolved

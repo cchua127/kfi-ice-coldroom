@@ -32,6 +32,7 @@ import {
   waterKwh,
   flatDailyKwh,
   siteStatement,
+  DEFAULT_COUNTS_AS_ICE,
   type EnergyUseRow,
 } from '@/lib/site-energy'
 import { machineEfficiency, focWatch, coldroomRecovery } from '@/lib/analytics'
@@ -161,6 +162,13 @@ describe('the owner’s cost template, month by month', () => {
             delivered,
             feed,
           ],
+          // Pinned to the TEMPLATE's convention, which excludes ice-feed water
+          // from ice. This system now includes it, by owner decision (docs
+          // §10.3) — so reproducing the template's ice total requires saying
+          // which convention is being reproduced. Without this the test would
+          // start failing the day a convention changed, which is not a
+          // disagreement about arithmetic and should not read as one.
+          countsAsIce: { WATER_ICE_FEED: false },
         })
 
         near(statement.unallocatedKwh, m.expected.unallocatedKwh, 0.05, 'unallocated kWh')
@@ -285,6 +293,37 @@ describe('the owner’s cost template, month by month', () => {
       })
     })
   }
+})
+
+describe('where this system deliberately departs from the template', () => {
+  const months = fixture.months as Month[]
+
+  it('counts the water that becomes ice as ice, and the template does not', () => {
+    for (const m of months) {
+      const iceKg = totalIceKg(m)
+      const [, feed] = waterKwh(
+        { tonnes: m.inputs.pkpsWaterT, retailM3: m.inputs.retailWaterM3, iceKg },
+        A.waterDeliveredKwhPerTonne,
+        A.waterIceFeedKwhPerTonne
+      )
+      // The whole of the difference, and it is exactly the ice-feed line.
+      const ours = d(m.expected.iceKwh).plus(feed.kwh)
+      expect(ours.minus(m.expected.iceKwh).toNumber()).toBeCloseTo(feed.kwh.toNumber(), 6)
+
+      // 0.023 sen/kg, an order of magnitude smaller than the compressor and
+      // D10-D12 correction. Small enough that the owner was right to call the
+      // breakdown menial; in anyway, because it is the correct treatment and
+      // nobody has to key it.
+      const moved = feed.kwh.times(m.expected.ratePerKwh).dividedBy(iceKg)
+      expect(moved.times(100).toNumber()).toBeLessThan(0.03)
+      expect(moved.times(100).toNumber()).toBeGreaterThan(0.015)
+    }
+  })
+
+  it('has ice-feed water on by default, which the template test must override', () => {
+    expect(DEFAULT_COUNTS_AS_ICE.WATER_ICE_FEED).toBe(true)
+    expect(DEFAULT_COUNTS_AS_ICE.WATER_DELIVERED).toBe(false)
+  })
 })
 
 describe('what the template teaches about the trend', () => {

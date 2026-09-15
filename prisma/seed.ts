@@ -222,6 +222,15 @@ async function main() {
       ['TCC', 'BIG_BLOCK', '19.00'],
       ['Burger', 'BIG_BLOCK', '24.00'],
       ['Good Taste', 'CRUSH', '3.00', 'Crushed ice in bags'],
+      // Counter prices before the June rise. Owner-confirmed 15 September 2026:
+      // the counter was revised once, in 2026, and these were the prices before
+      // it. See docs §10.5 for how the small block was settled.
+      ['Pasar Counter', 'BIG_BLOCK', '24.00', 'Counter price before the June 2026 rise'],
+      ['Pasar Counter', 'SMALL_BLOCK_BIMC', '12.00', 'Counter price before the June 2026 rise'],
+      [
+        'Pasar Counter', 'TUBE_TONG', '22.00',
+        'Unchanged through the June 2026 rise — the only counter line that did not move',
+      ],
       // Owner-confirmed: Good Taste blocks are charged per block, at eight
       // times the crush rate of the day. RM26.40 from June; before that the
       // crush rate was RM3.00, so RM24.00. The RM22.40 in column Y of the
@@ -239,10 +248,10 @@ async function main() {
       ['Ocean Ice', 'BIG_BLOCK', '15.00'],
       // Counter prices. Report R1 proves these reconcile shift cash to the
       // ringgit on June data: big x RM26 + small x RM13 = recorded shift cash,
-      // six for six. Pre-June counter prices are not evidenced anywhere in the
-      // supplied workbooks, so none is seeded rather than inferred.
+      // six for six.
       ['Pasar Counter', 'BIG_BLOCK', '26.00', 'Counter price; reconciles June shift cash exactly'],
       ['Pasar Counter', 'SMALL_BLOCK_BIMC', '13.00', 'Counter price; reconciles June shift cash exactly'],
+      ['Pasar Counter', 'TUBE_TONG', '22.00', 'Unchanged in the June 2026 rise'],
     ]],
   ]
   // Re-seeding must CONVERGE, not accumulate. An earlier version of this file
@@ -435,13 +444,14 @@ async function main() {
       code: 'WATER_ICE_FEED',
       name: 'Water — ice feed',
       nameBm: 'Air — suapan ais',
-      countsAsIce: false,
+      countsAsIce: true,
       note:
-        'OPEN QUESTION — see docs/00-inputs-required.md §10.3. This water ' +
-        'physically becomes the ice, so there is a real argument that it belongs ' +
-        "in cost of ice. It is excluded here only because the owner's template " +
-        'excludes it. Including it would add roughly a third of a sen per kg. ' +
-        'Flip this boolean, re-run the recompute, and every report restates.',
+        'OWNER DECISION, 15 September 2026 — docs §10.3. Counts as ice, against ' +
+        "the template's convention, because this water becomes the ice. The water " +
+        'itself is free from the tubewell, so what is allocated is only the ' +
+        'electricity of pumping and filtering it. Worth 0.023 sen/kg — the owner ' +
+        'was right that the amount is menial; it is in because it is correct, and ' +
+        'because the 0.45 kWh/t split costs the office no extra keying.',
     },
     {
       code: 'OFFICE_CCTV',

@@ -588,23 +588,57 @@ The figure going up is the correction working.
 `daily_energy_use` holds the support plant per day, and `MonthlySummary.supportKwh`
 breaks it out so the two definitions can be reconciled rather than guessed at.
 
-### 10.3 Open: does ice-feed water belong in cost of ice?
+### 10.3 RESOLVED: ice-feed water counts as ice
 
-The template says no; it costs water as one line outside ice. But the 0.45 kWh/t
-figure exists precisely *because* ice-feed water is a different job from
-delivered water — it stops at the moulds instead of going to a client tank. The
-water that becomes the ice is, on the face of it, part of making the ice.
+**Owner, 15 September 2026:** yes, the water that becomes the ice belongs in
+cost of ice. With two qualifications worth recording, because both are right:
 
-Not resolved, and deliberately not decided in code. `energy_use.counts_as_ice` is
-a column, so the answer is one boolean and a recompute away. It is currently
-`false`, matching the template, with the argument recorded in the seed note.
+> "we never really figured out a way to quantify it exactly, since the water is
+> free, just that the electricity bill should be split to ice. However we think
+> it is too menial to break it down this way."
 
-Worth about **a third of a sen per kilogram**. The crusher is excluded on firmer
-ground: it acts on ice already made and already costed, so counting it would
-charge the same tonnage's energy twice.
+The water *is* free — it comes out of the tubewell — so nothing is being costed
+except the electricity of pumping and filtering it. That is what the 0.45 kWh/t
+intensity represents, and it is an estimate, flagged as one.
 
-**For the owner:** should the water that becomes the ice be counted as part of
-the cost of making it?
+**On "too menial": correcting a figure stated earlier in this section.** The
+first draft of §10.3 said the decision was worth "about a third of a sen per
+kilogram". That was wrong by roughly a factor of fourteen. The real figure:
+
+```
+0.45 kWh/t  ÷ 1000  ×  RM0.52071/kWh  =  RM0.000234/kg  =  0.023 sen/kg
+```
+
+On June 2026 that is **RM206 on an ice bill of RM61,670**, and it moves cost of
+ice from RM0.0699/kg to RM0.0701/kg. The owner's instinct was correct: the
+amount is menial.
+
+It is included anyway, for two reasons that have nothing to do with the amount.
+It is the correct treatment, and a system that gets the small allocations right
+is the one you can believe about the large ones. And it costs the office
+nothing: `WATER_DELIVERED` is the only water figure anyone keys, monthly, while
+the ice-feed side is struck per day against the ice actually made. There is no
+"breaking it down" for anyone to do.
+
+`energy_use.counts_as_ice` for `WATER_ICE_FEED` is now `true`. Keeping the two
+water intensities separate is what made the decision expressible at all — a
+single water line could only have been all ice or none, and it is neither.
+
+The crusher stays out, on firmer ground than a convention: it acts on ice
+already made and already costed, so counting it would charge the same tonnage's
+energy twice.
+
+### 10.3a What the workbook-template test now pins
+
+`tests/workbook-template.test.ts` reproduces the *template*, which excludes
+ice-feed water from ice. It therefore passes `countsAsIce: { WATER_ICE_FEED:
+false }` explicitly rather than relying on the default.
+
+That matters for anyone changing a convention later. Without the override the
+test would have started failing the moment this decision was taken — and a
+convention change is not a disagreement about arithmetic, so it must not read
+as one. A test that reproduces an external artefact has to name the artefact's
+assumptions.
 
 ### 10.4 The coldroom back-inference — the worst thing in the template
 
@@ -631,25 +665,53 @@ meter reading a month removes a stale rate from the tenant margin, the site
 bridge, the D10-D12 allocation and cost of ice. The meter is confirmed present;
 only its number, CT multiplier and readings are missing.
 
-### 10.5 What the template says that this system will not repeat
+### 10.5 RESOLVED: the pre-June counter prices
 
-Its INPUTS sheet prefills counter prices for January to May — big blocks at RM24
-rising to RM26, small blocks at RM12-13, tube tongs at RM22 — and its own note
-describes them as "implied from counter reconciliation", not evidenced.
+**Owner, 15 September 2026:** "the counter price only got revised this year."
+One revision, in June 2026, which is the same event that moved every outside
+price. The template's prefill is therefore evidence, not a guess, and the
+pre-June epoch is now seeded.
 
-These are **not seeded**. §8.3 records that the June 2026 price rise is the only
-one the source workbooks evidence, and the seed deliberately carries no pre-June
-counter price rather than an inferred one. A figure that arrives prefilled in a
-template is not thereby a measurement, and seeding it would put a guess behind
-five months of restated revenue — which is §9.2 again, in a different costume.
+Two of the three prices were unambiguous in the template's own cells:
 
-The consequence is visible rather than hidden: the sales and margin report shows
-the pasar split only for months where counter units are recorded, and says so
-otherwise.
+| Counter line | Jan–May | Jun | Source |
+|---|---|---|---|
+| Big block | RM24 | RM26 | column X, flat at 24 for five months then 26 |
+| Tube tong | RM22 | RM22 | column AM, flat at 22 throughout |
+| Small block | **RM12** | RM13 | see below |
 
-**For the owner:** were the January-May counter prices RM24/RM12-13 as the
-template assumes? A yes is a one-line seed change and five months of restated
-channel margin.
+**The small block needed deciding.** The template's column AK reads
+13, 12, 12, 12, 13, 13 — which is not a price series, because AK is an *average*
+that the template solves for as a residual: it takes shift cash, subtracts big
+blocks, tongs and crush, and divides by units. Every error upstream lands there.
+
+RM12 is the answer, on two grounds. Three of the five pre-June months say 12.
+And the June revision moved every product by 8–10%:
+
+| | Before | After | Move |
+|---|---|---|---|
+| Sydney bag | 3.00 | 3.30 | +10.00% |
+| Good Taste crush | 3.00 | 3.30 | +10.00% |
+| TCC block | 19 | 21 | +10.53% |
+| Burger block | 24 | 26 | +8.33% |
+| Counter big block | 24 | 26 | +8.33% |
+| **Counter small block at 12** | **12** | **13** | **+8.33%** |
+| Counter small block at 13 | 13 | 13 | 0.00% |
+
+RM12→13 lands on exactly the big block's and Burger's figure. RM13→13 would make
+the small block the only line in a general price rise that did not rise. The
+13s in January and May are the residual absorbing error, not a price.
+
+This is an inference, and it is labelled as one in the seed note. It is a
+different kind of inference from the one §9.2 warns about: that was a seed
+quietly resolving to a stale epoch nobody had declared, where this is a stated
+epoch with its reasoning attached and a check — the counter reconciliation in
+`src/lib/checks.ts` — that will contradict it the moment counter units are
+recorded for a pre-June month.
+
+**What would overturn it:** load any month from January to May with counter unit
+counts, and the counter-reconciliation check prices them out against shift cash.
+If RM12 is wrong the check flags it, per month, with the ringgit gap.
 
 ### 10.6 Smaller findings
 
