@@ -747,3 +747,184 @@ If RM12 is wrong the check flags it, per month, with the ringgit gap.
   latter. They are added at 1:1 — a cubic metre is a tonne — but kept in
   separate columns so the two sources stay separable when the second is
   reconciled.
+
+---
+
+## 11. The coldroom meter register — `E-2026.xls`
+
+The file that closes §10.4, the item this log has called the highest-value
+outstanding question in the system.
+
+It is not the single whole-room sub-meter reading that was being asked for. It
+is considerably better: a **per-room register**, about 29 rooms, each with its
+own meter, read monthly and recharged at RM0.543/kWh. Nine months on file,
+December 2025 to August 2026, 264 rows, plus an `ave` sheet holding per-room
+monthly figures for calendar 2025.
+
+It loads through the project's own pipeline — `scripts/import/extract.py` then
+`parseColdroomMeter` then `scripts/import/load.ts` — and every sheet resolved
+its month from its own date cell rather than its name.
+
+### 11.1 The back-inference was invertible, which is not the same as correct
+
+Every month the register and the owner's cost template both cover, the TOTAL
+agrees exactly:
+
+| Month | Register | Template (RM ÷ 0.484) |
+|---|---|---|
+| Jan 2026 | 53,297 | 53,297 |
+| Feb 2026 | 53,797 | 53,797 |
+| Mar 2026 | 62,489 | 62,489 |
+| Apr 2026 | 53,980 | 53,980 |
+| May 2026 | 58,481 | 58,481 |
+| Jun 2026 | 55,035 | 55,035 |
+
+This is not corroboration and should not be read as any. The template's ringgit
+compilations were struck **from these very readings** at RM0.484/kWh, so
+dividing back out by RM0.484 was an exactly invertible operation. It recovered
+the right number for the wrong reason — and only for the total.
+
+What it could not recover was the split, and the split is what cost of ice
+depends on.
+
+### 11.2 The register is internally sound, with fifteen explainable breaks
+
+Checked mechanically across all nine months:
+
+- `usage = current − last` on **every one of the 264 rows**. No breaks.
+- `amount = usage × rate` on every row. No breaks.
+- No negative usage anywhere.
+- Fifteen places where a month's "last meter" does not equal the prior month's
+  "current meter". Every one is explainable and none is a data error:
+  - **A2, January** — the meter was replaced. December closes at 96,670 and
+    January opens at 799 on a new register.
+  - **D5, every month** — there are two physically different rooms both labelled
+    D5, on registers around 564,767 and 486,831. Not a break at all; an artefact
+    of matching by room code.
+  - **D3 Jan, C4 Mar, D12 Mar** — a room re-let part-way through the month,
+    appearing as two rows whose registers run continuously across the handover.
+
+Usage and amount are therefore **derived, never stored**, per the standing
+invariant. The sheet stores all four and they agree, which makes the stored pair
+free evidence rather than a second source of truth: `COLDROOM_USAGE_MISMATCH`
+and `COLDROOM_AMOUNT_MISMATCH` fire if anyone overtypes the sheet's arithmetic.
+
+### 11.3 CORRECTION: own use follows the occupant, not the room number
+
+**The owner's cost template charged a tenant's refrigeration to the cost of ice
+in March 2026.**
+
+D10, D11 and D12 are KFI's own rooms *by convention*. The template took that
+convention as the rule. The register shows what actually happened:
+
+| Room | March 2026 | Occupant |
+|---|---|---|
+| D10 | 3,568 kWh | KFI |
+| D11 | 2,496 kWh | KFI |
+| D12 | 1,653 kWh | **Zaidah Ibrahim (start 10/2/26 – 9/3/26)** |
+| D12 | 76 kWh | KFI |
+
+D12 was let out for most of the month. The register runs continuously across the
+handover — the tenant's closing of 610,404 is KFI's opening — so both rows are
+real and neither is a duplicate to discard.
+
+- By room code: **7,793 kWh**
+- The template's own ice-storage line: **7,717 kWh**
+- Actually consumed by KFI: **6,140 kWh**
+
+About **1,577 kWh** of a tenant's consumption was in cost of ice. At March's
+blended rate that is roughly **RM746**.
+
+The rule now lives in one named, exported, tested predicate — `isOwnUseTenant`
+in `src/lib/import/parsers.ts` — and `CONVENTIONAL_OWN_USE_ROOMS` is kept
+beside it purely so the importer can report where the two part company
+(`COLDROOM_OWN_USE_DIVERGES`). March 2026 is the only month in the nine where
+they diverge materially; February has the same tenant in D12 at 0 kWh.
+
+### 11.4 Rows are keyed by position, not by room code
+
+Both the duplicated-D5 rooms and the mid-month re-lets mean a room code is **not
+unique within a month**. `coldroom_reading` is therefore keyed
+`(period_month, row_no)`.
+
+Keying on the room code would have silently dropped one row of each pair — in
+March, either the tenant's 1,653 kWh or KFI's 76.
+
+Room counts by month: 29, 30, 29, **31**, 29, 29, 29, 29, 29.
+
+### 11.5 December's columns are shifted
+
+`dec25` carries an extra "Inv No" column, putting its meters at D/E where every
+other sheet has C/D, and shifting rate, usage and amount with them. This is §8.2
+again in a new file.
+
+Columns are resolved by **label** — "Current meter", "Last meter", "Rate",
+"Tenants" — per the rule in `src/lib/import/layout.ts`. A positional map would
+have read December's tenant column as a meter reading.
+
+### 11.6 The coldroom letting business is nearly underwater
+
+Now measurable rather than inferred, and it is the most commercially significant
+thing in this section:
+
+| | Jan 2026 | Jun 2026 | Aug 2026 |
+|---|---|---|---|
+| Spread, RM/kWh | 0.0981 | 0.0223 | **0.0102** |
+
+The tenant rate is fixed at RM0.543 by contract; the blended tariff rose to
+RM0.5328 in August. On 56,699 tenant kWh, August's whole margin is **RM579**.
+
+One AFA move of a sen takes it negative. `src/lib/checks.ts` flags the crossing,
+but the decision — reprice, or absorb it knowingly — is the owner's and should
+be taken before it happens rather than after.
+
+### 11.7 Three defects the real data exposed in this system
+
+Found by loading the register, not by a unit test:
+
+1. **The coldroom report showed RM0.00 cost and a full-recharge margin on any
+   month with no confirmed bill.** `ctx.rate` is zero when no bill exists, and
+   zero was being multiplied through as though the power were free — printing
+   "RM30,597 margin" on March. Cost and margin are now blank on an uncosted
+   month; what the tenants were billed is still shown, because that part *is*
+   known.
+
+2. **The monthly entry screen warned "nothing entered for the coldroom"** on
+   months that were read room by room, because the fallback ringgit fields were
+   empty. Validation now takes a `hasRegister` flag and suppresses the fallback
+   warnings, on both the client and the server copy.
+
+3. **The bill tie-out tolerance was a flat 25 sen.** That was calibrated when a
+   month's statement was a dozen stored rows. Spreading the coldroom across 31
+   days makes it about three hundred, each rounded to the sen, and 36 sen of
+   accumulated rounding was being reported as a discrepancy. The tolerance now
+   scales at half a sen per stored row above the 25-sen floor. What the check is
+   actually for — a TNB bill period straddling a month, so days carry two rates
+   while the residual is struck at one — is worth hundreds of ringgit and clears
+   either bound by orders of magnitude.
+
+### 11.8 Still open
+
+- **The `ave` sheet holds per-room figures for calendar 2025** and is not loaded.
+  It would extend the register back twelve months. Not done because it is a
+  different shape (a block per room rather than a row per room) and nothing yet
+  needs 2025 coldroom detail. The parser skips it explicitly rather than by
+  accident, for the same reason the master workbook is skipped: loading it
+  alongside `dec25` would double-count December.
+
+- **"Usage 1" and "Usage 2"** split the rooms into two disjoint groups —
+  A1–A3, B1–B3, C3–C7 against B4–B6, C1, C8, D1–D12. Almost certainly two
+  feeders or two TNB accounts. The grouping is stable across all nine months
+  except C1, which is sometimes unassigned. Captured on the reading row; nothing
+  depends on it. **For the owner: what are the two groups?** If they map to the
+  two TNB accounts, the site bridge could be reconciled per account rather than
+  in aggregate.
+
+- **Eleven rooms recorded no consumption at all in March**, and similar counts in
+  other months. Vacant, or a meter nobody read — the register cannot tell those
+  apart, and the report says so rather than assuming the rooms were empty.
+
+- **Whether "KFI" in the tenant column is always the ice plant.** The predicate
+  matches `KFI` on a word boundary, so "KFIX Trading" would not match, but a
+  related entity billed as "KFI Trading" would. No such row exists in the nine
+  months on file.

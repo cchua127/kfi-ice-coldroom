@@ -17,7 +17,7 @@ system working, not a bug.
 ## Commands
 
 ```bash
-npm test                    # 373 tests, vitest — the real gate
+npm test                    # 411 tests, vitest — the real gate
 npm run typecheck           # tsc --noEmit, must be silent
 npm run build               # next build (output: standalone)
 npm run dev                 # next dev
@@ -73,12 +73,22 @@ it. Don't relax one without understanding which.
   how RM0.484/kWh survived a decade. `tests/workbook-template.test.ts` pins the
   template's own convention explicitly rather than inheriting the default, so
   changing ours does not read as an arithmetic break.
-- **A back-inferred quantity announces itself.** Where the coldroom sub-meter
-  has not been read, kWh is recovered by dividing ringgit compilations by the
-  frozen RM0.484/kWh factor. That is circular — a quantity from a price — so
-  the row is `MODELLED`, its basis string opens `BACK-INFERRED:`, a month-close
-  check flags it, and the entry screen warns before saving. It exists so the
-  coldroom is not absent from the bridge, not because it is trustworthy.
+- **The coldroom has three sources and always says which one it used.**
+  `coldroomSplit()` takes the per-room REGISTER first, a WHOLE_METER total
+  second, and the BACK_INFERRED ringgit-over-RM0.484 path only as a last resort.
+  The last is circular — a quantity from a price — so it is `MODELLED`, its
+  basis opens `BACK-INFERRED:`, a check flags it and the entry screen warns. It
+  exists so a month nobody read is not absent from the bridge, not because it is
+  trustworthy. Dec 2025 – Aug 2026 are on the register and need none of it.
+- **Own use follows the occupant, not the room number.** D10-D12 are KFI's rooms
+  *by convention*; `isOwnUseTenant()` asks who was actually in them. The owner's
+  cost template used the convention and charged a tenant 1,577 kWh of March
+  2026's refrigeration to the cost of ice (§11.3). `CONVENTIONAL_OWN_USE_ROOMS`
+  is kept only so the importer can report where the two part company.
+- **A coldroom row is keyed by position, never by room code.** Two different
+  rooms are both labelled `D5`, and a room re-let mid-month appears twice with a
+  continuous register across the handover. Keying on the code silently drops one
+  row of each pair.
 - **A check with nothing to check is not a pass.** `src/lib/checks.ts` returns
   `NO_DATA`, never `OK`, and names what is missing. An early draft read an
   absent coldroom flag as "read from the sub-meter" — a green tick over an empty
@@ -134,6 +144,12 @@ Business dates are `date`. Instants are `timestamptz`.
 - **`next start` does not exercise what production runs.** The container runs
   `node .next/standalone/server.js`. Verify against that, with `public/`,
   `.next/static/` and `prisma/` copied in as the Dockerfile does.
+- **A `next-server` process renames its own cmdline.** It will not match a grep
+  for `standalone/server.js`, and `lsof -ti :3000` did not find it either — so
+  a rebuilt `.next` was served stale for several checks in a row while every
+  kill appeared to succeed. Scan `/proc/*/cmdline` for `next-server` when the
+  port is held by something you cannot see, and confirm the new PID is actually
+  listening before trusting what you read.
 - **The parallel check is the acceptance test, not the unit tests.**
   `/parallel` compares the system against the hand-kept `Daily rekod Ais`. It has
   caught things no unit test could: a missing formula understating May by
@@ -172,12 +188,14 @@ Still open, and worth knowing before you touch related code:
   counted pieces plus crush bags at RM3.30, and the tally runs 7.7–8.2 per block,
   not a fixed 8. That gap is the entire residual in the parallel check. Unresolved
   — see §9.1.
-- **Coldroom sub-meter readings are still missing**, and this is now the single
-  highest-value outstanding item. The site bridge no longer reads 46.7%
-  unaccounted — naming the other six consumers brought June to 1.6% — but the
-  coldroom now enters through the back-inference above, so one stale rate
-  reaches the tenant margin, the D10-D12 allocation and cost of ice. One meter
-  reading a month removes all of it. See §10.4.
+- **The coldroom letting business is nearly underwater.** The tenant rate is
+  fixed at RM0.543 while the blended tariff reached RM0.5328 in August 2026 —
+  a spread of 1.02 sen/kWh against 9.8 sen in January, worth RM579 on the month.
+  One AFA move takes it negative. The check catches the crossing; the decision
+  is the owner's and is better taken before it than after. §11.6.
+- **`E-2026.xls` covers Dec 2025 – Aug 2026 only.** Months outside that range
+  still fall back to the RM0.484 back-inference. The `ave` sheet holds per-room
+  2025 history and is deliberately not loaded — §11.8.
 - **The Docker image build has never been executed** — no daemon in the
   development environment.
 - **The bill parser has never run against a real API key** — tested with a
