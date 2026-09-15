@@ -409,3 +409,186 @@ export function validateWaterMonth(input: WaterMonthInputCheck): Issue[] {
 
   return out
 }
+
+// ---------------------------------------------------------------------------
+// The coldroom register
+// ---------------------------------------------------------------------------
+
+export interface RegisterRowCheck {
+  /** 1-based position on the screen, for addressing the issue back to a row. */
+  rowNo: number
+  roomCode: string
+  tenantLabel: string | null
+  ownUse: boolean
+  openingKwh: Numeric | null
+  closingKwh: Numeric | null
+  rateRmPerKwh: Numeric | null
+  /** Set when the register was swapped, which is the only sane reason to go backwards. */
+  meterReplaced?: boolean
+  /** Last month's closing for this room, where there was one. */
+  priorClosing?: Numeric | null
+}
+
+/**
+ * One row of the register.
+ *
+ * The rule that earns its place here is the one about going backwards. A
+ * closing below the opening is either a replaced register or a transposed
+ * digit, and the legacy sheets resolved exactly this situation by subtracting
+ * from zero and carrying the result into a monthly total. It is a hard stop
+ * until somebody says which it is.
+ */
+export function validateRegisterRow(row: RegisterRowCheck): Issue[] {
+  const out: Issue[] = []
+  const field = `register.${row.rowNo}`
+  const blank = (v: Numeric | null) => v === null || v === ''
+
+  if (!row.roomCode.trim()) {
+    out.push({ severity: 'ERROR', field: `${field}.roomCode`, message: 'A row needs a room.' })
+  }
+
+  // A row with no closing is simply not filled in yet — normal mid-entry, and
+  // never an error. It is skipped on save rather than stored as a zero.
+  if (blank(row.closingKwh)) return out
+
+  const closing = d(row.closingKwh as Numeric)
+  if (closing.isNegative()) {
+    out.push({
+      severity: 'ERROR', field: `${field}.closingKwh`,
+      message: 'A meter reading cannot be negative.',
+    })
+    return out
+  }
+
+  if (blank(row.openingKwh)) {
+    out.push({
+      severity: 'ERROR', field: `${field}.openingKwh`,
+      message:
+        `${row.roomCode}: no opening reading. Carry last month's closing forward, ` +
+        `or key the opening if this room is new.`,
+    })
+    return out
+  }
+
+  const opening = d(row.openingKwh as Numeric)
+  if (closing.lessThan(opening)) {
+    out.push(
+      row.meterReplaced
+        ? {
+            severity: 'WARN', field: `${field}.closingKwh`,
+            message:
+              `${row.roomCode}: register replaced, so this month counts from ` +
+              `${opening} to ${closing}. Confirm the new meter's starting figure.`,
+            requiresNote: true,
+          }
+        : {
+            severity: 'ERROR', field: `${field}.closingKwh`,
+            message:
+              `${row.roomCode}: closing ${closing} is below opening ${opening}. ` +
+              `Tick "meter replaced" if the register was swapped, or correct the reading.`,
+          }
+    )
+  }
+
+  if (blank(row.rateRmPerKwh)) {
+    out.push({
+      severity: 'ERROR', field: `${field}.rateRmPerKwh`,
+      message: `${row.roomCode}: no rate, so this room cannot be recharged.`,
+    })
+  } else if (d(row.rateRmPerKwh as Numeric).isNegative()) {
+    out.push({
+      severity: 'ERROR', field: `${field}.rateRmPerKwh`,
+      message: `${row.roomCode}: the rate cannot be negative.`,
+    })
+  }
+
+  // The chain is the thing that makes a monthly register trustworthy: this
+  // month's opening should be last month's closing. A silent break means a
+  // room's consumption has gone missing or been counted twice.
+  if (
+    row.priorClosing !== null && row.priorClosing !== undefined &&
+    !row.meterReplaced &&
+    !opening.equals(d(row.priorClosing))
+  ) {
+    out.push({
+      severity: 'WARN', field: `${field}.openingKwh`,
+      message:
+        `${row.roomCode}: opening ${opening} does not match last month's closing ` +
+        `${d(row.priorClosing)}. ${opening.greaterThan(d(row.priorClosing))
+          ? 'Consumption between the two readings is not recorded anywhere.'
+          : 'This month would count consumption already billed last month.'}`,
+      requiresNote: true,
+    })
+  }
+
+  if (row.ownUse !== isOwnUseLabel(row.tenantLabel)) {
+    out.push({
+      severity: 'WARN', field: `${field}.ownUse`,
+      message: row.ownUse
+        ? `${row.roomCode} is marked as KFI's own use but the occupant reads ` +
+          `"${row.tenantLabel ?? 'blank'}". Its power goes to cost of ice.`
+        : `${row.roomCode}'s occupant reads as KFI but the row is not marked own ` +
+          `use, so its power will be recharged to a tenant instead of costed to ice.`,
+    })
+  }
+
+  return out
+}
+
+/**
+ * Whether an occupant label reads as KFI itself.
+ *
+ * Deliberately duplicated from the importer's `isOwnUseTenant` rather than
+ * imported: validation must not pull in the import stack, which drags the
+ * workbook types into the browser bundle. The two are tested against each other
+ * so they cannot drift apart silently.
+ */
+export const isOwnUseLabel = (label: string | null): boolean =>
+  /^kfi\b/i.test((label ?? '').trim())
+
+/** The whole register for a month, after every row has been checked. */
+export function validateRegister(rows: RegisterRowCheck[]): Issue[] {
+  const out = rows.flatMap(validateRegisterRow)
+
+  const filled = rows.filter((r) => r.closingKwh !== null && r.closingKwh !== '')
+  if (!filled.length) {
+    out.push({
+      severity: 'WARN', field: 'register',
+      message:
+        'No readings entered. Saving now removes the month from the register and ' +
+        'the coldroom falls back to the ringgit compilations.',
+    })
+    return out
+  }
+
+  // Two rooms on one code is normal here — there are two D5s, and a room re-let
+  // mid-month appears twice. What is NOT normal is the same room read twice from
+  // the same opening, which means a row was duplicated rather than split.
+  const seen = new Map<string, number[]>()
+  rows.forEach((r, i) => {
+    const key = `${r.roomCode.trim().toUpperCase()}|${r.openingKwh ?? ''}`
+    seen.set(key, [...(seen.get(key) ?? []), i + 1])
+  })
+  for (const [key, at] of seen) {
+    if (at.length > 1 && key.split('|')[1] !== '') {
+      out.push({
+        severity: 'ERROR', field: `register.${at[1]}`,
+        message:
+          `Rows ${at.join(' and ')} read ${key.split('|')[0]} from the same opening. ` +
+          `A room re-let mid-month runs continuously — the first row's closing is ` +
+          `the second row's opening — so this is a duplicated row, not a split.`,
+      })
+    }
+  }
+
+  if (!filled.some((r) => r.ownUse)) {
+    out.push({
+      severity: 'WARN', field: 'register',
+      message:
+        'No room is marked as KFI\'s own use this month, so none of the coldroom ' +
+        'will be costed to ice. Correct if D10-D12 were in use.',
+    })
+  }
+
+  return out
+}

@@ -20,6 +20,8 @@
 import { describe, it, expect } from 'vitest'
 import { coldroomSplit, type ColdroomRegisterRow } from '@/lib/site-energy'
 import { isOwnUseTenant, CONVENTIONAL_OWN_USE_ROOMS } from '@/lib/import/parsers'
+import { carryForward } from '@/lib/coldroom-entry'
+import { validateRegister, validateRegisterRow, hasBlocking, isOwnUseLabel } from '@/lib/validation'
 import fixture from './fixtures/coldroom-register.json'
 
 const LEGACY = '0.484'
@@ -228,5 +230,151 @@ describe('what the register says about the coldroom business', () => {
       expect(Number.isFinite(Number(r.openingKwh))).toBe(true)
       expect(Number(r.closingKwh)).toBeGreaterThanOrEqual(Number(r.openingKwh))
     }
+  })
+})
+
+describe('keying next month: what carries forward', () => {
+  const r = (rowNo: number, roomCode: string, openingKwh: number, closingKwh: number) => ({
+    rowNo, roomCode, openingKwh, closingKwh,
+  })
+
+  it('carries one row per room in the ordinary case', () => {
+    const out = carryForward([r(1, 'A1', 100, 150), r(2, 'B1', 200, 260)])
+    expect(out.map((x) => x.roomCode)).toEqual(['A1', 'B1'])
+  })
+
+  it('collapses a room re-let mid-month to its final closing', () => {
+    // March's D12: a tenant to 610,404, then KFI from 610,404. One meter, read
+    // twice. Next month starts from where it ended, not from the handover.
+    const out = carryForward([
+      r(30, 'D12', 608_751, 610_404),
+      r(31, 'D12', 610_404, 610_480),
+    ])
+    expect(out).toHaveLength(1)
+    expect(out[0].closingKwh).toBe(610_480)
+  })
+
+  it('keeps BOTH rooms when one label covers two different meters', () => {
+    // The bug this test exists for: collapsing by room code dropped one of the
+    // two D5 rooms, and next month it silently stopped being read.
+    const out = carryForward([
+      r(22, 'D5', 564_767, 564_767),
+      r(23, 'D5', 486_831, 486_831),
+    ])
+    expect(out).toHaveLength(2)
+    expect(out.map((x) => x.openingKwh).sort()).toEqual([486_831, 564_767])
+  })
+
+  it('handles a room both re-let AND duplicated, without losing either meter', () => {
+    const out = carryForward([
+      r(1, 'D5', 564_767, 564_900),
+      r(2, 'D5', 564_900, 565_000), // continues the first meter
+      r(3, 'D5', 486_831, 486_900), // a different meter entirely
+    ])
+    expect(out).toHaveLength(2)
+    expect(out.map((x) => x.closingKwh).sort()).toEqual([486_900, 565_000])
+  })
+
+  it('preserves the register order so the screen reads like the sheet', () => {
+    const out = carryForward([r(3, 'C1', 1, 2), r(1, 'A1', 1, 2), r(2, 'B1', 1, 2)])
+    expect(out.map((x) => x.roomCode)).toEqual(['A1', 'B1', 'C1'])
+  })
+})
+
+describe('keying next month: what the validation refuses', () => {
+  const base = {
+    rowNo: 1, roomCode: 'B1', tenantLabel: 'Shabila Enterprise', ownUse: false,
+    openingKwh: '1000', closingKwh: '1100', rateRmPerKwh: '0.5430',
+  }
+
+  it('accepts an ordinary row', () => {
+    expect(validateRegisterRow(base)).toHaveLength(0)
+  })
+
+  it('treats a row with no closing as unfinished, not as an error', () => {
+    // Mid-entry blanks are normal on a screen with thirty rooms.
+    expect(validateRegisterRow({ ...base, closingKwh: null })).toHaveLength(0)
+  })
+
+  it('refuses a closing below the opening', () => {
+    const issues = validateRegisterRow({ ...base, closingKwh: '900' })
+    expect(hasBlocking(issues)).toBe(true)
+    expect(issues[0].message).toMatch(/meter replaced/)
+  })
+
+  it('allows it once the meter is declared replaced, and asks for a note', () => {
+    // A2 in January 2026: the register was swapped, December closed at 96,670
+    // and January opened at 799.
+    const issues = validateRegisterRow({
+      ...base, openingKwh: '96670', closingKwh: '799', meterReplaced: true,
+    })
+    expect(hasBlocking(issues)).toBe(false)
+    expect(issues[0].requiresNote).toBe(true)
+  })
+
+  it('warns when the chain no longer joins last month', () => {
+    const forward = validateRegisterRow({ ...base, openingKwh: '1050', priorClosing: '1000' })
+    expect(hasBlocking(forward)).toBe(false)
+    expect(forward[0].message).toMatch(/not recorded anywhere/)
+
+    const backward = validateRegisterRow({ ...base, openingKwh: '950', priorClosing: '1000' })
+    expect(backward[0].message).toMatch(/already billed last month/)
+  })
+
+  it('warns when the own-use flag and the occupant disagree', () => {
+    const notFlagged = validateRegisterRow({ ...base, tenantLabel: 'KFI', ownUse: false })
+    expect(notFlagged.some((i) => i.message.includes('recharged to a tenant'))).toBe(true)
+
+    const overFlagged = validateRegisterRow({ ...base, tenantLabel: 'RB meat', ownUse: true })
+    expect(overFlagged.some((i) => i.message.includes('cost of ice'))).toBe(true)
+    // Neither blocks: the office can overrule, and March 2026 is why.
+    expect(hasBlocking([...notFlagged, ...overFlagged])).toBe(false)
+  })
+
+  it('refuses a row with no rate', () => {
+    expect(hasBlocking(validateRegisterRow({ ...base, rateRmPerKwh: null }))).toBe(true)
+  })
+
+  it('refuses two rows reading one room from the same opening', () => {
+    // A genuine mid-month split runs continuously. Two rows from one opening is
+    // a duplicated row, and it would double-count the room.
+    const issues = validateRegister([
+      { ...base, rowNo: 1, roomCode: 'D12', openingKwh: '1000', closingKwh: '1100' },
+      { ...base, rowNo: 2, roomCode: 'D12', openingKwh: '1000', closingKwh: '1200' },
+    ])
+    expect(hasBlocking(issues)).toBe(true)
+    expect(issues.find((i) => i.message.includes('duplicated row'))).toBeTruthy()
+  })
+
+  it('accepts a genuine mid-month split', () => {
+    const issues = validateRegister([
+      { ...base, rowNo: 1, roomCode: 'D12', openingKwh: '608751', closingKwh: '610404' },
+      { ...base, rowNo: 2, roomCode: 'D12', tenantLabel: 'KFI', ownUse: true,
+        openingKwh: '610404', closingKwh: '610480' },
+    ])
+    expect(hasBlocking(issues)).toBe(false)
+  })
+
+  it('warns rather than silently emptying the month when nothing is keyed', () => {
+    const issues = validateRegister([{ ...base, closingKwh: null }])
+    expect(hasBlocking(issues)).toBe(false)
+    expect(issues[0].message).toMatch(/falls back to the ringgit compilations/)
+  })
+
+  it('warns when no room is marked as KFI’s own', () => {
+    const issues = validateRegister([base])
+    expect(issues.some((i) => i.message.includes('none of the coldroom will be costed to ice')))
+      .toBe(true)
+  })
+})
+
+describe('the two copies of the own-use rule agree', () => {
+  // `isOwnUseLabel` in validation.ts is deliberately duplicated from
+  // `isOwnUseTenant` in the importer, so the browser bundle does not drag in the
+  // workbook types. Duplication is only safe while something checks it.
+  it.each([
+    'KFI', 'kfi', 'KFI Cold Storage', 'KFIX Trading', 'RB meat', '', null,
+  ])('agrees on %s', (label) => {
+    expect(isOwnUseLabel(label)).toBe(isOwnUseTenant(label))
   })
 })

@@ -507,3 +507,29 @@ table.derived td.sub { color: var(--text-muted); font-size: .8rem; padding-left:
 .kpis.secondary { margin-top: -.4rem; }
 .kpis.secondary .kpi { background: transparent; border-style: dashed; }
 .kpis.secondary .kpi-value { font-size: 1.15rem; }
+
+/* The coldroom register. Thirty rooms, one column actually keyed, so the grid
+   is dense and the closing column is the one that reads as the job. */
+.register table.grid th { white-space: nowrap; }
+.register table.grid td { vertical-align: top; }
+.register table.grid td.num {
+  text-align: right; font-variant-numeric: tabular-nums; padding-top: .55rem;
+  white-space: nowrap;
+}
+.register table.grid td.mid { text-align: center; padding-top: .55rem; }
+.register table.grid input[type='text'],
+.register table.grid input:not([type]),
+.register table.grid select { min-width: 4rem; }
+.register table.grid tr.bad td { background: color-mix(in srgb, var(--critical) 7%, transparent); }
+/* An opening that no longer joins to last month's closing is the one thing on
+   this screen a reader must not scroll past. */
+.register table.grid input.warned {
+  border-color: var(--warn); background: color-mix(in srgb, var(--warn) 9%, transparent);
+}
+.register .rowtools { white-space: nowrap; }
+.register .rowtools .linkish { font-size: .78rem; margin-right: .5rem; }
+.register ul.issues { margin: .3rem 0 0; padding-left: 1rem; max-width: 34rem; }
+.register ul.issues li { font-size: .78rem; line-height: 1.35; }
+.register ul.issues li.error { color: var(--critical); }
+.register ul.issues li.warn { color: var(--warn); }
+.register .kpis.secondary { margin: .6rem 0 1rem; }

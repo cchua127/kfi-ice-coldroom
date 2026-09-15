@@ -32,9 +32,20 @@ export default async function MonthlyPage({ params }: { params: Promise<{ month:
       </div>
 
       <p className="sub">
-        Monthly inputs. Everything else in this system is keyed daily; these two
+        Monthly inputs. Everything else in this system is keyed daily; these
         arrive once a month, and inventing a daily figure for them would put a
         made-up number where a keyed one should be.
+      </p>
+
+      <p className="alert info">
+        <strong>Coldroom meter register</strong>
+        <span>
+          The coldroom is read room by room.{' '}
+          <Link href={`/monthly/${month}/coldroom` as never}>
+            Key {pretty(month)}&rsquo;s readings
+          </Link>{' '}
+          — the fields below are only the fallback for a month nobody read.
+        </span>
       </p>
 
       {/* Which months already have figures, at a glance — the same reason the

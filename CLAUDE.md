@@ -17,7 +17,7 @@ system working, not a bug.
 ## Commands
 
 ```bash
-npm test                    # 411 tests, vitest — the real gate
+npm test                    # 434 tests, vitest — the real gate
 npm run typecheck           # tsc --noEmit, must be silent
 npm run build               # next build (output: standalone)
 npm run dev                 # next dev
