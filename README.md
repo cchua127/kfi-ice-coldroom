@@ -5,7 +5,7 @@ Pasar Borong Selangor. Replaces six hand-maintained Excel workbooks.
 
 **Status:** feature-complete against the build specification. Schema, tariff and
 cost engines, importers, auth, the management dashboard, the daily entry screen,
-the TNB bill upload and review, the seven reports and the parallel check are all
+the TNB bill upload and review, the thirteen reports and the parallel check are all
 built and tested against the real bills and meter books.
 
 Outstanding inputs and open questions are in `docs/00-inputs-required.md`,
@@ -208,7 +208,7 @@ and outside-sales figures from the two `.xls` books anyway.
 
 ## Reports
 
-Seven reports at `/reports/<slug>?month=YYYY-MM`, each rendering three ways from
+Thirteen reports at `/reports/<slug>?month=YYYY-MM`, each rendering three ways from
 one structure — on screen, as Excel, and printed A4 landscape. That is
 deliberate: during the parallel run she will be holding a printout against a
 spreadsheet against a screen, and three renderers over one data shape cannot
@@ -222,7 +222,20 @@ disagree the way three implementations eventually would.
 | Daily cash | Shifts, cumulative, running average, prior month |
 | Outside sales and purchases | By customer, at the price in force on the day |
 | Monthly electricity reconciliation | Both bills, each checked against the reconstruction, then the site bridge |
-| Cost of ice | Per line and combined, with the month-on-month move split into tariff and plant |
+| Cost of ice | Per line and combined, carrying the support plant, with the month-on-month move split into tariff and plant |
+
+The six below come from the owner's own LIVE cost template, which arrived after
+the build. The seven above answer what happened on the ice lines; these answer
+where the rest of the electricity went, and whether the month can be closed.
+
+| Report | What it answers |
+|---|---|
+| Site energy statement | Every consumer named and costed, with the residual as a line of its own. June 2026: 1.6% unaccounted, against the 46.7% the bridge read before |
+| Efficiency by machine | kWh/kg and RM/kg per line, gross and net of FOC, against last month |
+| FOC and defect watch | What the free ice cost in electricity, what it forwent in revenue, and the block ledger gap |
+| Coldroom recovery | Tenant recharges against actual tariff, and the spread that AFA is closing |
+| Sales by channel and margin | Realised RM/kg per channel against the electricity in a kilogram of ice |
+| Month close | The template's CHECKS sheet: nine checks, named thresholds, and `NO_DATA` where there is nothing to check |
 
 Every export carries the company, the period, the generation timestamp and
 whether the figures are final. A provisional number must never leave the

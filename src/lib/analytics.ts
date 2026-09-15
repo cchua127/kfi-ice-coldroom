@@ -291,12 +291,12 @@ export function pasarKg(sellableKg: Numeric, outsideKg: Numeric): Decimal {
 }
 
 /**
- * What the plant could actually sell: everything made, less the ice given away,
- * less anything bought in for resale being double-counted as production.
+ * What there was to sell: everything made, less the ice given away, plus
+ * anything bought in for resale.
  *
- * Purchased ice is added, not subtracted — it is ice that moved through the
- * counter without the plant making it, and leaving it out understates the
- * denominator of every realised-price figure.
+ * Purchased ice is ADDED. It moved through the counter without the plant making
+ * it, so it is nowhere in the production figures, and leaving it out understates
+ * the denominator of every realised-price figure below it.
  */
 export function sellableKg(
   producedKg: Numeric,

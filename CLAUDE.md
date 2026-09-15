@@ -17,7 +17,7 @@ system working, not a bug.
 ## Commands
 
 ```bash
-npm test                    # 265 tests, vitest — the real gate
+npm test                    # 371 tests, vitest — the real gate
 npm run typecheck           # tsc --noEmit, must be silent
 npm run build               # next build (output: standalone)
 npm run dev                 # next dev
@@ -61,6 +61,25 @@ it. Don't relax one without understanding which.
   not guessed — guessing is exactly what the old workbooks did.
 - **Ratios are never summed.** A monthly ratio comes from monthly totals; a month
   average divides by the days that actually have data.
+- **Cost of ice carries its support plant.** Ice is the four production lines
+  *plus* the 30HP brine compressor and the D10-D12 storage rooms, which freeze
+  and hold ice while making none. Leaving them out understated cost of ice by
+  about a sen per kilogram and parked the difference in the site residual —
+  a quieter version of the legacy report's fatal habit of treating ice as the
+  balancing figure. Which consumers count is `energy_use.counts_as_ice`, a
+  column, not a constant in the cost engine: two of the seven are genuinely
+  arguable (see `docs/00-inputs-required.md` §10.3) and a convention frozen into
+  code is how RM0.484/kWh survived a decade.
+- **A back-inferred quantity announces itself.** Where the coldroom sub-meter
+  has not been read, kWh is recovered by dividing ringgit compilations by the
+  frozen RM0.484/kWh factor. That is circular — a quantity from a price — so
+  the row is `MODELLED`, its basis string opens `BACK-INFERRED:`, a month-close
+  check flags it, and the entry screen warns before saving. It exists so the
+  coldroom is not absent from the bridge, not because it is trustworthy.
+- **A check with nothing to check is not a pass.** `src/lib/checks.ts` returns
+  `NO_DATA`, never `OK`, and names what is missing. An early draft read an
+  absent coldroom flag as "read from the sub-meter" — a green tick over an empty
+  month, which is exactly the failure the checks exist to catch.
 - **The seed must stay convergent.** `prisma/seed.ts` deletes any price epoch it
   no longer declares, for the pairs it manages. An upsert-only seed silently left
   orphaned epochs and mis-priced five months of history — that bug shipped once
@@ -118,6 +137,20 @@ Business dates are `date`. Instants are `timestamptz`.
   9,000 kg, sheets labelled Oct/Nov that are 2025, a June price rise the sheet
   applied from January.
 
+## Monthly inputs are a separate screen, deliberately
+
+Almost everything is keyed daily, which is right for a plant that runs daily.
+Two things are not: the coldroom arrives as a compilation of ringgit and the
+water as a delivery tonnage. `/monthly/[month]` takes them, one row per month,
+and `recomputeEnergyUses()` spreads them over the days. Forcing either onto the
+daily screen would mean inventing a daily figure — a made-up number sitting
+where a keyed one belongs.
+
+Blank and zero differ there and the validation enforces it: a blank sub-meter
+reading means "not read", a zero claims rooms holding -18C drew nothing.
+Clearing every field deletes the row rather than storing zeros, because a row of
+zeros reads as a measurement.
+
 ## Where the record lives
 
 `docs/00-inputs-required.md` is the running findings log — every discrepancy
@@ -127,12 +160,24 @@ number that disagrees with the old sheet.
 
 Still open, and worth knowing before you touch related code:
 
+- **Does ice-feed water belong in cost of ice?** The owner's template says no;
+  the water physically becomes the ice, which argues yes. Worth a third of a sen
+  per kilogram, and settled by one boolean on `energy_use` plus a recompute.
+  §10.3.
+- **Pre-June counter prices.** The owner's template prefills them for Jan–May
+  and its own note calls them inferred, so they are NOT seeded — §8.3 and §10.5.
+  Confirming them is a one-line seed change and five months of restated channel
+  margin.
 - **Good Taste billing.** The system bills per block (RM26.40). The sheet bills
   counted pieces plus crush bags at RM3.30, and the tally runs 7.7–8.2 per block,
   not a fixed 8. That gap is the entire residual in the parallel check. Unresolved
   — see §9.1.
-- **Coldroom sub-meter readings are missing**, so the site bridge reads 46.7%
-  unaccounted. Everything reported is correct for what can be measured.
+- **Coldroom sub-meter readings are still missing**, and this is now the single
+  highest-value outstanding item. The site bridge no longer reads 46.7%
+  unaccounted — naming the other six consumers brought June to 1.6% — but the
+  coldroom now enters through the back-inference above, so one stale rate
+  reaches the tenant margin, the D10-D12 allocation and cost of ice. One meter
+  reading a month removes all of it. See §10.4.
 - **The Docker image build has never been executed** — no daemon in the
   development environment.
 - **The bill parser has never run against a real API key** — tested with a

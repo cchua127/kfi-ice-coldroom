@@ -531,3 +531,157 @@ The parallel check is what surfaced it: January showed 31 differences where
 August showed 25, with gaps that were not multiples of any rate. The seed now
 deletes any epoch it no longer declares, for the pairs it manages, so re-seeding
 converges instead of accumulating.
+
+---
+
+## 10. The owner's LIVE cost template
+
+A file arrived after the build: `KFI_Ice_Cost_LIVE_TEMPLATE_4.xlsx`, eleven
+sheets, owner-maintained, covering January to June 2026. It is not one of the
+six workbooks this system replaces. It is the owner's own attempt at the
+question this system exists to answer — where the electricity goes — and it
+gets considerably further than the six do.
+
+Everything in it is now implemented. `tests/workbook-template.test.ts` holds the
+implementation to the template's own figures, from a machine dump of the file
+rather than transcription, so a disagreement there is a disagreement between two
+implementations and not a typing slip. All 57 assertions pass across all six
+months.
+
+### 10.1 What it supplied that was genuinely missing
+
+The site bridge read 46.7% unaccounted because four consumers had no home and
+three more had assumptions seeded but never used. The template names all seven:
+
+| Consumer | Basis | Was it in the system? |
+|---|---|---|
+| 30HP brine compressor | 340 kWh/day | assumption seeded, never read |
+| Office and CCTV | 36 kWh/day | assumption seeded, never read |
+| Crusher | 10 kWh/day | assumption seeded, never read |
+| Water, delivered | 0.65 kWh/t | assumption seeded, never read |
+| Water, ice feed | 0.45 kWh/t | **new** |
+| Coldrooms, tenant | RM compilation ÷ 0.484 | no path at all |
+| Ice storage D10-D12 | invoiced RM ÷ 0.543 | no path at all |
+
+Three new dated assumptions came with it: the legacy coldroom factor
+(RM0.484/kWh), the tenant billing rate (RM0.543/kWh) and the ice-feed water
+intensity (0.45 kWh/t).
+
+On June 2026 data the residual falls from 46.7% to **1.6%**.
+
+### 10.2 The correction to cost of ice
+
+The template's ice total is tube + big pool + old small pool + the China machine
+**plus the 30HP compressor plus the D10-D12 storage rooms**. This system's was
+the four production lines alone.
+
+That was wrong, and wrong in the direction that flatters. The compressor freezes
+the big pool and makes no ice of its own; D10-D12 holds this plant's ice before
+it is sold. Both are cost of ice by any reading, and excluding them moved the
+difference into the site residual — a quieter version of the same mistake the
+legacy report made by treating ice as the balancing figure.
+
+Cost of ice is therefore **about a sen per kilogram higher** than this system
+reported before. On June: RM0.0699/kg against RM0.0604/kg on the old definition.
+The figure going up is the correction working.
+
+`daily_energy_use` holds the support plant per day, and `MonthlySummary.supportKwh`
+breaks it out so the two definitions can be reconciled rather than guessed at.
+
+### 10.3 Open: does ice-feed water belong in cost of ice?
+
+The template says no; it costs water as one line outside ice. But the 0.45 kWh/t
+figure exists precisely *because* ice-feed water is a different job from
+delivered water — it stops at the moulds instead of going to a client tank. The
+water that becomes the ice is, on the face of it, part of making the ice.
+
+Not resolved, and deliberately not decided in code. `energy_use.counts_as_ice` is
+a column, so the answer is one boolean and a recompute away. It is currently
+`false`, matching the template, with the argument recorded in the seed note.
+
+Worth about **a third of a sen per kilogram**. The crusher is excluded on firmer
+ground: it acts on ice already made and already costed, so counting it would
+charge the same tonnage's energy twice.
+
+**For the owner:** should the water that becomes the ice be counted as part of
+the cost of making it?
+
+### 10.4 The coldroom back-inference — the worst thing in the template
+
+The template recovers coldroom kWh by dividing the ringgit compilations by
+RM0.484/kWh. That is the frozen pre-July-2025 tariff — defect 1, the reason this
+rebuild exists — used as a divisor.
+
+It is circular: it recovers a quantity from a price. The quantity is only as
+good as a rate that has been stale for over a year, and every coldroom figure
+downstream inherits it, including the tenant margin the business decides pricing
+on.
+
+It is implemented anyway, because the alternative is the coldroom being simply
+absent from the bridge, which is what produced the 46.7% residual. But:
+
+- the sub-meter is always preferred, and there is a field for it;
+- the derived figure is `MODELLED` and its basis string starts `BACK-INFERRED:`;
+- the month-close check **flags every month that leans on it**;
+- the entry screen warns before the month is saved;
+- the dashboard says so.
+
+**This is the single highest-value outstanding item in the whole system.** One
+meter reading a month removes a stale rate from the tenant margin, the site
+bridge, the D10-D12 allocation and cost of ice. The meter is confirmed present;
+only its number, CT multiplier and readings are missing.
+
+### 10.5 What the template says that this system will not repeat
+
+Its INPUTS sheet prefills counter prices for January to May — big blocks at RM24
+rising to RM26, small blocks at RM12-13, tube tongs at RM22 — and its own note
+describes them as "implied from counter reconciliation", not evidenced.
+
+These are **not seeded**. §8.3 records that the June 2026 price rise is the only
+one the source workbooks evidence, and the seed deliberately carries no pre-June
+counter price rather than an inferred one. A figure that arrives prefilled in a
+template is not thereby a measurement, and seeding it would put a guess behind
+five months of restated revenue — which is §9.2 again, in a different costume.
+
+The consequence is visible rather than hidden: the sales and margin report shows
+the pasar split only for months where counter units are recorded, and says so
+otherwise.
+
+**For the owner:** were the January-May counter prices RM24/RM12-13 as the
+template assumes? A yes is a one-line seed change and five months of restated
+channel margin.
+
+### 10.6 Smaller findings
+
+- **The template's CHECKS sheet demands an exact RM0.00 bill tie-out.** It can,
+  because Excel rounds no intermediate column. This system stores every line to
+  the sen, so the check is split: kWh must tie exactly (it does, by
+  construction — the residual *is* the difference) and the ringgit carries a
+  named 25-sen tolerance. Anything larger is reported as `unexplainedRm`, whose
+  usual cause is not rounding at all but a TNB bill period straddling a month,
+  costing days at two rates while the residual is struck at one.
+
+- **February and March 2026 run a *negative* residual** in the template: the
+  named loads claim more than the bill, by 508 and 3,271 kWh. That means a
+  modelled assumption is set too high in those months — most likely the flat
+  340 kWh/day compressor, in months when the pool ran less. The check reads a
+  negative residual as over-modelling rather than under-metering and says so.
+
+- **The coldroom margin is shrinking monotonically.** 9.8 sen/kWh in January,
+  2.2 sen in June, on a fixed RM0.543 tenant rate against a blended tariff that
+  AFA pushes up every month. Two more AFA moves of June's size and it is
+  negative. There is a check for the crossing; the template has no equivalent.
+  Reselling power at a fixed rate while buying it at a floating one is a short
+  position on the tariff, and nobody has priced it as one.
+
+- **The template's "Sydney pcs" convert at 12.5 kg**, confirming §7.8's reading
+  that Sydney buys the 12.5 kg bag despite the "block" label on the price list.
+
+- **FOC ran 19.8% to 30.0% of blocks moved** across the six months, against a
+  15% threshold. Every month flags. That is not a threshold problem.
+
+- **`WaterDelivery` gained `retail_m3`.** The template tracks retail water
+  separately from the PKPS tubewell delivery and this system tracked only the
+  latter. They are added at 1:1 — a cubic metre is a tonne — but kept in
+  separate columns so the two sources stay separable when the second is
+  reconciled.

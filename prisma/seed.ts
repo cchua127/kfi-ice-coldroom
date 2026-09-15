@@ -469,9 +469,25 @@ async function main() {
   }
   // Convergent, for the same reason the price epochs are: a consumer this file
   // no longer declares must not linger and keep claiming kWh.
-  await prisma.energyUse.deleteMany({
+  //
+  // A consumer that still has costed days is a different matter. The foreign
+  // key would refuse the delete anyway; catching it here turns a raw constraint
+  // violation into a sentence that says what to do. Deleting the costed days
+  // silently would be worse than either.
+  const retired = await prisma.energyUse.findMany({
     where: { code: { notIn: energyUses.map((u) => u.code) } },
   })
+  for (const u of retired) {
+    const costed = await prisma.dailyEnergyUse.count({ where: { useCode: u.code } })
+    if (costed > 0) {
+      throw new Error(
+        `Energy use ${u.code} is no longer declared in the seed but still has ` +
+          `${costed} costed day(s). Remove it from the recompute window first ` +
+          `(scripts/recompute.ts rebuilds the range wholesale), then re-seed.`
+      )
+    }
+    await prisma.energyUse.delete({ where: { code: u.code } })
+  }
 
   // -------------------------------------------------------------------------
   // AFA as billed. The only component of this tariff that moves.
