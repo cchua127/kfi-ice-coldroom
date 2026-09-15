@@ -36,8 +36,8 @@ export interface CheckResult {
  * figure unless the comment says otherwise.
  */
 export interface CheckThresholds {
-  /** Sen of rounding drift between the named lines and the bill. */
-  billRoundingSen: Numeric
+  /** Sen of the bill left unexplained by the named lines plus the residual. */
+  billUnexplainedSen: Numeric
   /** Unaccounted kWh per day. Above this, a load is missing from the bridge. */
   unallocatedKwhPerDay: Numeric
   /** FOC as a share of blocks moved. */
@@ -59,7 +59,7 @@ export const DEFAULT_THRESHOLDS: CheckThresholds = {
   // can demand an exact tie; this system stores every line to the sen, and the
   // few sen that leaves has to be tolerated or plugged. Two sen per line across
   // a dozen lines is the honest allowance.
-  billRoundingSen: 25,
+  billUnexplainedSen: 25,
   unallocatedKwhPerDay: 250,
   focShare: 0.15,
   tubeKwhPerKg: 0.145,
@@ -101,7 +101,7 @@ export interface CheckInput {
   daysInMonth: number
 
   /** From siteStatement(). Null when the month has no bill yet. */
-  roundingDriftRm?: Numeric | null
+  unexplainedRm?: Numeric | null
   tieOutKwh?: Numeric | null
   unallocatedKwh?: Numeric | null
 
@@ -145,7 +145,7 @@ export function monthCloseChecks(input: CheckInput): CheckResult[] {
 
   // 1. Does the statement account for the bill?
   const tieKwh = num(input.tieOutKwh)
-  const drift = num(input.roundingDriftRm)
+  const drift = num(input.unexplainedRm)
   if (tieKwh === null || drift === null) {
     out.push(
       noData(
@@ -168,7 +168,7 @@ export function monthCloseChecks(input: CheckInput): CheckResult[] {
     )
   } else {
     const driftSen = drift.times(100).abs()
-    const limit = d(t.billRoundingSen)
+    const limit = d(t.billUnexplainedSen)
     out.push(
       driftSen.greaterThan(limit)
         ? flag(
@@ -176,8 +176,10 @@ export function monthCloseChecks(input: CheckInput): CheckResult[] {
             'Bill tie-out',
             drift,
             limit.dividedBy(100),
-            `Per-line rounding leaves RM${drift.toFixed(2)} against the bill — more than ` +
-              'rounding alone explains. Check for a line costed at the wrong rate.'
+            `RM${drift.toFixed(2)} of the bill is neither on a named line nor in the ` +
+              'residual — more than sen-rounding explains. The usual cause is a TNB ' +
+              'bill period straddling the month, so days are costed at two rates ' +
+              "while the residual is struck at one. Check the bill's period dates."
           )
         : ok(
             'bill-tie-out',

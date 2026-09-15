@@ -6,6 +6,14 @@ import { PrismaClient } from '@prisma/client'
 import { Decimal, d } from '../money'
 import { reconstructBill, siteRate } from '../tariff'
 import type { Report, ReportRow, ReportSlug } from './types'
+import {
+  siteEnergyReport,
+  efficiencyReport,
+  focWatchReport,
+  coldroomReport,
+  salesMarginReport,
+  monthCloseReport,
+} from './site-reports'
 
 const prisma = new PrismaClient()
 const iso = (x: Date) => x.toISOString().slice(0, 10)
@@ -630,6 +638,32 @@ async function costOfIceReport(month: string): Promise<Report> {
   const then = roll(before)
   const ICE = ['TUBE', 'BIG_POOL', 'BIMC', 'SMALL_POOL']
 
+  // The support plant: consumers that freeze or hold ice and make none of it.
+  // Which ones those are is a column on `energy_use`, not a constant here, so
+  // the owner can settle the two arguable cases without a deployment.
+  const [supportNow, supportThen, energyRefs] = await Promise.all([
+    prisma.dailyEnergyUse.findMany({
+      where: { costDate: { gte: monthStart(month), lte: monthEnd(month) } },
+    }),
+    prisma.dailyEnergyUse.findMany({
+      where: { costDate: { gte: monthStart(prev), lte: monthEnd(prev) } },
+    }),
+    prisma.energyUse.findMany(),
+  ])
+  const isIce = Object.fromEntries(energyRefs.map((u) => [u.code as string, u.countsAsIce]))
+  const label = Object.fromEntries(energyRefs.map((u) => [u.code as string, u.name]))
+  const rollSupport = (src: typeof supportNow) => {
+    const byUse = new Map<string, { kwh: Decimal; rm: Decimal }>()
+    for (const e of src) {
+      if (!isIce[e.useCode]) continue
+      const v = byUse.get(e.useCode) ?? { kwh: d(0), rm: d(0) }
+      byUse.set(e.useCode, { kwh: v.kwh.plus(e.kwh), rm: v.rm.plus(e.costRm) })
+    }
+    return byUse
+  }
+  const supNow = rollSupport(supportNow)
+  const supThen = rollSupport(supportThen)
+
   const rows: ReportRow[] = []
   const tot = { kwh: d(0), kg: d(0), rm: d(0) }
   for (const code of ICE) {
@@ -647,6 +681,20 @@ async function costOfIceReport(month: string): Promise<Report> {
       },
     })
   }
+  // Support plant makes no kilograms, so it has no intensity of its own — it
+  // raises everyone else's. Listed with blank ratio columns rather than a zero,
+  // which would read as a line that is free.
+  const producedKg = tot.kg
+  for (const [code, v] of [...supNow.entries()].sort()) {
+    tot.kwh = tot.kwh.plus(v.kwh); tot.rm = tot.rm.plus(v.rm)
+    rows.push({
+      cells: {
+        line: label[code] ?? code,
+        kwh: Number(v.kwh), kg: null, rm: Number(v.rm),
+        kwhPerKg: null, rmPerKg: null, priorKwhPerKg: null, priorRmPerKg: null,
+      },
+    })
+  }
   rows.push({
     emphasis: true,
     cells: {
@@ -658,12 +706,17 @@ async function costOfIceReport(month: string): Promise<Report> {
 
   // Splits the month-on-month move in RM/kg into the part the tariff caused and
   // the part the plant caused. Flat kWh/kg with rising RM/kg means tariff.
-  const priorTot = ICE.reduce(
-    (a, code) => {
-      const v = then.get(code)
-      return v ? { kwh: a.kwh.plus(v.kwh), kg: a.kg.plus(v.kg), rm: a.rm.plus(v.rm) } : a
-    },
-    { kwh: d(0), kg: d(0), rm: d(0) }
+  // Both sides of the comparison must carry the support plant, or the month
+  // this feature shipped would read as a plant efficiency collapse.
+  const priorTot = [...supThen.values()].reduce<{ kwh: Decimal; kg: Decimal; rm: Decimal }>(
+    (a, v) => ({ kwh: a.kwh.plus(v.kwh), kg: a.kg, rm: a.rm.plus(v.rm) }),
+    ICE.reduce(
+      (a, code) => {
+        const v = then.get(code)
+        return v ? { kwh: a.kwh.plus(v.kwh), kg: a.kg.plus(v.kg), rm: a.rm.plus(v.rm) } : a
+      },
+      { kwh: d(0), kg: d(0), rm: d(0) }
+    )
   )
 
   const decomposition: ReportRow[] = []
@@ -708,6 +761,20 @@ async function costOfIceReport(month: string): Promise<Report> {
     notes: [
       'Cost of ice is the sum of the metered and modelled ice lines, never a ' +
         'site residual.',
+      'It now carries the support plant that freezes and holds the ice but ' +
+        'produces none — the 30HP brine compressor and the D10-D12 storage ' +
+        'rooms. Excluding them understated cost of ice and left the difference ' +
+        'in the site residual; a figure higher than the old sheet is that ' +
+        'correction, not a break.',
+      supNow.size
+        ? `Support plant is ${Number(
+            [...supNow.values()].reduce<Decimal>((a, v) => a.plus(v.kwh), d(0))
+          ).toLocaleString('en-MY')} kWh of the total above.`
+        : 'No support plant is costed for this month — run the recompute, or ' +
+          'enter the coldroom month it depends on.',
+      producedKg.isZero()
+        ? 'No production recorded, so there is no cost per kilogram to state.'
+        : `Spread over ${Number(producedKg).toLocaleString('en-MY')} kg produced.`,
     ],
   }]
 
@@ -743,5 +810,11 @@ export async function buildReport(slug: ReportSlug, month: string): Promise<Repo
     case 'outside': return outsideReport(month)
     case 'electricity': return electricityReport(month)
     case 'cost-of-ice': return costOfIceReport(month)
+    case 'site-energy': return siteEnergyReport(month)
+    case 'efficiency': return efficiencyReport(month)
+    case 'foc-watch': return focWatchReport(month)
+    case 'coldroom': return coldroomReport(month)
+    case 'sales-margin': return salesMarginReport(month)
+    case 'month-close': return monthCloseReport(month)
   }
 }

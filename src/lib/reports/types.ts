@@ -98,6 +98,15 @@ export const REPORTS = [
   { slug: 'outside', name: 'Outside sales and purchases' },
   { slug: 'electricity', name: 'Monthly electricity reconciliation' },
   { slug: 'cost-of-ice', name: 'Cost of ice' },
+  // The six from the owner's LIVE cost template. The seven above answer what
+  // happened on the ice lines; these answer where the rest of the electricity
+  // went, and whether the month can be closed.
+  { slug: 'site-energy', name: 'Site energy statement' },
+  { slug: 'efficiency', name: 'Efficiency by machine' },
+  { slug: 'foc-watch', name: 'FOC and defect watch' },
+  { slug: 'coldroom', name: 'Coldroom recovery' },
+  { slug: 'sales-margin', name: 'Sales by channel and margin' },
+  { slug: 'month-close', name: 'Month close' },
 ] as const
 
 export type ReportSlug = (typeof REPORTS)[number]['slug']

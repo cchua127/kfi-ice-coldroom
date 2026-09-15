@@ -174,7 +174,7 @@ describe('the owner’s cost template, month by month', () => {
 
         // Per-line sen rounding, and nothing else, separates the named lines
         // from the bill. A dozen lines at half a sen each.
-        expect(Math.abs(statement.roundingDriftRm.toNumber())).toBeLessThan(0.1)
+        expect(Math.abs(statement.unexplainedRm.toNumber())).toBeLessThan(0.1)
 
         const byKey = Object.fromEntries(statement.lines.map((l) => [l.key, l]))
         near(byKey.TUBE.costRm, m.expected.statement.tubeRm, 0.02, 'tube RM')

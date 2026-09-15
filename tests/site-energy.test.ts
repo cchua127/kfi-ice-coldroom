@@ -166,7 +166,7 @@ describe('the site statement', () => {
   it('ties to the bill in kWh exactly, and in ringgit to within rounding', () => {
     const s = statement()
     expect(s.tieOutKwh.toString()).toBe('0')
-    expect(Math.abs(s.roundingDriftRm.toNumber())).toBeLessThan(0.05)
+    expect(Math.abs(s.unexplainedRm.toNumber())).toBeLessThan(0.05)
   })
 
   it('survives a month with no bill without dividing by zero', () => {
@@ -406,7 +406,7 @@ describe('the month-close checks', () => {
   const healthy = {
     month: '2026-06',
     daysInMonth: 30,
-    roundingDriftRm: '0.03',
+    unexplainedRm: '0.03',
     tieOutKwh: '0',
     unallocatedKwh: '2919.81',
     coldroomMarginRm: '1097.29',

@@ -36,6 +36,8 @@ export interface EnergyUseRow {
   kwhSource: KwhSource
   /** How the number was made. Never empty — a modelled figure must say so. */
   basis: string
+  /** Stored ringgit for these days, where they have been costed. See below. */
+  costRm?: Numeric
 }
 
 /**
@@ -315,23 +317,43 @@ export interface SiteStatement {
    */
   tieOutKwh: Decimal
   /**
-   * Sum of the per-line sen-rounded ringgit against the bill.
+   * The named lines plus the residual, against the bill, in ringgit.
    *
-   * The template's own tie-out check expects an exact 0.00 here, which it gets
-   * only because Excel never rounds the intermediate columns. Rounding each
-   * line to the sen — which this system does, because those figures are stored
-   * — leaves a few sen that have to land somewhere. Reporting the drift as
-   * itself is honest; forcing a zero by plugging one line is how a rounding
-   * error becomes a silent allocation.
+   * Unlike `tieOutKwh` this is NOT zero by construction, and the two things it
+   * catches are both worth catching. Sen-rounding each stored line accounts for
+   * a few sen. Anything larger means the lines were costed at rates the month's
+   * blended rate does not represent — which happens the moment a TNB bill
+   * period straddles a month boundary, because each day is costed at its own
+   * rate while the residual is struck at the month's.
+   *
+   * The template expects an exact 0.00 here and gets it only because Excel
+   * rounds nothing and its months are one flat rate. Reporting the difference
+   * as itself is honest; plugging it into a line is how a rounding error
+   * becomes a silent allocation.
    */
-  roundingDriftRm: Decimal
+  unexplainedRm: Decimal
 }
 
 export interface StatementInput {
   billedKwh: Numeric
   billedRm: Numeric
-  /** Production lines: tube, big pool, BIMC, small pool. */
-  productionLines: { code: string; label: string; kwh: Numeric; source: KwhSource; basis: string }[]
+  /**
+   * Production lines: tube, big pool, BIMC, small pool.
+   *
+   * `costRm` is the ringgit already stored against those days. Pass it whenever
+   * you have it: a day is costed at ITS OWN rate, and re-striking a month's kWh
+   * against a month-blended rate would disagree with every other report the
+   * moment a bill period straddles a month boundary. Omitted, the statement
+   * falls back to kWh times the blended rate.
+   */
+  productionLines: {
+    code: string
+    label: string
+    kwh: Numeric
+    source: KwhSource
+    basis: string
+    costRm?: Numeric
+  }[]
   /** Non-production consumers. */
   energyUses: EnergyUseRow[]
   /** Overrides the seeded default, so the owner's convention wins. */
@@ -366,6 +388,9 @@ export function siteStatement(input: StatementInput): SiteStatement {
 
   const shareOf = (kwh: Decimal) => (billedKwh.isZero() ? null : kwh.dividedBy(billedKwh))
 
+  const costOf = (kwh: Decimal, stored: Numeric | undefined) =>
+    stored === undefined ? rm(kwh.times(rate)) : rm(stored)
+
   const lines: StatementLine[] = [
     ...input.productionLines.map((l): StatementLine => {
       const kwh = d(l.kwh)
@@ -375,7 +400,7 @@ export function siteStatement(input: StatementInput): SiteStatement {
         kwh,
         kwhSource: l.source,
         basis: l.basis,
-        costRm: rm(kwh.times(rate)),
+        costRm: costOf(kwh, l.costRm),
         share: shareOf(kwh),
         countsAsIce: true,
       }
@@ -386,7 +411,7 @@ export function siteStatement(input: StatementInput): SiteStatement {
       kwh: u.kwh,
       kwhSource: u.kwhSource,
       basis: u.basis,
-      costRm: rm(u.kwh.times(rate)),
+      costRm: costOf(u.kwh, u.costRm),
       share: shareOf(u.kwh),
       countsAsIce: iceFlag[u.useCode],
     })),
@@ -399,10 +424,11 @@ export function siteStatement(input: StatementInput): SiteStatement {
   const iceLines = lines.filter((l) => l.countsAsIce)
   const iceKwh = iceLines.reduce<Decimal>((a, l) => a.plus(l.kwh), d(0))
 
-  // Ice RM is struck on the ice kWh total, not summed from the per-line rounded
-  // figures: rounding each line to the sen and then adding them drifts by a few
-  // sen a month, and cost of ice is quoted to four decimal places per kg.
-  const iceRm = rm(iceKwh.times(rate))
+  // Summed from the lines above, not re-struck on the ice kWh total. The few
+  // sen between the two methods do not matter to a figure quoted per kilogram,
+  // but a reader adding up the printed column with a calculator and getting a
+  // different answer from the printed total matters a great deal.
+  const iceRm = iceLines.reduce<Decimal>((a, l) => a.plus(l.costRm), d(0))
 
   const namedRm = lines.reduce<Decimal>((a, l) => a.plus(l.costRm), d(0))
 
@@ -418,6 +444,6 @@ export function siteStatement(input: StatementInput): SiteStatement {
     iceKwh,
     iceRm,
     tieOutKwh: billedKwh.minus(accountedKwh).minus(unallocatedKwh),
-    roundingDriftRm: rm(namedRm.plus(unallocatedRm).minus(billedRm)),
+    unexplainedRm: rm(namedRm.plus(unallocatedRm).minus(billedRm)),
   }
 }

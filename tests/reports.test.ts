@@ -47,9 +47,21 @@ describe('export filename', () => {
 })
 
 describe('report catalogue', () => {
-  it('covers all seven reports the specification lists', () => {
-    expect(REPORTS.map((r) => r.slug)).toEqual([
+  it('covers the seven reports the specification lists', () => {
+    // The order matters: it is the order of the nav and of the printed pack.
+    expect(REPORTS.map((r) => r.slug).slice(0, 7)).toEqual([
       'daily-rekod', 'tube', 'big-pool', 'cash', 'outside', 'electricity', 'cost-of-ice',
     ])
+  })
+
+  it("covers the six the owner's cost template adds", () => {
+    expect(REPORTS.map((r) => r.slug).slice(7)).toEqual([
+      'site-energy', 'efficiency', 'foc-watch', 'coldroom', 'sales-margin', 'month-close',
+    ])
+  })
+
+  it('gives every report a distinct slug and a name', () => {
+    expect(new Set(REPORTS.map((r) => r.slug)).size).toBe(REPORTS.length)
+    for (const r of REPORTS) expect(r.name.length).toBeGreaterThan(3)
   })
 })
