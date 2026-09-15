@@ -209,7 +209,7 @@ run the import, then recompute. Expect to re-verify every month afterwards —
 that is the work 4a avoids.
 
 **Check:** `--summary` prints the monthly table. Compare it against what the
-same command prints locally. Cost of ice should read RM0.0542 to RM0.0616 per kg
+same command prints locally. Cost of ice should read RM0.0608 to RM0.0681 per kg
 across January to September 2026, December 2025 should show `no rate` (bills
 start in January), and June through August should read FINAL with everything
 else PROVISIONAL.

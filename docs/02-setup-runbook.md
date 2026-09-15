@@ -315,15 +315,19 @@ droplet$ bash scripts/ops.sh npx tsx scripts/recompute.ts --summary
 | Month | RM/kg | Status |
 |---|---|---|
 | 2025-12 | no rate | PROVISIONAL |
-| 2026-01 | 0.0565 | PROVISIONAL |
-| 2026-02 | 0.0549 | PROVISIONAL |
-| 2026-03 | 0.0542 | PROVISIONAL |
-| 2026-04 | 0.0566 | PROVISIONAL |
-| 2026-05 | 0.0592 | PROVISIONAL |
-| 2026-06 | 0.0604 | **FINAL** |
-| 2026-07 | 0.0616 | **FINAL** |
-| 2026-08 | 0.0613 | **FINAL** |
-| 2026-09 | 0.0606 | PROVISIONAL |
+| 2026-01 | 0.0624 | PROVISIONAL |
+| 2026-02 | 0.0608 | PROVISIONAL |
+| 2026-03 | 0.0609 | PROVISIONAL |
+| 2026-04 | 0.0620 | PROVISIONAL |
+| 2026-05 | 0.0654 | PROVISIONAL |
+| 2026-06 | 0.0666 | **FINAL** |
+| 2026-07 | 0.0681 | **FINAL** |
+| 2026-08 | 0.0678 | **FINAL** |
+| 2026-09 | 0.0668 | PROVISIONAL |
+
+These are about 0.6 sen/kg above what this table said before cost of ice began
+carrying its support plant — the 30HP brine compressor, the D10–D12 storage
+rooms and the ice-feed water. That difference used to sit in the site residual.
 
 December 2025 reads `no rate` because the bills start in January. Those days are
 left uncosted rather than guessed — the old workbooks would have carried the
