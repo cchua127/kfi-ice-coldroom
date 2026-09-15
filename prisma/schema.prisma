@@ -360,7 +360,12 @@ model IcePurchase {
 model WaterDelivery {
   id          BigInt   @id @default(autoincrement())
   periodMonth DateTime @unique @map("period_month") @db.Date
+  /// PKPS tubewell delivery.
   tonnes      Decimal  @db.Decimal(12, 2)
+  /// Metered retail water, billed in cubic metres. Added to the tonnage at 1:1 —
+  /// a cubic metre of water is a tonne — and kept in its own column so the two
+  /// sources stay separable when the second one is ever reconciled.
+  retailM3    Decimal  @default(0) @map("retail_m3") @db.Decimal(12, 2)
   note        String?
 
   @@map("water_delivery")
@@ -492,36 +497,132 @@ enum KwhSource {
 /// rather than derived on read so a report can state, per day, which rate it
 /// used and whether that rate was final.
 model DailyLineCost {
-  id           BigInt     @id @default(autoincrement())
-  costDate     DateTime   @map("cost_date") @db.Date
-  lineId       Int        @map("line_id")
-  kwh          Decimal    @db.Decimal(14, 2)
-  kwhSource    KwhSource  @map("kwh_source")
-  kg           Decimal    @db.Decimal(14, 2)
+  id             BigInt     @id @default(autoincrement())
+  costDate       DateTime   @map("cost_date") @db.Date
+  lineId         Int        @map("line_id")
+  kwh            Decimal    @db.Decimal(14, 2)
+  kwhSource      KwhSource  @map("kwh_source")
+  kg             Decimal    @db.Decimal(14, 2)
   /// Free-of-charge tonnage inside `kg`, so cost per kg can be reported on a
   /// produced, moved or sold basis without recomputing from scratch.
-  focKg        Decimal    @default(0) @map("foc_kg") @db.Decimal(14, 2)
+  focKg          Decimal    @default(0) @map("foc_kg") @db.Decimal(14, 2)
   /// How many days the metered delta covers. Greater than one means entry was
   /// missed and this day carries its neighbours' consumption too.
-  spansDays    Int        @default(1) @map("spans_days")
+  spansDays      Int        @default(1) @map("spans_days")
   /// True when an input was a standing convention rather than a count — the
   /// flat BIMC per-day figure being the one that matters.
-  fromConvention Boolean  @default(false) @map("from_convention")
+  fromConvention Boolean    @default(false) @map("from_convention")
   /// Site blended rate for the bill period containing this date. Zero only
   /// when `rateBasis` is NO_RATE, which means uncosted, not free.
-  rateRmPerKwh Decimal    @map("rate_rm_per_kwh") @db.Decimal(8, 5)
+  rateRmPerKwh   Decimal    @map("rate_rm_per_kwh") @db.Decimal(8, 5)
   /// CONFIRMED_BILL | AFA_FORECAST | CARRIED_FORWARD | NO_RATE. Kept so a
   /// report can say why a day carries the rate it does.
-  rateBasis    String     @default("CONFIRMED_BILL") @map("rate_basis")
-  costRm       Decimal    @map("cost_rm") @db.Decimal(14, 2)
-  status       CostStatus
+  rateBasis      String     @default("CONFIRMED_BILL") @map("rate_basis")
+  costRm         Decimal    @map("cost_rm") @db.Decimal(14, 2)
+  status         CostStatus
   /// Null while provisional; set to the bill that finalised the day.
-  billId       BigInt?    @map("bill_id")
-  computedAt   DateTime   @default(now()) @map("computed_at") @db.Timestamptz(6)
+  billId         BigInt?    @map("bill_id")
+  computedAt     DateTime   @default(now()) @map("computed_at") @db.Timestamptz(6)
 
   line ProductionLine @relation(fields: [lineId], references: [id])
 
   @@unique([costDate, lineId])
   @@index([costDate])
   @@map("daily_line_cost")
+}
+
+// ---------------------------------------------------------------------------
+// Site energy — everything that draws power and makes no ice
+// ---------------------------------------------------------------------------
+
+/// The non-production consumers named in the owner's LIVE cost template.
+///
+/// Before these existed the site bridge reported one undifferentiated residual
+/// of 46.7%, which is another way of saying "we do not know where half the
+/// electricity goes". Naming each consumer does not make it measured — most are
+/// still modelled — but it makes the modelling arguable, which a residual never is.
+enum EnergyUseCode {
+  BRINE_COMPRESSOR
+  COLDROOM_TENANT
+  COLDROOM_ICE_STORE
+  WATER_DELIVERED
+  WATER_ICE_FEED
+  OFFICE_CCTV
+  CRUSHER
+}
+
+/// Reference row per consumer. `countsAsIce` is data rather than a constant in
+/// the cost engine because it is a business convention, not a physical fact, and
+/// two of the seven are genuinely arguable — see the notes in prisma/seed.ts.
+/// A convention that lives in a column can be changed by the owner; one frozen
+/// into a formula is how the old workbooks got stuck at RM0.484/kWh.
+model EnergyUse {
+  id          Int           @id @default(autoincrement())
+  code        EnergyUseCode @unique
+  name        String
+  nameBm      String?       @map("name_bm")
+  countsAsIce Boolean       @map("counts_as_ice")
+  note        String
+
+  daily DailyEnergyUse[]
+
+  @@map("energy_use")
+}
+
+/// One costed day per consumer, the mirror of `DailyLineCost` for everything
+/// that makes no ice. Same discipline: the rate that was used, why it was used,
+/// and whether the kWh was measured or modelled, all recorded per day.
+model DailyEnergyUse {
+  id        BigInt        @id @default(autoincrement())
+  costDate  DateTime      @map("cost_date") @db.Date
+  useCode   EnergyUseCode @map("use_code")
+  kwh       Decimal       @db.Decimal(14, 2)
+  kwhSource KwhSource     @map("kwh_source")
+  /// Human-readable derivation — "340 kWh/day", "RM8,145.60 / 0.484 RM/kWh".
+  /// A modelled number must never reach a report without saying how it was made.
+  basis     String
+
+  rateRmPerKwh Decimal    @map("rate_rm_per_kwh") @db.Decimal(8, 5)
+  rateBasis    String     @default("CONFIRMED_BILL") @map("rate_basis")
+  costRm       Decimal    @map("cost_rm") @db.Decimal(14, 2)
+  status       CostStatus
+  computedAt   DateTime   @default(now()) @map("computed_at") @db.Timestamptz(6)
+
+  use EnergyUse @relation(fields: [useCode], references: [code])
+
+  @@unique([costDate, useCode])
+  @@index([costDate])
+  @@map("daily_energy_use")
+}
+
+/// The coldroom month, as the compilations record it.
+///
+/// `meteredKwh` is the answer. The three RM columns are the fallback, and they
+/// are a BACK-INFERENCE: the old books priced coldroom consumption at a frozen
+/// RM0.484/kWh and the only surviving artefact is the ringgit total, so dividing
+/// back out recovers a kWh figure that is only as good as that stale rate. It is
+/// recorded as MODELLED, it says so in its basis string, and the month-close
+/// checks flag every month that leans on it. It exists so the coldroom is not
+/// simply absent until the sub-meter is read — not because it is trustworthy.
+model ColdroomMonthly {
+  periodMonth DateTime @id @map("period_month") @db.Date
+
+  /// Sub-meter kWh for the whole coldroom. Preferred over every RM column below.
+  meteredKwh Decimal? @map("metered_kwh") @db.Decimal(14, 2)
+
+  /// Tenant compilations, at the legacy RM0.484/kWh convention. Together these
+  /// cover the WHOLE coldroom, D10-D12 included — the split comes from the
+  /// invoiced column below, not from these.
+  ratonoRm Decimal @default(0) @map("ratono_rm") @db.Decimal(14, 2)
+  yemintRm Decimal @default(0) @map("yemint_rm") @db.Decimal(14, 2)
+
+  /// D10-D12, the rooms that store this plant's own ice, invoiced internally at
+  /// the tenant rate. Subtracted from the total above to leave tenant rooms.
+  iceStoreInvoicedRm Decimal @default(0) @map("ice_store_invoiced_rm") @db.Decimal(14, 2)
+
+  note      String?
+  enteredAt DateTime @default(now()) @map("entered_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("coldroom_monthly")
 }

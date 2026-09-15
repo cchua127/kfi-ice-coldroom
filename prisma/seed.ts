@@ -6,7 +6,15 @@
  * inferred rather than sourced carries a note saying so, because a calibrated
  * estimate that reads like a measurement is how the old system went wrong.
  */
-import { PrismaClient, Role, LineCode, UnitCode, Channel, BillStatus } from '@prisma/client'
+import {
+  PrismaClient,
+  Role,
+  LineCode,
+  UnitCode,
+  Channel,
+  BillStatus,
+  EnergyUseCode,
+} from '@prisma/client'
 import { hashPassword } from '../src/lib/auth'
 import billFixtures from '../tests/fixtures/tnb-bills.json'
 
@@ -326,6 +334,31 @@ async function main() {
         'finds implied yield of 174.5-180.7 every month. Open question: mould ' +
         'count or harvest count.',
     ],
+    // From the owner's LIVE cost template, September 2026. See docs §10.
+    [
+      'coldroom_legacy_factor_rm_per_kwh', PHYSICAL_FROM, '0.4840', 'RM/kWh', false,
+      'NOT A TARIFF — A DIVISOR. The pre-July-2025 rate the coldroom RM ' +
+        'compilations were struck at, and the only way back to a kWh figure ' +
+        'while the sub-meter goes unread. Every coldroom number derived through ' +
+        'it inherits a rate that has been stale since July 2025, which is why ' +
+        'the month-close checks flag any month that leans on it. It is dated ' +
+        'from the start of the record because it describes historic documents, ' +
+        'not current consumption. Delete the need for it by reading the meter.',
+    ],
+    [
+      'tenant_billing_rate_rm_per_kwh', CALIBRATED_FROM, '0.5430', 'RM/kWh', true,
+      'Counted, in the sense that it is the rate actually charged: coldroom ' +
+        'tenants and the internal D10-D12 recharge are billed at it. It is a ' +
+        'commercial decision, not a measurement of anything, and it is fixed ' +
+        'while the blended tariff floats — so the margin it earns shrinks every ' +
+        'time AFA rises. Review before Q3.',
+    ],
+    [
+      'water_ice_feed_kwh_per_tonne', CALIBRATED_FROM, '0.4500', 'kWh/tonne', false,
+      'ESTIMATE. Delivered intensity less the final transfer to a client tank, ' +
+        'which ice feed water never makes: it stops at the moulds. Lower than ' +
+        'the 0.65 delivered figure for that reason alone.',
+    ],
   ]
   for (const [key, from, value, unit, measured, note] of assumptions) {
     await prisma.costAssumption.upsert({
@@ -338,6 +371,106 @@ async function main() {
   // not leave two epochs of the same assumption in place.
   await prisma.costAssumption.deleteMany({
     where: { effectiveFrom: date('2026-01-01'), key: { in: assumptions.map((a) => a[0]) } },
+  })
+
+  // -------------------------------------------------------------------------
+  // The non-production consumers, from the owner's LIVE cost template.
+  //
+  // `countsAsIce` is the one field here that is a judgement rather than a
+  // description, and it is a column precisely so that it can be argued with.
+  // Freezing this convention into the cost engine is the same mistake as
+  // freezing RM0.484/kWh into a formula: the number stops being visible and
+  // then stops being questioned.
+  // -------------------------------------------------------------------------
+  const energyUses: {
+    code: EnergyUseCode
+    name: string
+    nameBm: string | null
+    countsAsIce: boolean
+    note: string
+  }[] = [
+    {
+      code: 'BRINE_COMPRESSOR',
+      name: '30HP brine compressor',
+      nameBm: 'Kompresor brine 30HP',
+      countsAsIce: true,
+      // The compressor makes no ice and the big pool cannot freeze without it.
+      // It was invisible before: part of what the retired x1.2 big-pool loader
+      // stood in for, spread across a line it does not belong to.
+      note:
+        'Freezes the big pool and makes none of the ice itself. Counts as ice ' +
+        'because the pool cannot run without it. -8C cut-out with manual ' +
+        'restart, so 16-18 effective hours rather than 24.',
+    },
+    {
+      code: 'COLDROOM_ICE_STORE',
+      name: 'Ice storage D10-D12',
+      nameBm: 'Stor ais D10-D12',
+      countsAsIce: true,
+      note:
+        "Three rooms holding this plant's own ice, recharged internally at the " +
+        'tenant rate. Storing ice is part of selling it, so the power belongs ' +
+        'in cost of ice rather than in the coldroom letting business.',
+    },
+    {
+      code: 'COLDROOM_TENANT',
+      name: 'Coldrooms — tenant',
+      nameBm: 'Bilik sejuk — penyewa',
+      countsAsIce: false,
+      note:
+        'Rooms let to tenants and recharged at a fixed RM/kWh. A separate ' +
+        'business that happens to share a bill; its power must never reach cost ' +
+        'of ice.',
+    },
+    {
+      code: 'WATER_DELIVERED',
+      name: 'Water — delivered',
+      nameBm: 'Air — dihantar',
+      countsAsIce: false,
+      note:
+        "Tubewell, filtration and transfer to a client's tank. Water sold as " +
+        'water, not frozen.',
+    },
+    {
+      code: 'WATER_ICE_FEED',
+      name: 'Water — ice feed',
+      nameBm: 'Air — suapan ais',
+      countsAsIce: false,
+      note:
+        'OPEN QUESTION — see docs/00-inputs-required.md §10.3. This water ' +
+        'physically becomes the ice, so there is a real argument that it belongs ' +
+        "in cost of ice. It is excluded here only because the owner's template " +
+        'excludes it. Including it would add roughly a third of a sen per kg. ' +
+        'Flip this boolean, re-run the recompute, and every report restates.',
+    },
+    {
+      code: 'OFFICE_CCTV',
+      name: 'Office and CCTV',
+      nameBm: 'Pejabat dan CCTV',
+      countsAsIce: false,
+      note: 'A 400 sqft office running aircond around the clock, and ~24 cameras. Overhead.',
+    },
+    {
+      code: 'CRUSHER',
+      name: 'Crusher (10HP)',
+      nameBm: 'Mesin hancur (10HP)',
+      countsAsIce: false,
+      note:
+        'Acts on ice already made and already costed. Counting it again would ' +
+        "charge the same tonnage's energy twice. ~1.5 effective hours a day at 6 kW.",
+    },
+  ]
+  for (const u of energyUses) {
+    await prisma.energyUse.upsert({
+      where: { code: u.code },
+      create: u,
+      update: u,
+    })
+  }
+  // Convergent, for the same reason the price epochs are: a consumer this file
+  // no longer declares must not linger and keep claiming kWh.
+  await prisma.energyUse.deleteMany({
+    where: { code: { notIn: energyUses.map((u) => u.code) } },
   })
 
   // -------------------------------------------------------------------------
@@ -454,6 +587,7 @@ async function main() {
     products: await prisma.product.count(),
     prices: await prisma.price.count(),
     assumptions: await prisma.costAssumption.count(),
+    energyUses: await prisma.energyUse.count(),
     afaRates: await prisma.afaRate.count(),
     bills: await prisma.tnbBill.count(),
     billMeterRows: await prisma.tnbBillMeterReading.count(),

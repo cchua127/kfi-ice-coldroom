@@ -9,7 +9,16 @@
  * bill, after editing a cost assumption, and after an import.
  */
 import { PrismaClient, Prisma } from '@prisma/client'
-import { recompute, summariseMonths, type ProductionRow, type ReadingRow } from '../src/lib/cost-recompute'
+import {
+  recompute,
+  recomputeEnergyUses,
+  summariseMonths,
+  type ColdroomMonthRow,
+  type ProductionRow,
+  type ReadingRow,
+  type WaterMonthRow,
+} from '../src/lib/cost-recompute'
+import type { EnergyUseCode } from '../src/lib/site-energy'
 import { buildDailyRateSeries, type BillPeriod } from '../src/lib/cost-engine'
 import { Assumptions, type UnitRow, type LineCode, type UnitCode } from '../src/lib/domain'
 
@@ -29,8 +38,10 @@ async function main() {
     [bounds._max.readingDate, prodBounds._max.prodDate].filter(Boolean).sort().reverse()[0] as Date
   )
 
-  const [lines, meters, readingRows, prodRows, unitRows, assumptionRows, bills, afa] =
-    await Promise.all([
+  const [
+    lines, meters, readingRows, prodRows, unitRows, assumptionRows, bills, afa,
+    coldroomRows, waterRows, energyUseRefs,
+  ] = await Promise.all([
       prisma.productionLine.findMany(),
       prisma.meter.findMany(),
       prisma.meterReading.findMany({ orderBy: { readingDate: 'asc' } }),
@@ -39,6 +50,9 @@ async function main() {
       prisma.costAssumption.findMany(),
       prisma.tnbBill.findMany({ include: { account: true } }),
       prisma.afaRate.findMany(),
+      prisma.coldroomMonthly.findMany({ orderBy: { periodMonth: 'asc' } }),
+      prisma.waterDelivery.findMany({ orderBy: { periodMonth: 'asc' } }),
+      prisma.energyUse.findMany(),
     ])
 
   const lineById = Object.fromEntries(lines.map((l) => [l.id, l.code as LineCode]))
@@ -98,6 +112,23 @@ async function main() {
 
   const rows = recompute({ from, to, readings, production, units, assumptions, rates })
 
+  const coldroom: ColdroomMonthRow[] = coldroomRows.map((c) => ({
+    month: iso(c.periodMonth).slice(0, 7),
+    meteredKwh: c.meteredKwh ? c.meteredKwh.toString() : null,
+    ratonoRm: c.ratonoRm.toString(),
+    yemintRm: c.yemintRm.toString(),
+    iceStoreInvoicedRm: c.iceStoreInvoicedRm.toString(),
+  }))
+  const water: WaterMonthRow[] = waterRows.map((w) => ({
+    month: iso(w.periodMonth).slice(0, 7),
+    tonnes: w.tonnes.toString(),
+    retailM3: w.retailM3.toString(),
+  }))
+
+  const energyRows = recomputeEnergyUses({
+    from, to, rates, assumptions, lineCosts: rows, coldroom, water,
+  })
+
   const lineIdByCode = Object.fromEntries(lines.map((l) => [l.code, l.id]))
   for (const r of rows) {
     const lineId = lineIdByCode[r.line]
@@ -121,11 +152,36 @@ async function main() {
     })
   }
 
+  // Replace the window wholesale rather than upserting row by row. These rows
+  // are entirely derived, so there is nothing in them worth preserving, and a
+  // clean sweep is the only way a consumer that no longer has an input stops
+  // claiming kWh — delete a coldroom month and its daily rows must go with it.
+  // In one transaction, so a failure cannot leave the range half-emptied.
+  await prisma.$transaction([
+    prisma.dailyEnergyUse.deleteMany({
+      where: { costDate: { gte: date(from), lte: date(to) } },
+    }),
+    prisma.dailyEnergyUse.createMany({
+      data: energyRows.map((r) => ({
+        costDate: date(r.costDate),
+        useCode: r.useCode,
+        kwh: new Prisma.Decimal(r.kwh.toString()),
+        kwhSource: r.kwhSource,
+        basis: r.basis,
+        rateRmPerKwh: new Prisma.Decimal(r.ratePerKwh.toString()),
+        rateBasis: r.rateBasis,
+        costRm: new Prisma.Decimal(r.costRm.toString()),
+        status: r.status,
+      })),
+    }),
+  ])
+
   const byStatus = rows.reduce<Record<string, number>>((a, r) => {
     a[r.status] = (a[r.status] ?? 0) + 1
     return a
   }, {})
   console.log(`Recomputed ${rows.length} daily line costs, ${from} to ${to}`)
+  console.log(`  ${energyRows.length} daily energy-use rows across ${new Set(energyRows.map((r) => r.useCode)).size} consumer(s)`)
   console.log(`  ${Object.entries(byStatus).map(([k, v]) => `${k}=${v}`).join('  ')}`)
   const gaps = rows.filter((r) => r.spansDays > 1)
   if (gaps.length) {
@@ -135,9 +191,15 @@ async function main() {
   if (args.includes('--summary')) {
     console.log('\nMonthly cost of ice:')
     console.table(
-      summariseMonths(rows).map((m) => ({
+      summariseMonths(rows, {
+        energyUses: energyRows,
+        countsAsIce: Object.fromEntries(
+          energyUseRefs.map((u) => [u.code as EnergyUseCode, u.countsAsIce])
+        ),
+      }).map((m) => ({
         month: m.month,
         ice_kWh: m.iceKwh.toNumber(),
+        support_kWh: m.supportKwh.toNumber(),
         ice_kg: m.iceKg.toNumber(),
         cost_RM: m.iceCostRm.toNumber(),
         kWh_per_kg: m.kwhPerKg.toFixed(4),
