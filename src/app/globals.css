@@ -461,3 +461,49 @@ tr.emphasis td { font-weight: 650; border-top: 1px solid var(--line-strong); }
   color: #fff; font: inherit; font-weight: 600; cursor: pointer;
 }
 .row button:disabled { opacity: .6; cursor: default; }
+
+/* Monthly inputs. A narrow, labelled column rather than the daily screen's
+   grid: there are eight fields, not two hundred, and each needs its hint read
+   rather than skimmed. */
+.monthly fieldset > p.sub { margin: 0 0 1rem; max-width: 60ch; }
+.monthly label {
+  display: block; max-width: 34rem; margin: 0 0 1rem;
+}
+.monthly label > span {
+  display: block; font-weight: 600; font-size: .88rem; margin: 0 0 .25rem;
+}
+.monthly label input {
+  width: 100%; padding: .4rem .5rem; border-radius: 6px;
+  border: 1px solid var(--line-strong); background: var(--bg);
+  color: var(--text-primary); font: inherit;
+}
+.monthly label input:disabled { opacity: .6; }
+.monthly label .hint { display: block; margin: .3rem 0 0; }
+/* A warning is not an error. It is the colour of a caution, and it never
+   blocks the save — she knows the plant better than the rule does. */
+.monthly label .hint.warn { color: var(--warn, #9a6a00); }
+.monthly label .error { display: block; margin: .3rem 0 0; }
+
+table.derived {
+  width: 100%; max-width: 40rem; margin: 1rem 0 0;
+  border-collapse: collapse; font-size: .88rem;
+}
+table.derived caption {
+  text-align: left; font-weight: 600; font-size: .82rem;
+  color: var(--text-secondary); padding: 0 0 .35rem;
+}
+table.derived th {
+  text-align: left; font-weight: 600; padding: .3rem .6rem .3rem 0;
+  border-top: 1px solid var(--line); white-space: nowrap;
+}
+table.derived td {
+  padding: .3rem 0; border-top: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+table.derived td.sub { color: var(--text-muted); font-size: .8rem; padding-left: .8rem; }
+
+/* The site KPIs sit under the ice ones and read as a second rank: same shape,
+   quieter, so the eye reaches cost of ice first. */
+.kpis.secondary { margin-top: -.4rem; }
+.kpis.secondary .kpi { background: transparent; border-style: dashed; }
+.kpis.secondary .kpi-value { font-size: 1.15rem; }

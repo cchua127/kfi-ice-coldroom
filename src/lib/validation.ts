@@ -253,3 +253,149 @@ export function trailingMean(values: Numeric[], window = 7): Decimal | null {
   if (!recent.length) return null
   return recent.reduce<Decimal>((a, v) => a.plus(d(v)), d(0)).dividedBy(recent.length)
 }
+
+// ---------------------------------------------------------------------------
+// The monthly inputs
+// ---------------------------------------------------------------------------
+
+export interface ColdroomMonthInputCheck {
+  meteredKwh: Numeric | null
+  ratonoRm: Numeric | null
+  yemintRm: Numeric | null
+  iceStoreInvoicedRm: Numeric | null
+  legacyFactor: Numeric
+  tenantRate: Numeric
+}
+
+/**
+ * The coldroom month.
+ *
+ * The rule that matters here is the one about a blank. A blank meter reading
+ * means "not read" and sends the whole month down the back-inference path; a
+ * zero means "the coldroom drew nothing", which for rooms holding -18C is not
+ * a thing that happens. The legacy sheets could not tell those apart, which is
+ * how a missing reading became a real zero in a total.
+ */
+export function validateColdroomMonth(input: ColdroomMonthInputCheck): Issue[] {
+  const out: Issue[] = []
+  const metered = input.meteredKwh === null || input.meteredKwh === '' ? null : d(input.meteredKwh)
+  const compilation = d(input.ratonoRm ?? 0).plus(d(input.yemintRm ?? 0))
+  const iceStore = d(input.iceStoreInvoicedRm ?? 0)
+
+  for (const [field, value] of [
+    ['coldroom.meteredKwh', metered],
+    ['coldroom.ratonoRm', input.ratonoRm === null || input.ratonoRm === '' ? null : d(input.ratonoRm)],
+    ['coldroom.yemintRm', input.yemintRm === null || input.yemintRm === '' ? null : d(input.yemintRm)],
+    [
+      'coldroom.iceStoreInvoicedRm',
+      input.iceStoreInvoicedRm === null || input.iceStoreInvoicedRm === ''
+        ? null
+        : d(input.iceStoreInvoicedRm),
+    ],
+  ] as const) {
+    if (value !== null && value.isNegative()) {
+      out.push({ severity: 'ERROR', field, message: 'This figure cannot be negative.' })
+    }
+  }
+
+  if (metered !== null && metered.isZero()) {
+    out.push({
+      severity: 'ERROR',
+      field: 'coldroom.meteredKwh',
+      message:
+        'A coldroom holding temperature does not draw zero. Leave the field ' +
+        'BLANK if the meter was not read — blank and zero mean different things ' +
+        'here, and zero would be treated as a measurement.',
+    })
+  }
+
+  if (metered === null && compilation.isZero() && !iceStore.isZero()) {
+    out.push({
+      severity: 'ERROR',
+      field: 'coldroom.ratonoRm',
+      message:
+        'D10-D12 is invoiced but no compilation and no meter reading were given. ' +
+        'The tenant rooms would come out negative and be clamped to zero.',
+    })
+  }
+
+  if (metered === null && !compilation.isZero()) {
+    out.push({
+      severity: 'WARN',
+      field: 'coldroom.meteredKwh',
+      message:
+        'No sub-meter reading, so the month will be BACK-INFERRED by dividing ' +
+        `RM${compilation.toFixed(2)} by the frozen ${d(input.legacyFactor).toFixed(4)} ` +
+        'RM/kWh factor. That rate has been stale since July 2025 and every ' +
+        'coldroom figure this month inherits it.',
+    })
+  }
+
+  if (metered !== null) {
+    const iceStoreKwh = iceStore.dividedBy(d(input.tenantRate))
+    if (iceStoreKwh.greaterThan(metered)) {
+      out.push({
+        severity: 'ERROR',
+        field: 'coldroom.iceStoreInvoicedRm',
+        message:
+          `D10-D12 works out at ${iceStoreKwh.toFixed(0)} kWh, more than the ` +
+          `${metered.toFixed(0)} kWh on the whole-room meter. One of the two is wrong.`,
+      })
+    }
+  }
+
+  if (metered === null && compilation.isZero() && iceStore.isZero()) {
+    out.push({
+      severity: 'WARN',
+      field: 'coldroom.meteredKwh',
+      message:
+        'Nothing entered for the coldroom. The whole coldroom load will sit ' +
+        'inside the unaccounted residual on the site energy statement.',
+    })
+  }
+
+  return out
+}
+
+export interface WaterMonthInputCheck {
+  tonnes: Numeric | null
+  retailM3: Numeric | null
+  /** The month before, for the outlier check. Null when there is none. */
+  priorTonnes?: Numeric | null
+}
+
+/** Water delivery. Volumes move slowly, so a large step is worth a question. */
+export function validateWaterMonth(input: WaterMonthInputCheck): Issue[] {
+  const out: Issue[] = []
+  const tonnes = input.tonnes === null || input.tonnes === '' ? null : d(input.tonnes)
+  const retail = input.retailM3 === null || input.retailM3 === '' ? null : d(input.retailM3)
+
+  for (const [field, value] of [
+    ['water.tonnes', tonnes],
+    ['water.retailM3', retail],
+  ] as const) {
+    if (value !== null && value.isNegative()) {
+      out.push({ severity: 'ERROR', field, message: 'This figure cannot be negative.' })
+    }
+  }
+
+  if (
+    tonnes !== null &&
+    input.priorTonnes !== null &&
+    input.priorTonnes !== undefined &&
+    !d(input.priorTonnes).isZero()
+  ) {
+    const move = tonnes.minus(d(input.priorTonnes)).dividedBy(d(input.priorTonnes)).abs()
+    if (move.greaterThan(d('0.25'))) {
+      out.push({
+        severity: 'WARN',
+        field: 'water.tonnes',
+        message:
+          `${move.times(100).toFixed(0)}% away from last month's delivery. ` +
+          'Confirm the figure, or note what changed.',
+      })
+    }
+  }
+
+  return out
+}

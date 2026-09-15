@@ -14,6 +14,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         <nav>
           <Link href="/">Dashboard</Link>
           <Link href="/entry">Daily entry</Link>
+          <Link href="/monthly">Monthly inputs</Link>
           <Link href="/bills">TNB bills</Link>
           <Link href="/reports">Reports</Link>
           <Link href="/parallel">Parallel check</Link>

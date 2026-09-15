@@ -72,6 +72,48 @@ export default async function Dashboard() {
         </div>
       </section>
 
+      {/*
+        The four the owner's cost template leads on. They are the site figures
+        rather than the ice ones: what a kWh actually cost this month, how much
+        of the bill still has no owner, what the giveaway has come to this year,
+        and whether reselling power to tenants is still worth doing.
+
+        Each shows an em dash rather than a zero when it cannot be computed. A
+        blended tariff of zero would read as free electricity and a coldroom
+        margin of zero as breaking even, and both would be wrong in the
+        direction that gets missed.
+      */}
+      <section className="kpis secondary" aria-label="Site, month to date">
+        <div className="kpi">
+          <span className="kpi-label">Blended tariff</span>
+          <span className="kpi-value">
+            {kpi.blendedRate === null ? '—' : <><small>RM</small>{perKg(kpi.blendedRate)}</>}
+            <small>/kWh</small>
+          </span>
+        </div>
+        <div className="kpi">
+          <span className="kpi-label">Unaccounted</span>
+          <span className="kpi-value">
+            {kpi.unallocatedRm === null ? '—' : <><small>RM</small>{money(kpi.unallocatedRm)}</>}
+            {kpi.unallocatedShare === null ? null : (
+              <small>{(kpi.unallocatedShare * 100).toFixed(1)}% of bill</small>
+            )}
+          </span>
+        </div>
+        <div className="kpi">
+          <span className="kpi-label">Coldroom margin</span>
+          <span className="kpi-value">
+            {kpi.coldroomMarginRm === null ? '—' : <><small>RM</small>{money(kpi.coldroomMarginRm)}</>}
+          </span>
+        </div>
+        <div className="kpi">
+          <span className="kpi-label">FOC year to date</span>
+          <span className="kpi-value">
+            {kg(Math.round(kpi.focTonnesYtd))}<small>tonnes</small>
+          </span>
+        </div>
+      </section>
+
       {alerts.length ? (
         <section className="alerts" aria-label="Alerts">
           {alerts.map((a, i) => (

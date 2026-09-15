@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   validateMeter, validateProduction, validateCash, validateSale,
   validateAgainstBill, hasBlocking, needsNote, trailingMean,
+  validateColdroomMonth, validateWaterMonth,
 } from '@/lib/validation'
 
 const meter = (over: Partial<Parameters<typeof validateMeter>[0]> = {}) =>
@@ -137,5 +138,81 @@ describe('trailing mean', () => {
 
   it('returns null with nothing to average', () => {
     expect(trailingMean([])).toBeNull()
+  })
+})
+
+describe('the coldroom month', () => {
+  const base = { legacyFactor: '0.484', tenantRate: '0.543' }
+  const run = (over: Partial<Parameters<typeof validateColdroomMonth>[0]>) =>
+    validateColdroomMonth({
+      meteredKwh: null, ratonoRm: null, yemintRm: null, iceStoreInvoicedRm: null,
+      ...base, ...over,
+    })
+
+  it('treats a blank meter reading and a zero as different things', () => {
+    // Blank means "not read" and sends the month down the back-inference path.
+    const blank = run({ ratonoRm: '14025.84', yemintRm: '12611.10' })
+    expect(blank.filter((i) => i.severity === 'ERROR')).toHaveLength(0)
+    expect(blank.find((i) => i.field === 'coldroom.meteredKwh')?.message).toMatch(/BACK-INFERRED/)
+
+    // Zero claims the rooms drew nothing, which for -18C storage is not a
+    // thing that happens, and would be treated downstream as a measurement.
+    const zero = run({ meteredKwh: '0' })
+    expect(zero.some((i) => i.severity === 'ERROR')).toBe(true)
+    expect(zero[0].message).toMatch(/Leave the field BLANK/)
+  })
+
+  it('accepts a metered month without warning about the stale factor', () => {
+    expect(run({ meteredKwh: '55035', iceStoreInvoicedRm: '3153.75' })).toHaveLength(0)
+  })
+
+  it('catches D10-D12 larger than the whole-room meter', () => {
+    const issues = run({ meteredKwh: '1000', iceStoreInvoicedRm: '5430' })
+    expect(issues.some((i) => i.severity === 'ERROR')).toBe(true)
+    expect(issues[0].message).toMatch(/more than the/)
+  })
+
+  it('refuses an invoiced ice store with nothing to subtract it from', () => {
+    const issues = run({ iceStoreInvoicedRm: '3153.75' })
+    expect(issues.some((i) => i.severity === 'ERROR')).toBe(true)
+    expect(issues[0].message).toMatch(/come out negative/)
+  })
+
+  it('warns, without blocking, when the month is left empty', () => {
+    const issues = run({})
+    expect(hasBlocking(issues)).toBe(false)
+    expect(issues[0].message).toMatch(/unaccounted residual/)
+  })
+
+  it('rejects negatives on every figure', () => {
+    for (const field of ['ratonoRm', 'yemintRm', 'iceStoreInvoicedRm'] as const) {
+      expect(run({ [field]: '-1' }).some((i) => i.severity === 'ERROR')).toBe(true)
+    }
+  })
+})
+
+describe('the water month', () => {
+  it('questions a large step against last month without blocking it', () => {
+    const issues = validateWaterMonth({ tonnes: '18000', retailM3: '2450', priorTonnes: '11958' })
+    expect(hasBlocking(issues)).toBe(false)
+    expect(issues[0].message).toMatch(/51% away/)
+  })
+
+  it('passes a normal month quietly', () => {
+    expect(
+      validateWaterMonth({ tonnes: '11958', retailM3: '2450', priorTonnes: '11687' })
+    ).toHaveLength(0)
+  })
+
+  it('does not compare against a month that has no figure', () => {
+    expect(
+      validateWaterMonth({ tonnes: '11958', retailM3: '2450', priorTonnes: null })
+    ).toHaveLength(0)
+  })
+
+  it('rejects a negative delivery', () => {
+    expect(
+      validateWaterMonth({ tonnes: '-1', retailM3: null }).some((i) => i.severity === 'ERROR')
+    ).toBe(true)
   })
 })
