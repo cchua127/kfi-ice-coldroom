@@ -57,8 +57,16 @@ export interface CheckThresholds {
 export const DEFAULT_THRESHOLDS: CheckThresholds = {
   // Not the template's 0.00. Excel never rounds its intermediate columns, so it
   // can demand an exact tie; this system stores every line to the sen, and the
-  // few sen that leaves has to be tolerated or plugged. Two sen per line across
-  // a dozen lines is the honest allowance.
+  // rounding that leaves has to be tolerated or plugged.
+  //
+  // This is a FLOOR, not the whole allowance: `storedRows` widens it by half a
+  // sen per stored row, because each stored row is one more opportunity to
+  // round. A month with two metered lines and a handful of monthly figures
+  // rounds a dozen times; the same month with the coldroom read room by room
+  // and spread across 31 days rounds three hundred times, and a fixed 25 sen
+  // then reports arithmetic as a discrepancy. What the check is actually for —
+  // a bill period straddling the month — is worth tens or hundreds of ringgit
+  // and clears either bound comfortably.
   billUnexplainedSen: 25,
   unallocatedKwhPerDay: 250,
   focShare: 0.15,
@@ -109,6 +117,12 @@ export interface CheckInput {
   coldroomMarginRm?: Numeric | null
   coldroomBackInferred?: boolean
   coldroomPresent?: boolean
+  /**
+   * Which source produced the coldroom figures. Only the wording depends on it,
+   * but a check that says "read from its sub-meter" about a month read room by
+   * room is a small lie, and this file is the one place that cannot afford one.
+   */
+  coldroomProvenance?: 'REGISTER' | 'WHOLE_METER' | 'BACK_INFERRED'
 
   /** FOC, on the line that records it. */
   focShare?: Numeric | null
@@ -128,6 +142,13 @@ export interface CheckInput {
 
   /** Days in the month that had no rate to cost with at all. */
   daysWithoutRate?: number
+
+  /**
+   * How many sen-rounded rows the month's statement was built from. Widens the
+   * bill tie-out tolerance, because every one of them rounds. Omit and only the
+   * floor applies.
+   */
+  storedRows?: number
 
   thresholds?: Partial<CheckThresholds>
 }
@@ -168,7 +189,10 @@ export function monthCloseChecks(input: CheckInput): CheckResult[] {
     )
   } else {
     const driftSen = drift.times(100).abs()
-    const limit = d(t.billUnexplainedSen)
+    const limit = Decimal.max(
+      d(t.billUnexplainedSen),
+      d(input.storedRows ?? 0).times('0.5')
+    )
     out.push(
       driftSen.greaterThan(limit)
         ? flag(
@@ -177,16 +201,18 @@ export function monthCloseChecks(input: CheckInput): CheckResult[] {
             drift,
             limit.dividedBy(100),
             `RM${drift.toFixed(2)} of the bill is neither on a named line nor in the ` +
-              'residual — more than sen-rounding explains. The usual cause is a TNB ' +
-              'bill period straddling the month, so days are costed at two rates ' +
-              "while the residual is struck at one. Check the bill's period dates."
+              `residual — more than rounding ${input.storedRows ?? 0} stored row(s) ` +
+              'explains. The usual cause is a TNB bill period straddling the month, ' +
+              'so days are costed at two rates while the residual is struck at one. ' +
+              "Check the bill's period dates."
           )
         : ok(
             'bill-tie-out',
             'Bill tie-out',
             drift,
             limit.dividedBy(100),
-            `Statement ties to the bill; RM${drift.toFixed(2)} of per-line rounding.`
+            `Statement ties to the bill; RM${drift.toFixed(2)} across ` +
+              `${input.storedRows ?? 0} stored row(s) of rounding.`
           )
     )
   }
@@ -251,7 +277,15 @@ export function monthCloseChecks(input: CheckInput): CheckResult[] {
     )
   } else {
     out.push(
-      ok('coldroom-source', 'Coldroom measurement', null, null, 'Coldroom read from its sub-meter.')
+      ok(
+        'coldroom-source',
+        'Coldroom measurement',
+        null,
+        null,
+        input.coldroomProvenance === 'REGISTER'
+          ? 'Coldroom read room by room from the register. No divisor, no convention.'
+          : 'Coldroom read from its whole-room sub-meter.'
+      )
     )
   }
 

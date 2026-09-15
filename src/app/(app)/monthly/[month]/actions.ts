@@ -68,9 +68,10 @@ export async function saveMonth(payload: MonthPayload): Promise<MonthSaveResult>
   )
   const at = `${month}-01`
 
-  const prior = await prisma.waterDelivery.findUnique({
-    where: { periodMonth: asMonthDate(prevMonth(month)) },
-  })
+  const [prior, registerRows] = await Promise.all([
+    prisma.waterDelivery.findUnique({ where: { periodMonth: asMonthDate(prevMonth(month)) } }),
+    prisma.coldroomReading.count({ where: { periodMonth: asMonthDate(month) } }),
+  ])
 
   const issues: Issue[] = [
     ...validateColdroomMonth({
@@ -80,6 +81,7 @@ export async function saveMonth(payload: MonthPayload): Promise<MonthSaveResult>
       iceStoreInvoicedRm: num(payload.coldroom.iceStoreInvoicedRm),
       legacyFactor: assumptions.at('coldroom_legacy_factor_rm_per_kwh', at),
       tenantRate: assumptions.at('tenant_billing_rate_rm_per_kwh', at),
+      hasRegister: registerRows > 0,
     }),
     ...validateWaterMonth({
       tonnes: num(payload.water.tonnes),

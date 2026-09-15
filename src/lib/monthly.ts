@@ -45,6 +45,20 @@ export interface MonthlyInputs {
     basis: string | null
     waterKwh: string | null
   }
+  /**
+   * The imported meter register for this month, when there is one. Its presence
+   * changes what the screen is FOR: the ringgit compilations below are a
+   * fallback for a month nobody read, and typing them into a month that has a
+   * register achieves nothing, so the screen says so rather than letting a
+   * clerk fill in fields that will be ignored.
+   */
+  register: {
+    rooms: number
+    totalKwh: string
+    ownUseKwh: string
+    tenantKwh: string
+    ownUseRooms: string[]
+  } | null
   reference: {
     legacyFactor: string
     tenantRate: string
@@ -58,13 +72,19 @@ export interface MonthlyInputs {
 const str = (v: Decimal | null | undefined) => (v === null || v === undefined ? '' : v.toString())
 
 export async function loadMonth(month: string): Promise<MonthlyInputs> {
-  const [coldroom, water, assumptionRows, allColdroom, allWater] = await Promise.all([
-    prisma.coldroomMonthly.findUnique({ where: { periodMonth: asMonthDate(month) } }),
-    prisma.waterDelivery.findUnique({ where: { periodMonth: asMonthDate(month) } }),
-    prisma.costAssumption.findMany(),
-    prisma.coldroomMonthly.findMany({ select: { periodMonth: true } }),
-    prisma.waterDelivery.findMany({ select: { periodMonth: true } }),
-  ])
+  const [coldroom, water, assumptionRows, allColdroom, allWater, registerRows, allRegister] =
+    await Promise.all([
+      prisma.coldroomMonthly.findUnique({ where: { periodMonth: asMonthDate(month) } }),
+      prisma.waterDelivery.findUnique({ where: { periodMonth: asMonthDate(month) } }),
+      prisma.costAssumption.findMany(),
+      prisma.coldroomMonthly.findMany({ select: { periodMonth: true } }),
+      prisma.waterDelivery.findMany({ select: { periodMonth: true } }),
+      prisma.coldroomReading.findMany({
+        where: { periodMonth: asMonthDate(month) },
+        orderBy: { rowNo: 'asc' },
+      }),
+      prisma.coldroomReading.findMany({ select: { periodMonth: true }, distinct: ['periodMonth'] }),
+    ])
 
   const assumptions = new Assumptions(
     assumptionRows.map((a) => ({
@@ -79,6 +99,22 @@ export async function loadMonth(month: string): Promise<MonthlyInputs> {
   const tenantRate = assumptions.at('tenant_billing_rate_rm_per_kwh', at)
   const waterPerTonne = assumptions.at('water_kwh_per_tonne', at)
   const iceFeedPerTonne = assumptions.at('water_ice_feed_kwh_per_tonne', at)
+
+  const usage = (r: { openingKwh: Decimal; closingKwh: Decimal }) =>
+    d(r.closingKwh).minus(d(r.openingKwh))
+  const registerTotal = registerRows.reduce((a, r) => a.plus(usage(r)), d(0))
+  const registerOwn = registerRows
+    .filter((r) => r.ownUse)
+    .reduce((a, r) => a.plus(usage(r)), d(0))
+  const register: MonthlyInputs['register'] = registerRows.length
+    ? {
+        rooms: registerRows.length,
+        totalKwh: registerTotal.toFixed(2),
+        ownUseKwh: registerOwn.toFixed(2),
+        tenantKwh: registerTotal.minus(registerOwn).toFixed(2),
+        ownUseRooms: [...new Set(registerRows.filter((r) => r.ownUse).map((r) => r.roomCode))],
+      }
+    : null
 
   let derived: MonthlyInputs['derived'] = {
     coldroomTotalKwh: null,
@@ -119,6 +155,7 @@ export async function loadMonth(month: string): Promise<MonthlyInputs> {
     ...new Set([
       ...allColdroom.map((r) => iso(r.periodMonth).slice(0, 7)),
       ...allWater.map((r) => iso(r.periodMonth).slice(0, 7)),
+      ...allRegister.map((r) => iso(r.periodMonth).slice(0, 7)),
     ]),
   ].sort()
 
@@ -137,6 +174,7 @@ export async function loadMonth(month: string): Promise<MonthlyInputs> {
       note: water?.note ?? '',
     },
     derived,
+    register,
     reference: {
       legacyFactor: legacyFactor.toFixed(4),
       tenantRate: tenantRate.toFixed(4),

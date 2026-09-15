@@ -19,6 +19,7 @@ import {
   type ColdroomMonthInput,
   type EnergyUseCode,
 } from './site-energy'
+export type { ColdroomRegisterRow } from './site-energy'
 
 export interface ReadingRow {
   meterCode: string
@@ -426,13 +427,18 @@ export function recomputeEnergyUses(input: EnergyRecomputeInput): EnergyUseCostR
     const tenant = spreadOverDays(split.tenantKwh, dates)
     const store = spreadOverDays(split.iceStoreKwh, dates)
     const spreadNote = `, spread evenly over ${dates.length} day(s)`
+    // What is subtracted depends on where the figure came from: the register
+    // knows which rooms KFI actually occupied, the other two paths only know
+    // the invoice for D10-D12.
+    const lessWhat =
+      split.provenance === 'REGISTER' ? 'less the rooms KFI occupied' : 'less D10-D12'
     for (const date of dates) {
       put(
         date,
         'COLDROOM_TENANT',
         tenant.get(date) ?? d(0),
         split.source,
-        `${split.totalBasis}, less D10-D12${spreadNote}`
+        `${split.totalBasis}, ${lessWhat}${spreadNote}`
       )
       put(date, 'COLDROOM_ICE_STORE', store.get(date) ?? d(0), split.source, split.iceStoreBasis + spreadNote)
     }

@@ -40,7 +40,7 @@ async function main() {
 
   const [
     lines, meters, readingRows, prodRows, unitRows, assumptionRows, bills, afa,
-    coldroomRows, waterRows, energyUseRefs,
+    coldroomRows, registerRows, waterRows, energyUseRefs,
   ] = await Promise.all([
       prisma.productionLine.findMany(),
       prisma.meter.findMany(),
@@ -51,6 +51,7 @@ async function main() {
       prisma.tnbBill.findMany({ include: { account: true } }),
       prisma.afaRate.findMany(),
       prisma.coldroomMonthly.findMany({ orderBy: { periodMonth: 'asc' } }),
+      prisma.coldroomReading.findMany({ orderBy: [{ periodMonth: 'asc' }, { rowNo: 'asc' }] }),
       prisma.waterDelivery.findMany({ orderBy: { periodMonth: 'asc' } }),
       prisma.energyUse.findMany(),
     ])
@@ -112,13 +113,44 @@ async function main() {
 
   const rows = recompute({ from, to, readings, production, units, assumptions, rates })
 
-  const coldroom: ColdroomMonthRow[] = coldroomRows.map((c) => ({
-    month: iso(c.periodMonth).slice(0, 7),
-    meteredKwh: c.meteredKwh ? c.meteredKwh.toString() : null,
-    ratonoRm: c.ratonoRm.toString(),
-    yemintRm: c.yemintRm.toString(),
-    iceStoreInvoicedRm: c.iceStoreInvoicedRm.toString(),
-  }))
+  // The register outranks everything: it needs no divisor and it knows who
+  // actually occupied each room. A month with register rows uses them even when
+  // a ringgit compilation also exists for that month.
+  const registerByMonth = new Map<string, typeof registerRows>()
+  for (const r of registerRows) {
+    const m = iso(r.periodMonth).slice(0, 7)
+    registerByMonth.set(m, [...(registerByMonth.get(m) ?? []), r])
+  }
+  const asRegister = (month: string) =>
+    (registerByMonth.get(month) ?? []).map((r) => ({
+      roomCode: r.roomCode,
+      tenantLabel: r.tenantLabel,
+      ownUse: r.ownUse,
+      openingKwh: r.openingKwh.toString(),
+      closingKwh: r.closingKwh.toString(),
+    }))
+
+  const coldroomMonths = [
+    ...new Set([
+      ...coldroomRows.map((c) => iso(c.periodMonth).slice(0, 7)),
+      ...registerByMonth.keys(),
+    ]),
+  ].sort()
+  const compilationByMonth = new Map(
+    coldroomRows.map((c) => [iso(c.periodMonth).slice(0, 7), c])
+  )
+  const coldroom: ColdroomMonthRow[] = coldroomMonths.map((month) => {
+    const c = compilationByMonth.get(month)
+    const register = asRegister(month)
+    return {
+      month,
+      register: register.length ? register : null,
+      meteredKwh: c?.meteredKwh ? c.meteredKwh.toString() : null,
+      ratonoRm: c ? c.ratonoRm.toString() : '0',
+      yemintRm: c ? c.yemintRm.toString() : '0',
+      iceStoreInvoicedRm: c ? c.iceStoreInvoicedRm.toString() : '0',
+    }
+  })
   const water: WaterMonthRow[] = waterRows.map((w) => ({
     month: iso(w.periodMonth).slice(0, 7),
     tonnes: w.tonnes.toString(),

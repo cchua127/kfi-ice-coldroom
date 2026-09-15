@@ -30,12 +30,13 @@ interface Counts {
   cash: number
   outsideSales: number
   purchases: number
+  coldroomReadings: number
   skipped: number
 }
 
 const zero = (): Counts => ({
   meterReadings: 0, production: 0, cash: 0,
-  outsideSales: 0, purchases: 0, skipped: 0,
+  outsideSales: 0, purchases: 0, coldroomReadings: 0, skipped: 0,
 })
 
 function printIssues(issues: Issue[]) {
@@ -174,6 +175,35 @@ async function load(key: string, parsed: ParseResult, counts: Counts) {
     if (existing) await prisma.icePurchase.update({ where: { id: existing.id }, data })
     else await prisma.icePurchase.create({ data })
   }
+
+  // ---- coldroom register -------------------------------------------------
+  // Replaced per month rather than upserted per row. The register's row count
+  // changes as tenants come and go — 29 rooms in June, 31 in March — so an
+  // upsert-only load would leave a deleted row behind, and a stale row here is
+  // a roomful of electricity charged to somebody who was not there.
+  const coldroomMonths = [...new Set(parsed.coldroomReadings.map((r) => r.periodMonth))]
+  for (const month of coldroomMonths) {
+    const rows = parsed.coldroomReadings.filter((r) => r.periodMonth === month)
+    counts.coldroomReadings += rows.length
+    if (!WRITE) continue
+    await prisma.$transaction([
+      prisma.coldroomReading.deleteMany({ where: { periodMonth: date(`${month}-01`) } }),
+      prisma.coldroomReading.createMany({
+        data: rows.map((r) => ({
+          periodMonth: date(`${month}-01`),
+          rowNo: r.rowNo,
+          roomCode: r.roomCode,
+          tenantLabel: r.tenantLabel,
+          ownUse: r.ownUse,
+          openingKwh: dec(r.openingKwh),
+          closingKwh: dec(r.closingKwh),
+          rateRmPerKwh: new Prisma.Decimal(r.rateRmPerKwh.toFixed(4)),
+          usageGroup: r.usageGroup,
+        })),
+      }),
+    ])
+  }
+
   void key
 }
 

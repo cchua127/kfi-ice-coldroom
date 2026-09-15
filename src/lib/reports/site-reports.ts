@@ -63,7 +63,7 @@ const LINE_LABELS: Record<string, string> = {
 async function monthly(month: string) {
   const [
     bills, costs, energy, energyRefs, lines, production, cash, sales, purchases,
-    coldroomRow, assumptionRows, products,
+    coldroomRow, register, assumptionRows, products,
   ] = await Promise.all([
     prisma.tnbBill.findMany({
       where: { periodStart: { gte: monthStart(month), lte: monthEnd(month) } },
@@ -92,6 +92,10 @@ async function monthly(month: string) {
       include: { supplier: true },
     }),
     prisma.coldroomMonthly.findUnique({ where: { periodMonth: monthStart(month) } }),
+    prisma.coldroomReading.findMany({
+      where: { periodMonth: monthStart(month) },
+      orderBy: { rowNo: 'asc' },
+    }),
     prisma.costAssumption.findMany(),
     prisma.product.findMany(),
   ])
@@ -211,6 +215,7 @@ async function monthly(month: string) {
     sales,
     purchases,
     coldroomRow,
+    register,
     assumptions,
     kgPerUnit,
     billedKwh,
@@ -225,6 +230,17 @@ async function monthly(month: string) {
 }
 
 type Ctx = Awaited<ReturnType<typeof monthly>>
+
+/**
+ * Where this month's coldroom figures came from. One function, because three
+ * reports and a check all need the same answer and a disagreement between them
+ * would be worse than any of them being wrong.
+ */
+const coldroomProvenance = (ctx: Ctx): 'REGISTER' | 'WHOLE_METER' | 'BACK_INFERRED' | 'NONE' =>
+  ctx.register.length ? 'REGISTER'
+  : !ctx.coldroomRow ? 'NONE'
+  : ctx.coldroomRow.meteredKwh !== null ? 'WHOLE_METER'
+  : 'BACK_INFERRED'
 
 const statusOf = (ctx: Ctx) => {
   const all = [...ctx.costs, ...ctx.energy]
@@ -321,7 +337,7 @@ export async function siteEnergyReport(month: string): Promise<Report> {
         'and every share is blank. Consumption still stands.'
     )
   }
-  const backInferred = ctx.coldroomRow && ctx.coldroomRow.meteredKwh === null
+  const backInferred = coldroomProvenance(ctx) === 'BACK_INFERRED'
   if (backInferred) {
     notes.push(
       'Coldroom kWh is back-inferred from the ringgit compilations at the frozen ' +
@@ -562,22 +578,31 @@ export async function coldroomReport(month: string): Promise<Report> {
   const tenantRate = ctx.assumptions.at('tenant_billing_rate_rm_per_kwh', `${month}-01`)
   const recovery = coldroomRecovery(tenantKwh, ctx.rate, tenantRate)
 
+  // A month with no confirmed bill has no blended rate, and `ctx.rate` is zero
+  // rather than absent. Every figure struck against it must therefore read as
+  // BLANK, not as zero: a zero cost turns the whole recharge into margin and
+  // prints "RM30,597 margin" on a month nobody has costed yet. The rooms and
+  // the recharge are still real and still shown — it is only the comparison
+  // against cost that is unavailable.
+  const costed = ctx.bills.length > 0 && !ctx.rate.isZero()
+  const atCost = (kwh: Decimal) => (costed ? Number(rm(kwh.times(ctx.rate))) : null)
+
   const rows: ReportRow[] = [
     {
       cells: {
         item: 'Tenant rooms',
         kwh: Number(recovery.tenantKwh),
-        cost: Number(recovery.costRm),
+        cost: atCost(recovery.tenantKwh),
         billed: Number(recovery.billedRm),
-        margin: Number(recovery.marginRm),
-        perKwh: Number(recovery.marginPerKwh),
+        margin: costed ? Number(recovery.marginRm) : null,
+        perKwh: costed ? Number(recovery.marginPerKwh) : null,
       },
     },
     {
       cells: {
-        item: 'Ice storage D10-D12',
+        item: 'Rooms KFI occupies',
         kwh: Number(storeKwh),
-        cost: Number(rm(storeKwh.times(ctx.rate))),
+        cost: atCost(storeKwh),
         billed: Number(rm(storeKwh.times(tenantRate))),
         margin: null,
         perKwh: null,
@@ -588,7 +613,7 @@ export async function coldroomReport(month: string): Promise<Report> {
       cells: {
         item: 'Whole coldroom',
         kwh: Number(tenantKwh.plus(storeKwh)),
-        cost: Number(rm(tenantKwh.plus(storeKwh).times(ctx.rate))),
+        cost: atCost(tenantKwh.plus(storeKwh)),
         billed: null,
         margin: null,
         perKwh: null,
@@ -607,42 +632,130 @@ export async function coldroomReport(month: string): Promise<Report> {
     {
       cells: {
         item: "This month's blended tariff",
-        value: Number(ctx.rate),
-        note: 'What the power actually cost, from the reconstructed bills.',
+        value: costed ? Number(ctx.rate) : null,
+        note: costed
+          ? 'What the power actually cost, from the reconstructed bills.'
+          : 'No confirmed bill for this month, so what the power cost is not yet known.',
       },
     },
     {
       emphasis: true,
       cells: {
         item: 'Spread',
-        value: Number(recovery.marginPerKwh),
-        note: recovery.underwater
-          ? 'NEGATIVE. Every kWh resold to a tenant now loses money.'
-          : 'Positive, and shrinking every month AFA rises.',
+        value: costed ? Number(recovery.marginPerKwh) : null,
+        note: !costed
+          ? 'Cannot be struck until the month is billed.'
+          : recovery.underwater
+            ? 'NEGATIVE. Every kWh resold to a tenant now loses money.'
+            : 'Positive, and shrinking every month AFA rises.',
       },
     },
   ]
 
-  const notes: string[] = [
-    'D10-D12 holds this plant\'s own ice and is recharged internally, so its ' +
-      'margin is a transfer and is left blank rather than counted as profit.',
+  const provenance = coldroomProvenance(ctx)
+  const notes: string[] = []
+  if (!costed) {
+    notes.push(
+      'NOT COSTED. There is no confirmed TNB bill for this month, so the cost ' +
+        'and margin columns are blank rather than zero. What the tenants were ' +
+        'billed is known; what the power cost is not.'
+    )
+  }
+  notes.push(
+    "The rooms KFI occupies hold this plant's own ice and are recharged " +
+      'internally, so their margin is a transfer and is left blank rather than ' +
+      'counted as profit.',
     'Reselling power at a fixed rate while buying it at a floating one is a ' +
-      'short position on the tariff. The spread above is the whole of it.',
-  ]
-  if (!ctx.coldroomRow) {
+      'short position on the tariff. The spread above is the whole of it.'
+  )
+  if (provenance === 'NONE') {
     notes.push(
       'NO COLDROOM FIGURES FOR THIS MONTH. Everything above reads zero because ' +
         'nothing was entered, not because nothing was consumed — the whole ' +
         'coldroom load is sitting in the unaccounted residual on the site energy ' +
         'statement.'
     )
-  } else if (ctx.coldroomRow.meteredKwh === null) {
+  } else if (provenance === 'BACK_INFERRED') {
     notes.push(
       'Coldroom kWh is BACK-INFERRED: the ringgit compilations divided by the ' +
-        'frozen RM0.484/kWh factor, because the sub-meter has not been read. ' +
-        'Recovering a quantity from a price is circular, and the quantity is only ' +
-        'as good as a rate that has been stale since July 2025. Read the meter.'
+        'frozen RM0.484/kWh factor, because no register was read. Recovering a ' +
+        'quantity from a price is circular, and the quantity is only as good as a ' +
+        'rate that has been stale since July 2025. Read the register.'
     )
+  } else if (provenance === 'REGISTER') {
+    notes.push(
+      `Read from the register: ${ctx.register.length} rooms, each with its own ` +
+        'meter. No divisor, no convention.'
+    )
+  }
+
+  // Room by room, when the register was read. This is the detail the office
+  // invoices from, and the only place a room that stopped consuming becomes
+  // visible before a tenant queries their bill.
+  const roomTables: ReportTable[] = []
+  if (ctx.register.length) {
+    const roomRows: ReportRow[] = ctx.register.map((r) => {
+      const usage = d(r.closingKwh).minus(r.openingKwh)
+      const rate = d(r.rateRmPerKwh)
+      return {
+        cells: {
+          room: r.roomCode,
+          tenant: r.ownUse ? 'KFI (own use)' : (r.tenantLabel ?? '— vacant —'),
+          opening: Number(r.openingKwh),
+          closing: Number(r.closingKwh),
+          usage: Number(usage),
+          rate: Number(rate),
+          amount: Number(rm(usage.times(rate))),
+          group: r.usageGroup === null ? '' : `Usage ${r.usageGroup}`,
+        },
+      }
+    })
+    const regTotal = ctx.register.reduce<Decimal>(
+      (a, r) => a.plus(d(r.closingKwh).minus(r.openingKwh)), d(0)
+    )
+    const regOwn = ctx.register.filter((r) => r.ownUse).reduce<Decimal>(
+      (a, r) => a.plus(d(r.closingKwh).minus(r.openingKwh)), d(0)
+    )
+    roomRows.push({
+      emphasis: true,
+      cells: {
+        room: 'TOTAL', tenant: `${ctx.register.length} rooms`,
+        opening: null, closing: null,
+        usage: Number(regTotal), rate: null,
+        amount: Number(rm(regTotal.times(tenantRate))), group: '',
+      },
+    })
+
+    const idle = ctx.register.filter((r) => d(r.closingKwh).minus(r.openingKwh).isZero())
+    const roomNotes = [
+      `${Number(regOwn).toLocaleString('en-MY')} kWh of this is KFI's own, on the ` +
+        'rooms the occupant column marks as KFI — not on a fixed list of room ' +
+        'numbers. The two are not the same thing: a room KFI normally uses can be ' +
+        'let out, and in March 2026 one was.',
+    ]
+    if (idle.length) {
+      roomNotes.push(
+        `${idle.length} room(s) recorded no consumption at all: ` +
+          `${idle.map((r) => r.roomCode).join(', ')}. Vacant, or a meter that was ` +
+          'not read — the register cannot tell those apart.'
+      )
+    }
+    roomTables.push({
+      title: 'Room by room',
+      subtitle: `${month}, as the register records it`,
+      columns: [
+        { key: 'room', label: 'Room', type: 'text', width: 8 },
+        { key: 'tenant', label: 'Occupant', type: 'text', width: 40 },
+        { key: 'opening', label: 'Opening', type: 'int', width: 12 },
+        { key: 'closing', label: 'Closing', type: 'int', width: 12 },
+        { key: 'usage', label: 'kWh', type: 'int', width: 10 },
+        { key: 'rate', label: 'Rate', type: 'rate4', width: 9 },
+        { key: 'amount', label: 'Recharge RM', type: 'money', width: 14 },
+        { key: 'group', label: 'Feeder', type: 'text', width: 10 },
+      ],
+      rows: roomRows,
+      notes: roomNotes,
+    })
   }
 
   return {
@@ -672,6 +785,7 @@ export async function coldroomReport(month: string): Promise<Report> {
         ],
         rows: spread,
       },
+      ...roomTables,
     ],
   }
 }
@@ -879,7 +993,8 @@ export async function monthCloseReport(month: string): Promise<Report> {
 
   const tenantKwh = ctx.byUse.get('COLDROOM_TENANT')?.kwh ?? d(0)
   const tenantRate = ctx.assumptions.at('tenant_billing_rate_rm_per_kwh', `${month}-01`)
-  const hasColdroom = Boolean(ctx.coldroomRow)
+  const provenance = coldroomProvenance(ctx)
+  const hasColdroom = provenance !== 'NONE'
 
   const tube = ctx.byLine.get('TUBE')
   const pool = ctx.byLine.get('BIG_POOL')
@@ -905,7 +1020,8 @@ export async function monthCloseReport(month: string): Promise<Report> {
     tieOutKwh: ctx.bills.length ? ctx.statement.tieOutKwh : null,
     unallocatedKwh: ctx.bills.length ? ctx.statement.unallocatedKwh : null,
     coldroomPresent: hasColdroom,
-    coldroomBackInferred: hasColdroom && ctx.coldroomRow!.meteredKwh === null,
+    coldroomBackInferred: provenance === 'BACK_INFERRED',
+    coldroomProvenance: provenance === 'NONE' ? undefined : provenance,
     coldroomMarginRm: hasColdroom
       ? coldroomRecovery(tenantKwh, ctx.rate, tenantRate).marginRm
       : null,
@@ -922,6 +1038,9 @@ export async function monthCloseReport(month: string): Promise<Report> {
     counterCashRm: counter.length ? cashRm : null,
     counterPricedRm: counter.length ? sum(counter, (s) => s.amount) : null,
     daysWithoutRate: ctx.costs.length || ctx.energy.length ? uncosted : undefined,
+    // Every stored daily row is one sen-rounding. The tie-out tolerance scales
+    // with them rather than assuming the handful of lines it once had.
+    storedRows: ctx.costs.length + ctx.energy.length,
   })
 
   const SYMBOL: Record<CheckResult['verdict'], string> = {

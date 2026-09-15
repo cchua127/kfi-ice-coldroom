@@ -265,6 +265,12 @@ export interface ColdroomMonthInputCheck {
   iceStoreInvoicedRm: Numeric | null
   legacyFactor: Numeric
   tenantRate: Numeric
+  /**
+   * True when the month already has an imported meter register. Everything
+   * below is then a fallback nobody needs, so the warnings about a missing
+   * reading are not only unhelpful but false — the meter WAS read, room by room.
+   */
+  hasRegister?: boolean
 }
 
 /**
@@ -318,6 +324,10 @@ export function validateColdroomMonth(input: ColdroomMonthInputCheck): Issue[] {
         'The tenant rooms would come out negative and be clamped to zero.',
     })
   }
+
+  // A month read room by room needs none of the fallback warnings below: the
+  // compilations are not consulted, so their absence is not a gap.
+  if (input.hasRegister) return out
 
   if (metered === null && !compilation.isZero()) {
     out.push({

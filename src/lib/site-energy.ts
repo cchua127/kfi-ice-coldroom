@@ -76,8 +76,24 @@ export const DEFAULT_COUNTS_AS_ICE: Record<EnergyUseCode, boolean> = {
 // The coldroom
 // ---------------------------------------------------------------------------
 
+/** One row of the coldroom register, reduced to what the split needs. */
+export interface ColdroomRegisterRow {
+  roomCode: string
+  tenantLabel?: string | null
+  /** True when the occupant is KFI, so this room's power is cost of ice. */
+  ownUse: boolean
+  openingKwh: Numeric
+  closingKwh: Numeric
+}
+
 export interface ColdroomMonthInput {
-  /** Whole-coldroom sub-meter kWh. When present, nothing below is used. */
+  /**
+   * The register, room by room. The best source there is: it needs no rate, no
+   * divisor and no convention, and it splits own use by who actually occupied
+   * the room. When this is present nothing else below is consulted.
+   */
+  register?: ColdroomRegisterRow[] | null
+  /** Whole-coldroom sub-meter kWh, when only a single total was read. */
   meteredKwh?: Numeric | null
   /** Tenant compilations. Together they cover the whole room, D10-D12 included. */
   ratonoRm?: Numeric
@@ -98,22 +114,32 @@ export interface ColdroomSplit {
    * from a meter. Surfaced in the month-close checks, not buried.
    */
   backInferred: boolean
+  /** How the figure was obtained, best first. */
+  provenance: 'REGISTER' | 'WHOLE_METER' | 'BACK_INFERRED'
+  /** Rooms in the register, when there was one. */
+  roomCount?: number
 }
 
 /**
  * Split the coldroom into tenant rooms and the plant's own D10-D12 ice store.
  *
- * Meter first. When there is no meter reading the legacy path divides the
- * ringgit compilations back out by the rate each was struck at — RM0.484/kWh
- * for the tenant compilations, the tenant billing rate for D10-D12. That is
- * circular in the precise sense that it recovers a quantity from a price, and
- * it is only as good as the frozen rate; it is done anyway so the coldroom is
- * not simply missing from the bridge, and every report that touches it says
- * which of the two paths produced the number.
+ * Three sources, in descending order of how much they can be trusted:
  *
- * Note the asymmetry, which is in the source data and not an error here: the
- * two tenant compilations cover the WHOLE room including D10-D12, so the ice
- * store is subtracted out rather than added in.
+ *   1. REGISTER — every room's own meter, with own use decided by the occupant.
+ *      Needs no rate and no convention. This is what the office actually keeps.
+ *   2. WHOLE_METER — a single sub-meter total for the room, with D10-D12 still
+ *      split out by its invoice because those rooms have no meter of their own.
+ *   3. BACK_INFERRED — the ringgit compilations divided back out by the rate
+ *      each was struck at: RM0.484/kWh for the tenant compilations, the tenant
+ *      rate for D10-D12. Circular in the precise sense that it recovers a
+ *      quantity from a price, and only as good as a rate frozen since July 2025.
+ *
+ * The third is kept so a month with no readings is not simply missing from the
+ * bridge, and every report that touches it says which path produced the number.
+ *
+ * Note the asymmetry in paths 2 and 3, which is in the source data and not an
+ * error here: the two tenant compilations cover the WHOLE room including
+ * D10-D12, so the ice store is subtracted out rather than added in.
  */
 export function coldroomSplit(
   input: ColdroomMonthInput,
@@ -128,6 +154,33 @@ export function coldroomSplit(
       'Coldroom split needs a non-zero legacy factor and tenant rate: the ' +
         'legacy path divides ringgit totals by them.'
     )
+  }
+
+  // Best path: the register itself. Every room read, and own use decided by who
+  // occupied the room rather than by which room it is — the two disagree, and
+  // the room-code convention is the one that is wrong. March 2026 let D12 to a
+  // tenant for 1,653 kWh while KFI used 76 of it; the convention charges the
+  // tenant's ice to the plant's cost of ice. See docs §11.3.
+  if (input.register && input.register.length) {
+    const usage = (r: ColdroomRegisterRow) => d(r.closingKwh).minus(d(r.openingKwh))
+    const total = input.register.reduce<Decimal>((a, r) => a.plus(usage(r)), d(0))
+    const store = input.register
+      .filter((r) => r.ownUse)
+      .reduce<Decimal>((a, r) => a.plus(usage(r)), d(0))
+    const ownRooms = input.register.filter((r) => r.ownUse).map((r) => r.roomCode)
+    return {
+      totalKwh: total,
+      tenantKwh: total.minus(store),
+      iceStoreKwh: store,
+      source: 'METERED',
+      totalBasis: `coldroom register, ${input.register.length} rooms read`,
+      iceStoreBasis: ownRooms.length
+        ? `rooms occupied by KFI: ${ownRooms.join(', ')}`
+        : 'no room occupied by KFI this month',
+      backInferred: false,
+      provenance: 'REGISTER',
+      roomCount: input.register.length,
+    }
   }
 
   const iceStoreRm = d(input.iceStoreInvoicedRm ?? 0)
@@ -148,6 +201,7 @@ export function coldroomSplit(
       totalBasis: 'coldroom sub-meter',
       iceStoreBasis,
       backInferred: false,
+      provenance: 'WHOLE_METER',
     }
   }
 
@@ -164,6 +218,7 @@ export function coldroomSplit(
       'RM/kWh legacy factor — no sub-meter reading on file',
     iceStoreBasis,
     backInferred: true,
+    provenance: 'BACK_INFERRED',
   }
 }
 

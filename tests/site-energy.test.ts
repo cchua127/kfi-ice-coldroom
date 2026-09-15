@@ -491,3 +491,37 @@ describe('the month-close checks', () => {
     expect(check.detail).toContain('19.8%')
   })
 })
+
+describe('the bill tie-out tolerance scales with what was stored', () => {
+  const base = {
+    month: '2026-08',
+    daysInMonth: 31,
+    tieOutKwh: '0',
+    unexplainedRm: '-0.36',
+  }
+
+  it('flags 36 sen when only a handful of rows were rounded', () => {
+    expect(monthCloseChecks({ ...base, storedRows: 12 })[0].verdict).toBe('FLAG')
+  })
+
+  it('accepts the same 36 sen across three hundred stored rows', () => {
+    // Ten lines spread across 31 days is 310 sen-roundings. Reporting their
+    // accumulation as a discrepancy would train the reader to ignore the check.
+    const r = monthCloseChecks({ ...base, storedRows: 310 })[0]
+    expect(r.verdict).toBe('OK')
+    expect(r.detail).toContain('310 stored row(s)')
+  })
+
+  it('still catches what the check is actually for', () => {
+    // A bill period straddling the month is worth tens or hundreds of ringgit
+    // and clears any rounding allowance by orders of magnitude.
+    const r = monthCloseChecks({ ...base, unexplainedRm: '-184.20', storedRows: 310 })[0]
+    expect(r.verdict).toBe('FLAG')
+    expect(r.detail).toContain('straddling the month')
+  })
+
+  it('applies the floor when nothing says how many rows there were', () => {
+    expect(monthCloseChecks({ ...base, unexplainedRm: '0.10' })[0].verdict).toBe('OK')
+    expect(monthCloseChecks({ ...base, unexplainedRm: '0.30' })[0].verdict).toBe('FLAG')
+  })
+})

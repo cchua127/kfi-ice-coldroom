@@ -71,6 +71,23 @@ export interface PurchaseRecord {
   sheetAmount?: number
 }
 
+export interface ColdroomReadingRecord {
+  /** 'YYYY-MM'. */
+  periodMonth: string
+  /** 1-based position in the month's register. Part of the key — see below. */
+  rowNo: number
+  roomCode: string
+  tenantLabel: string | null
+  ownUse: boolean
+  openingKwh: number
+  closingKwh: number
+  rateRmPerKwh: number
+  usageGroup: number | null
+  /** What the sheet itself shows, for the dry-run diff. Never loaded. */
+  sheetUsage?: number
+  sheetAmount?: number
+}
+
 export interface ParseResult {
   resolved: ResolvedSheet[]
   meterReadings: MeterReadingRecord[]
@@ -78,12 +95,13 @@ export interface ParseResult {
   cash: CashRecord[]
   outsideSales: OutsideSaleRecord[]
   purchases: PurchaseRecord[]
+  coldroomReadings: ColdroomReadingRecord[]
   issues: Issue[]
 }
 
 const empty = (): ParseResult => ({
   resolved: [], meterReadings: [], production: [], cash: [],
-  outsideSales: [], purchases: [], issues: [],
+  outsideSales: [], purchases: [], coldroomReadings: [], issues: [],
 })
 
 const merge = (a: ParseResult, b: ParseResult): ParseResult => ({
@@ -93,6 +111,7 @@ const merge = (a: ParseResult, b: ParseResult): ParseResult => ({
   cash: [...a.cash, ...b.cash],
   outsideSales: [...a.outsideSales, ...b.outsideSales],
   purchases: [...a.purchases, ...b.purchases],
+  coldroomReadings: [...a.coldroomReadings, ...b.coldroomReadings],
   issues: [...a.issues, ...b.issues],
 })
 
@@ -572,10 +591,233 @@ export function parseIcePurchase(wb: Workbook, defaultYear = 2026): ParseResult 
   })
 }
 
+
+
+// ---------------------------------------------------------------------------
+// E-2026 — the coldroom meter register. Ten sheets: dec25, jan..aug, plus a
+// per-room 2025 summary the loader ignores.
+//
+// The trap here is `dec25`. Every other sheet runs
+//   A room | B tenant | C current | D last | E usage | F rate | G use1 | H use2 | I amt
+// but dec25 carries an extra "Inv No" column, shifting the meters to D/E and
+// everything after it one to the right. A fixed column map would read December's
+// tenant column as its meter and import nonsense. So every column here is found
+// by its LABEL, per the rule in src/lib/import/layout.ts.
+//
+// A room code is NOT unique within a month: two physically different rooms are
+// both labelled "D5" in every sheet, and a room whose tenant changes mid-month
+// appears twice. Rows are therefore keyed by position, never by room code.
+// ---------------------------------------------------------------------------
+
+/** Column positions for one sheet, resolved from its own header labels. */
+interface ColdroomCols {
+  room: string
+  tenant: string | null
+  current: string
+  last: string
+  rate: string | null
+  usage: string | null
+  amount: string | null
+  group1: string | null
+  group2: string | null
+  headerRow: number
+}
+
+const COL_ORDER = (() => {
+  const out: string[] = []
+  for (let i = 0; i < 26; i++) out.push(String.fromCharCode(65 + i))
+  for (let i = 0; i < 26; i++)
+    for (let j = 0; j < 26; j++)
+      out.push(String.fromCharCode(65 + i) + String.fromCharCode(65 + j))
+  return out
+})()
+
+/** First cell in the first `rows` rows whose text matches. */
+function findLabel(
+  sheet: Sheet,
+  test: RegExp,
+  rows = 6
+): { row: number; col: string } | null {
+  for (let r = 1; r <= rows; r++) {
+    const row = sheet.cells[String(r)]
+    if (!row) continue
+    for (const col of Object.keys(row).sort((a, b) => COL_ORDER.indexOf(a) - COL_ORDER.indexOf(b))) {
+      const v = row[col].v
+      if (typeof v === 'string' && test.test(v.trim())) return { row: r, col }
+    }
+  }
+  return null
+}
+
+function coldroomColumns(sheet: Sheet): ColdroomCols | null {
+  const current = findLabel(sheet, /^current\s*meter/i)
+  const last = findLabel(sheet, /^last\s*meter/i)
+  if (!current || !last) return null
+  const roomHdr = findLabel(sheet, /^cold\s*room/i)
+  return {
+    room: roomHdr?.col ?? 'A',
+    tenant: findLabel(sheet, /^tenants?\b/i)?.col ?? null,
+    current: current.col,
+    last: last.col,
+    rate: findLabel(sheet, /^rate\b/i)?.col ?? null,
+    usage: findLabel(sheet, /^total\s*usage/i)?.col ?? null,
+    amount: findLabel(sheet, /^amt\b/i)?.col ?? null,
+    group1: findLabel(sheet, /^usage\s*1$/i)?.col ?? null,
+    group2: findLabel(sheet, /^usage\s*2$/i)?.col ?? null,
+    headerRow: Math.max(current.row, last.row),
+  }
+}
+
+/**
+ * Whether a register row is KFI's own consumption rather than a tenant's.
+ *
+ * Exported and named because it is the single rule that decides whether a
+ * roomful of electricity is cost of ice or a recharge, and because the obvious
+ * alternative — "the room code is D10, D11 or D12" — is WRONG. Those three are
+ * KFI's rooms by convention, but D12 was let to a tenant for most of March 2026
+ * while KFI kept 76 kWh of it. Keying on the room code charges that tenant's
+ * 1,653 kWh to the cost of ice; keying on the occupant does not. See §11.3.
+ */
+export const isOwnUseTenant = (label: string | null): boolean =>
+  /^kfi\b/i.test((label ?? '').trim())
+
+/** Room codes KFI occupies by convention — reported against, never relied on. */
+export const CONVENTIONAL_OWN_USE_ROOMS = ['D10', 'D11', 'D12']
+
+export function parseColdroomMeter(wb: Workbook, defaultYear = 2026): ParseResult {
+  return eachSheet(
+    wb,
+    defaultYear,
+    (ctx) => {
+      const out = ctx.out
+      const cols = coldroomColumns(ctx.sheet)
+      if (!cols) {
+        ctx.issues.push({
+          level: 'ERROR', workbook: wb.workbook, sheet: ctx.sheetName,
+          code: 'COLDROOM_NO_HEADER',
+          message:
+            `Could not find "Current meter" and "Last meter" headers on sheet ` +
+            `"${ctx.sheetName}". Columns are resolved by label, so the sheet ` +
+            `cannot be read positionally as a fallback.`,
+        })
+        return
+      }
+
+      let rowNo = 0
+      for (let r = cols.headerRow + 1; r <= ctx.sheet.maxRow; r++) {
+        const code = str(ctx.sheet, r, cols.room)
+        // The register runs A1..D12; anything longer is a footer label such as
+        // "Less :  Own Use" or the ICPT history block at the foot of the sheet.
+        if (!code || !/^[A-Za-z]{1,2}\d{1,2}$/.test(code)) continue
+
+        const closing = num(ctx.sheet, r, cols.current)
+        const opening = num(ctx.sheet, r, cols.last)
+        if (closing === null || opening === null) continue
+
+        const rate = cols.rate ? num(ctx.sheet, r, cols.rate) : null
+        if (rate === null) {
+          ctx.issues.push({
+            level: 'ERROR', workbook: wb.workbook, sheet: ctx.sheetName, row: r,
+            code: 'COLDROOM_NO_RATE',
+            message: `Room ${code} has no rate. The row is skipped rather than ` +
+              `costed at a guessed rate.`,
+          })
+          continue
+        }
+
+        if (closing < opening) {
+          ctx.issues.push({
+            level: 'ERROR', workbook: wb.workbook, sheet: ctx.sheetName, row: r,
+            code: 'COLDROOM_NEGATIVE_USAGE',
+            message:
+              `Room ${code}: closing ${closing} is below opening ${opening}. A ` +
+              `register rollover or a keying error — resolve it before loading.`,
+          })
+          continue
+        }
+
+        const tenant = cols.tenant ? str(ctx.sheet, r, cols.tenant) : null
+        const ownUse = isOwnUseTenant(tenant)
+        const group =
+          cols.group1 && num(ctx.sheet, r, cols.group1) !== null ? 1
+          : cols.group2 && num(ctx.sheet, r, cols.group2) !== null ? 2
+          : null
+
+        rowNo++
+        out.coldroomReadings.push({
+          periodMonth: ctx.month,
+          rowNo,
+          roomCode: code.toUpperCase(),
+          tenantLabel: tenant,
+          ownUse,
+          openingKwh: opening,
+          closingKwh: closing,
+          rateRmPerKwh: rate,
+          usageGroup: group,
+          sheetUsage: cols.usage ? (num(ctx.sheet, r, cols.usage) ?? undefined) : undefined,
+          sheetAmount: cols.amount ? (num(ctx.sheet, r, cols.amount) ?? undefined) : undefined,
+        })
+
+        // The sheet stores usage and amount as well as the two registers. They
+        // are recomputed rather than read, so the stored pair is free evidence:
+        // a disagreement means the sheet's own arithmetic has been overtyped.
+        const usage = closing - opening
+        const sheetUsage = cols.usage ? num(ctx.sheet, r, cols.usage) : null
+        if (sheetUsage !== null && Math.abs(sheetUsage - usage) > 0.01) {
+          ctx.issues.push({
+            level: 'WARN', workbook: wb.workbook, sheet: ctx.sheetName, row: r,
+            code: 'COLDROOM_USAGE_MISMATCH',
+            message:
+              `Room ${code}: sheet shows ${sheetUsage} kWh but the registers ` +
+              `give ${usage}. The registers are loaded.`,
+          })
+        }
+        const sheetAmount = cols.amount ? num(ctx.sheet, r, cols.amount) : null
+        if (sheetAmount !== null && Math.abs(sheetAmount - usage * rate) > 0.01) {
+          ctx.issues.push({
+            level: 'WARN', workbook: wb.workbook, sheet: ctx.sheetName, row: r,
+            code: 'COLDROOM_AMOUNT_MISMATCH',
+            message:
+              `Room ${code}: sheet shows RM${sheetAmount} but ${usage} x ` +
+              `${rate} is RM${(usage * rate).toFixed(2)}.`,
+          })
+        }
+
+        // Charging KFI's own rooms is a convention the office follows, not a
+        // fact about who used them. Where the two part company, say so — this
+        // is what the owner's cost template got wrong in March 2026.
+        if (CONVENTIONAL_OWN_USE_ROOMS.includes(code.toUpperCase()) !== ownUse) {
+          ctx.issues.push({
+            level: 'INFO', workbook: wb.workbook, sheet: ctx.sheetName, row: r,
+            code: 'COLDROOM_OWN_USE_DIVERGES',
+            message:
+              `Room ${code} is ${ownUse ? 'occupied by KFI but is not one of ' +
+              'the conventional own-use rooms' : `one of KFI's own-use rooms but is let to ` +
+              `"${tenant ?? 'nobody named'}"`}. ` +
+              `${usage} kWh follows the occupant, not the room code.`,
+          })
+        }
+      }
+
+      if (!rowNo) {
+        ctx.issues.push({
+          level: 'WARN', workbook: wb.workbook, sheet: ctx.sheetName,
+          code: 'COLDROOM_NO_ROWS',
+          message: `No register rows found on sheet "${ctx.sheetName}".`,
+        })
+      }
+    },
+    // The `ave` sheet is a per-room annual summary of the same readings. Loading
+    // it would double-count, exactly as the master workbook would.
+    (name) => /^ave/i.test(name.trim())
+  )
+}
+
 export const PARSERS: Record<string, (wb: Workbook, y?: number) => ParseResult> = {
   'meter-tube': parseTube,
   'meter-big-pool': parseBigPool,
   'meter-small-pool': parseSmallPool,
   'daily-cash-ice': parseCash,
   'ice-purchase': parseIcePurchase,
+  'coldroom-meter': parseColdroomMeter,
 }

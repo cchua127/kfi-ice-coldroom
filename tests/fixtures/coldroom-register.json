@@ -1,0 +1,172 @@
+{
+ "source": "E-2026.xls, the coldroom meter register, owner-supplied September 2026",
+ "sourceSha256": "30f7d48d4bdf448f0c8387419e6ef54888517d1e7051736f7c0d9e1019661dcf",
+ "months": [
+  {
+   "month": "2025-12",
+   "rooms": 29,
+   "totalKwh": 60873,
+   "ownUseKwh": 7025,
+   "byRoomCodeKwh": 7025,
+   "duplicatedRoomCodes": [
+    "D5"
+   ]
+  },
+  {
+   "month": "2026-01",
+   "rooms": 30,
+   "totalKwh": 53297,
+   "ownUseKwh": 6256,
+   "byRoomCodeKwh": 6256,
+   "duplicatedRoomCodes": [
+    "D3",
+    "D5"
+   ]
+  },
+  {
+   "month": "2026-02",
+   "rooms": 29,
+   "totalKwh": 53797,
+   "ownUseKwh": 5267,
+   "byRoomCodeKwh": 5267,
+   "duplicatedRoomCodes": [
+    "D5"
+   ]
+  },
+  {
+   "month": "2026-03",
+   "rooms": 31,
+   "totalKwh": 62489,
+   "ownUseKwh": 6140,
+   "byRoomCodeKwh": 7793,
+   "duplicatedRoomCodes": [
+    "C4",
+    "D12",
+    "D5"
+   ]
+  },
+  {
+   "month": "2026-04",
+   "rooms": 29,
+   "totalKwh": 53980,
+   "ownUseKwh": 5449,
+   "byRoomCodeKwh": 5449,
+   "duplicatedRoomCodes": [
+    "D5"
+   ]
+  },
+  {
+   "month": "2026-05",
+   "rooms": 29,
+   "totalKwh": 58481,
+   "ownUseKwh": 6306,
+   "byRoomCodeKwh": 6306,
+   "duplicatedRoomCodes": [
+    "D5"
+   ]
+  },
+  {
+   "month": "2026-06",
+   "rooms": 29,
+   "totalKwh": 55035,
+   "ownUseKwh": 5808,
+   "byRoomCodeKwh": 5808,
+   "duplicatedRoomCodes": [
+    "D5"
+   ]
+  },
+  {
+   "month": "2026-07",
+   "rooms": 29,
+   "totalKwh": 60959,
+   "ownUseKwh": 7044,
+   "byRoomCodeKwh": 7044,
+   "duplicatedRoomCodes": [
+    "D5"
+   ]
+  },
+  {
+   "month": "2026-08",
+   "rooms": 29,
+   "totalKwh": 63409,
+   "ownUseKwh": 6710,
+   "byRoomCodeKwh": 6710,
+   "duplicatedRoomCodes": [
+    "D5"
+   ]
+  }
+ ],
+ "march": [
+  {
+   "rowNo": 18,
+   "roomCode": "D1",
+   "tenantLabel": "RB meat",
+   "ownUse": false,
+   "openingKwh": 776464,
+   "closingKwh": 779796,
+   "kwh": 3332
+  },
+  {
+   "rowNo": 28,
+   "roomCode": "D10",
+   "tenantLabel": "KFI",
+   "ownUse": true,
+   "openingKwh": 509104,
+   "closingKwh": 512672,
+   "kwh": 3568
+  },
+  {
+   "rowNo": 29,
+   "roomCode": "D11",
+   "tenantLabel": "KFI",
+   "ownUse": true,
+   "openingKwh": 200110,
+   "closingKwh": 202606,
+   "kwh": 2496
+  },
+  {
+   "rowNo": 30,
+   "roomCode": "D12",
+   "tenantLabel": "Zaidah Ibrahim (start 10/2/26 - 9/3/26)",
+   "ownUse": false,
+   "openingKwh": 608751,
+   "closingKwh": 610404,
+   "kwh": 1653
+  },
+  {
+   "rowNo": 31,
+   "roomCode": "D12",
+   "tenantLabel": "KFI",
+   "ownUse": true,
+   "openingKwh": 610404,
+   "closingKwh": 610480,
+   "kwh": 76
+  }
+ ],
+ "december": [
+  {
+   "rowNo": 1,
+   "roomCode": "A1",
+   "tenantLabel": null,
+   "openingKwh": 216704,
+   "closingKwh": 216704,
+   "rateRmPerKwh": 0.543
+  },
+  {
+   "rowNo": 2,
+   "roomCode": "A2",
+   "tenantLabel": "Permatang Chengai",
+   "openingKwh": 90614,
+   "closingKwh": 96670,
+   "rateRmPerKwh": 0.543
+  },
+  {
+   "rowNo": 3,
+   "roomCode": "A3",
+   "tenantLabel": null,
+   "openingKwh": 421363,
+   "closingKwh": 421363,
+   "rateRmPerKwh": 0.543
+  }
+ ]
+}

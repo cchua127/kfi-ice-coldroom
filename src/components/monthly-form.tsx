@@ -51,13 +51,14 @@ export function MonthlyForm({ data, canWrite }: { data: MonthlyInputs; canWrite:
           : coldroom.iceStoreInvoicedRm,
         legacyFactor: data.reference.legacyFactor,
         tenantRate: data.reference.tenantRate,
+        hasRegister: Boolean(data.register),
       }),
       ...validateWaterMonth({
         tonnes: blank(water.tonnes) ? null : water.tonnes,
         retailM3: blank(water.retailM3) ? null : water.retailM3,
       }),
     ],
-    [coldroom, water, data.reference]
+    [coldroom, water, data.reference, data.register]
   )
 
   const issues = status === 'error' && serverIssues.length ? serverIssues : clientIssues
@@ -104,11 +105,46 @@ export function MonthlyForm({ data, canWrite }: { data: MonthlyInputs; canWrite:
     <div className="entry monthly">
       <fieldset>
         <legend>Coldroom</legend>
-        <p className="sub">
-          One row for the month. The sub-meter reading is the answer; the ringgit
-          compilations below are the fallback, and they recover a quantity from a
-          price struck at a rate that has not moved since July 2025.
-        </p>
+        {data.register ? (
+          <>
+            <p className="sub">
+              This month is read from the <strong>meter register</strong> —{' '}
+              {data.register.rooms} rooms, each with its own meter. Nothing below
+              is used for it. The fields are left open only so a month can be
+              corrected before its register arrives.
+            </p>
+            <table className="derived">
+              <caption>From the register</caption>
+              <tbody>
+                <tr>
+                  <th>Whole coldroom</th>
+                  <td>{fmt(n(data.register.totalKwh))} kWh</td>
+                  <td className="sub">{data.register.rooms} rooms read</td>
+                </tr>
+                <tr>
+                  <th>Rooms KFI occupied</th>
+                  <td>{fmt(n(data.register.ownUseKwh))} kWh</td>
+                  <td className="sub">
+                    {data.register.ownUseRooms.length
+                      ? data.register.ownUseRooms.join(', ')
+                      : 'none this month'}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Tenant rooms</th>
+                  <td>{fmt(n(data.register.tenantKwh))} kWh</td>
+                  <td className="sub">recharged at RM{data.reference.tenantRate}/kWh</td>
+                </tr>
+              </tbody>
+            </table>
+          </>
+        ) : (
+          <p className="sub">
+            One row for the month. The meter register is the answer; the ringgit
+            compilations below are the fallback, and they recover a quantity from
+            a price struck at a rate that has not moved since July 2025.
+          </p>
+        )}
 
         {field(
           'coldroom.meteredKwh',
@@ -151,7 +187,7 @@ export function MonthlyForm({ data, canWrite }: { data: MonthlyInputs; canWrite:
           />
         </label>
 
-        <table className="derived">
+        <table className="derived" hidden={Boolean(data.register)}>
           <caption>What that works out at</caption>
           <tbody>
             <tr>

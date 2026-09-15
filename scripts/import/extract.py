@@ -26,6 +26,10 @@ WORKBOOKS = {
     "meter-small-pool": ["meter SMALL POOL vs elec", "meter_SMALL_POOL_vs_elec"],
     "daily-cash-ice":   ["daily cash ice", "daily_cash_ice"],
     "ice-purchase":     ["Ice Purchase  sales outside", "Ice_Purchase__sales_outside"],
+    # The coldroom sub-meter register. Arrived after the six above, and it is
+    # the one that retires the RM0.484 back-inference: per room, per month,
+    # actual readings. `E-2026` is how the office names it.
+    "coldroom-meter":   ["E-2026", "E_2026"],
 }
 
 

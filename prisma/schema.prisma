@@ -626,3 +626,63 @@ model ColdroomMonthly {
 
   @@map("coldroom_monthly")
 }
+
+/// One row of the coldroom meter register, for one month.
+///
+/// This is the file that retires the RM0.484 back-inference. Where a month has
+/// rows here, the coldroom is MEASURED — 29 or so rooms, each with its own
+/// register, read monthly and recharged at the tenant rate.
+///
+/// The key is (month, rowNo), NOT (month, roomCode), and that is not fussiness.
+/// Two physically different rooms both carry the label "D5" in every sheet, and
+/// a room whose tenant changes mid-month appears twice — March 2026 has two D12
+/// rows, one for a tenant and one for KFI. Keying on the room code would have
+/// silently dropped one of each pair.
+///
+/// Usage and amount are DERIVED, never stored: usage is closing less opening,
+/// amount is usage times the rate. The source sheet stores all four and they
+/// agree on every one of its ~260 rows — but a column that does not exist
+/// cannot drift, and the sheet's own stored "last meter" does NOT always agree
+/// with the prior month's closing (see docs §11.2).
+model ColdroomReading {
+  id          BigInt   @id @default(autoincrement())
+  periodMonth DateTime @map("period_month") @db.Date
+  /// 1-based position in that month's register. Traceable back to the source row.
+  rowNo       Int      @map("row_no")
+
+  /// As printed: A1, B3, D10. Not unique within a month — see above.
+  roomCode    String  @map("room_code")
+  /// The occupant as the sheet names them, including the start/stop notes the
+  /// office writes inline ("Red Ruby- start balik 23/8/26"). Kept verbatim: it
+  /// is the only record of when a tenancy began.
+  tenantLabel String? @map("tenant_label")
+
+  /// True when the occupant is KFI itself, so this room's power is cost of ice
+  /// rather than a recharge. Stored per row rather than inferred from the room
+  /// code, because the two disagree — D12 was let to a tenant for most of
+  /// March 2026 while the owner's template still charged it to ice (§11.3).
+  ownUse Boolean @map("own_use")
+
+  /// Register at the start and end of the month. The opening is stored here,
+  /// unlike the daily meters, because this register is read monthly and the
+  /// first month on file has no predecessor to derive it from.
+  openingKwh Decimal @map("opening_kwh") @db.Decimal(14, 2)
+  closingKwh Decimal @map("closing_kwh") @db.Decimal(14, 2)
+
+  /// As printed on the row. Dated by the row rather than looked up, so a rate
+  /// change cannot restate a month that was billed at the old one.
+  rateRmPerKwh Decimal @map("rate_rm_per_kwh") @db.Decimal(8, 4)
+
+  /// The sheet splits the rooms between two feeders, "Usage 1" and "Usage 2".
+  /// Null where the source sheet does not label them.
+  usageGroup Int? @map("usage_group")
+
+  note      String?
+  enteredAt DateTime @default(now()) @map("entered_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([periodMonth, rowNo])
+  @@index([periodMonth])
+  @@index([roomCode])
+  @@map("coldroom_reading")
+}
