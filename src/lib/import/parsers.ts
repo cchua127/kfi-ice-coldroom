@@ -79,6 +79,8 @@ export interface ColdroomReadingRecord {
   roomCode: string
   tenantLabel: string | null
   ownUse: boolean
+  /** Let, but the rent covers the power — so neither ice nor recharge. */
+  rentInclusive: boolean
   openingKwh: number
   closingKwh: number
   rateRmPerKwh: number
@@ -690,6 +692,18 @@ export const isOwnUseTenant = (label: string | null): boolean =>
   /^kfi\b/i.test((label ?? '').trim())
 
 /**
+ * Whether the tenancy covers electricity in the rent — "sewa including elec".
+ *
+ * A third state between KFI's own use and a recharged tenant, and it has to
+ * exist or the margin lies. The room is let, so it is not cost of ice; and the
+ * rent covers the power, so no recharge is invoiced for it. Counting its kWh at
+ * the tenant rate books revenue that was never billed — 5,949 kWh across the
+ * nine months on file, RM3,230 of margin that does not exist.
+ */
+export const isRentInclusive = (label: string | null): boolean =>
+  /includ\w*[^a-z]{0,3}elec/i.test((label ?? '').trim())
+
+/**
  * The rooms the workbook's own-use footer names. Reported against, never relied
  * on: this is the convention the footer encodes, and the point of keeping it is
  * to be able to say where the convention and the occupant disagree.
@@ -750,10 +764,13 @@ export function parseColdroomMeter(wb: Workbook, defaultYear = 2026): ParseResul
 
         const tenant = cols.tenant ? str(ctx.sheet, r, cols.tenant) : null
         const ownUse = isOwnUseTenant(tenant)
+        const rentInclusive = !ownUse && isRentInclusive(tenant)
         const group =
           cols.group1 && num(ctx.sheet, r, cols.group1) !== null ? 1
           : cols.group2 && num(ctx.sheet, r, cols.group2) !== null ? 2
           : null
+
+        const usage = closing - opening
 
         rowNo++
         out.coldroomReadings.push({
@@ -762,6 +779,7 @@ export function parseColdroomMeter(wb: Workbook, defaultYear = 2026): ParseResul
           roomCode: code.toUpperCase(),
           tenantLabel: tenant,
           ownUse,
+          rentInclusive,
           openingKwh: opening,
           closingKwh: closing,
           rateRmPerKwh: rate,
@@ -773,7 +791,6 @@ export function parseColdroomMeter(wb: Workbook, defaultYear = 2026): ParseResul
         // The sheet stores usage and amount as well as the two registers. They
         // are recomputed rather than read, so the stored pair is free evidence:
         // a disagreement means the sheet's own arithmetic has been overtyped.
-        const usage = closing - opening
         const sheetUsage = cols.usage ? num(ctx.sheet, r, cols.usage) : null
         if (sheetUsage !== null && Math.abs(sheetUsage - usage) > 0.01) {
           ctx.issues.push({
@@ -792,6 +809,17 @@ export function parseColdroomMeter(wb: Workbook, defaultYear = 2026): ParseResul
             message:
               `Room ${code}: sheet shows RM${sheetAmount} but ${usage} x ` +
               `${rate} is RM${(usage * rate).toFixed(2)}.`,
+          })
+        }
+
+        if (rentInclusive) {
+          ctx.issues.push({
+            level: 'INFO', workbook: wb.workbook, sheet: ctx.sheetName, row: r,
+            code: 'COLDROOM_RENT_INCLUSIVE',
+            message:
+              `Room ${code}: "${tenant}" — the rent covers the power, so its ` +
+              `${usage} kWh is let but not recharged. Counted as neither cost of ` +
+              `ice nor tenant revenue.`,
           })
         }
 

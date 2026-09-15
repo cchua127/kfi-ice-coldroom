@@ -195,6 +195,7 @@ async function load(key: string, parsed: ParseResult, counts: Counts) {
           roomCode: r.roomCode,
           tenantLabel: r.tenantLabel,
           ownUse: r.ownUse,
+          rentInclusive: r.rentInclusive,
           openingKwh: dec(r.openingKwh),
           closingKwh: dec(r.closingKwh),
           rateRmPerKwh: new Prisma.Decimal(r.rateRmPerKwh.toFixed(4)),

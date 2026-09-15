@@ -126,6 +126,7 @@ async function main() {
       roomCode: r.roomCode,
       tenantLabel: r.tenantLabel,
       ownUse: r.ownUse,
+      rentInclusive: r.rentInclusive,
       openingKwh: r.openingKwh.toString(),
       closingKwh: r.closingKwh.toString(),
     }))

@@ -17,7 +17,7 @@ system working, not a bug.
 ## Commands
 
 ```bash
-npm test                    # 437 tests, vitest — the real gate
+npm test                    # 452 tests, vitest — the real gate
 npm run typecheck           # tsc --noEmit, must be silent
 npm run build               # next build (output: standalone)
 npm run dev                 # next dev
@@ -88,6 +88,12 @@ it. Don't relax one without understanding which.
   it agrees with that footer in eight of the nine months on file and corrects
   the ninth (§11.3). Don't "fix" it back to the room code — a test pins the
   difference so it reads as chosen.
+- **A let room is not always a recharged room.** "sewa including elec" means
+  the rent covers the power: not KFI's own use, so not cost of ice, and earning
+  no recharge, so counting its kWh at the tenant rate books revenue nobody
+  invoiced. `rentInclusive` is the third state and `rechargeableKwh` is the only
+  part that bills — but the room still costs what any other room costs, so the
+  margin is billed-less-whole-estate-cost, never `rechargeable x spread` (§11.10).
 - **A coldroom row is keyed by position, never by room code.** Two different
   rooms are both labelled `D5`, and a room re-let mid-month appears twice with a
   continuous register across the handover. Keying on the code silently drops one

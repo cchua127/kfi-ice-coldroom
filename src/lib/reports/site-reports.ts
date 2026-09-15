@@ -576,7 +576,12 @@ export async function coldroomReport(month: string): Promise<Report> {
   const tenantKwh = ctx.byUse.get('COLDROOM_TENANT')?.kwh ?? d(0)
   const storeKwh = ctx.byUse.get('COLDROOM_ICE_STORE')?.kwh ?? d(0)
   const tenantRate = ctx.assumptions.at('tenant_billing_rate_rm_per_kwh', `${month}-01`)
-  const recovery = coldroomRecovery(tenantKwh, ctx.rate, tenantRate)
+  // Rooms whose rent covers the power cost the same and earn nothing, so they
+  // come out of what is billed while staying in what is consumed.
+  const rentInclusiveKwh = ctx.register
+    .filter((r) => !r.ownUse && r.rentInclusive)
+    .reduce<Decimal>((a, r) => a.plus(d(r.closingKwh).minus(r.openingKwh)), d(0))
+  const recovery = coldroomRecovery(tenantKwh, ctx.rate, tenantRate, rentInclusiveKwh)
 
   // A month with no confirmed bill has no blended rate, and `ctx.rate` is zero
   // rather than absent. Every figure struck against it must therefore read as
@@ -598,6 +603,18 @@ export async function coldroomReport(month: string): Promise<Report> {
         perKwh: costed ? Number(recovery.marginPerKwh) : null,
       },
     },
+    ...(rentInclusiveKwh.isZero()
+      ? []
+      : [{
+          cells: {
+            item: 'of which rent-inclusive',
+            kwh: Number(rentInclusiveKwh),
+            cost: atCost(rentInclusiveKwh),
+            billed: 0,
+            margin: costed ? -Number(rm(rentInclusiveKwh.times(ctx.rate))) : null,
+            perKwh: null,
+          },
+        }]),
     {
       cells: {
         item: 'Rooms KFI occupies',
@@ -668,6 +685,15 @@ export async function coldroomReport(month: string): Promise<Report> {
     'Reselling power at a fixed rate while buying it at a floating one is a ' +
       'short position on the tariff. The spread above is the whole of it.'
   )
+  if (!rentInclusiveKwh.isZero()) {
+    notes.push(
+      `${Number(rentInclusiveKwh).toLocaleString('en-MY')} kWh went to rooms let ` +
+        '"sewa including elec" — the rent covers the power. They cost the same as ' +
+        'any other room and are invoiced nothing, so they are in the cost and out ' +
+        'of the billing. Counting them at the tenant rate would book revenue that ' +
+        'was never raised.'
+    )
+  }
   if (provenance === 'NONE') {
     notes.push(
       'NO COLDROOM FIGURES FOR THIS MONTH. Everything above reads zero because ' +
@@ -700,12 +726,14 @@ export async function coldroomReport(month: string): Promise<Report> {
       return {
         cells: {
           room: r.roomCode,
-          tenant: r.ownUse ? 'KFI (own use)' : (r.tenantLabel ?? '— vacant —'),
+          tenant: r.ownUse
+            ? 'KFI (own use)'
+            : (r.tenantLabel ?? '— vacant —') + (r.rentInclusive ? '  [rent covers elec]' : ''),
           opening: Number(r.openingKwh),
           closing: Number(r.closingKwh),
           usage: Number(usage),
           rate: Number(rate),
-          amount: Number(rm(usage.times(rate))),
+          amount: r.rentInclusive ? 0 : Number(rm(usage.times(rate))),
           group: r.usageGroup === null ? '' : `Usage ${r.usageGroup}`,
         },
       }

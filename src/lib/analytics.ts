@@ -157,6 +157,10 @@ export function focWatch(input: FocInput): FocWatch {
 
 export interface ColdroomRecovery {
   tenantKwh: Decimal
+  /** Let, but earning no recharge because the rent covers the power. */
+  rentInclusiveKwh: Decimal
+  /** `tenantKwh` less the above. The only part that bills. */
+  rechargeableKwh: Decimal
   /** What that power cost at the actual blended tariff. */
   costRm: Decimal
   /** What the tenants were billed for it. */
@@ -178,20 +182,36 @@ export interface ColdroomRecovery {
 export function coldroomRecovery(
   tenantKwh: Numeric,
   ratePerKwh: Numeric,
-  tenantRatePerKwh: Numeric
+  tenantRatePerKwh: Numeric,
+  /**
+   * The part of `tenantKwh` whose rent already covers the power. It costs the
+   * landlord the same as any other kWh and earns nothing, so it belongs in the
+   * cost and NOT in the billing. Default zero for callers that cannot see it.
+   */
+  rentInclusiveKwh: Numeric = 0
 ): ColdroomRecovery {
   const kwh = d(tenantKwh)
+  const inclusive = d(rentInclusiveKwh)
+  const billable = kwh.minus(inclusive)
   const rate = d(ratePerKwh)
   const tenantRate = d(tenantRatePerKwh)
   const spread = tenantRate.minus(rate)
 
+  const costRm = rm(kwh.times(rate))
+  const billedRm = rm(billable.times(tenantRate))
+
   return {
     tenantKwh: kwh,
-    costRm: rm(kwh.times(rate)),
-    billedRm: rm(kwh.times(tenantRate)),
-    marginRm: rm(kwh.times(spread)),
-    marginPerKwh: spread.toDecimalPlaces(5),
-    underwater: spread.isNegative(),
+    rentInclusiveKwh: inclusive,
+    rechargeableKwh: billable,
+    costRm,
+    billedRm,
+    // Not `billable x spread`: the rent-inclusive rooms still cost money, so
+    // the margin is what was billed less what the WHOLE let estate cost.
+    marginRm: rm(billedRm.minus(costRm)),
+    marginPerKwh: kwh.isZero() ? spread.toDecimalPlaces(5)
+      : rm(billedRm.minus(costRm)).dividedBy(kwh).toDecimalPlaces(5),
+    underwater: billedRm.lessThan(costRm),
   }
 }
 

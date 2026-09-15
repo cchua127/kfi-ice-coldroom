@@ -82,6 +82,8 @@ export interface ColdroomRegisterRow {
   tenantLabel?: string | null
   /** True when the occupant is KFI, so this room's power is cost of ice. */
   ownUse: boolean
+  /** Let, but the rent covers the power — so no recharge is invoiced for it. */
+  rentInclusive?: boolean
   openingKwh: Numeric
   closingKwh: Numeric
 }
@@ -118,6 +120,17 @@ export interface ColdroomSplit {
   provenance: 'REGISTER' | 'WHOLE_METER' | 'BACK_INFERRED'
   /** Rooms in the register, when there was one. */
   roomCount?: number
+  /**
+   * The part of `tenantKwh` that earns no recharge, because the rent already
+   * covers the power. Zero on the paths that cannot see it.
+   *
+   * `tenantKwh` stays the whole let estate — that is what the site bridge has
+   * to account for, and the power was consumed whoever paid for it. What
+   * changes is revenue: only `rechargeableKwh` is invoiced.
+   */
+  rentInclusiveKwh: Decimal
+  /** `tenantKwh` less `rentInclusiveKwh`. The only part that bills. */
+  rechargeableKwh: Decimal
 }
 
 /**
@@ -168,9 +181,14 @@ export function coldroomSplit(
       .filter((r) => r.ownUse)
       .reduce<Decimal>((a, r) => a.plus(usage(r)), d(0))
     const ownRooms = input.register.filter((r) => r.ownUse).map((r) => r.roomCode)
+    const rentInclusive = input.register
+      .filter((r) => !r.ownUse && r.rentInclusive)
+      .reduce<Decimal>((a, r) => a.plus(usage(r)), d(0))
     return {
       totalKwh: total,
       tenantKwh: total.minus(store),
+      rentInclusiveKwh: rentInclusive,
+      rechargeableKwh: total.minus(store).minus(rentInclusive),
       iceStoreKwh: store,
       source: 'METERED',
       totalBasis: `coldroom register, ${input.register.length} rooms read`,
@@ -196,6 +214,10 @@ export function coldroomSplit(
     return {
       totalKwh: total,
       tenantKwh: tenant.isNegative() ? d(0) : tenant,
+      // A whole-room total cannot tell a rent-inclusive room from a recharged
+      // one. Reported as zero because it is unknown, not because it is absent.
+      rentInclusiveKwh: d(0),
+      rechargeableKwh: tenant.isNegative() ? d(0) : tenant,
       iceStoreKwh,
       source: 'METERED',
       totalBasis: 'coldroom sub-meter',
@@ -211,6 +233,8 @@ export function coldroomSplit(
   return {
     totalKwh: total,
     tenantKwh: tenant.isNegative() ? d(0) : tenant,
+    rentInclusiveKwh: d(0),
+    rechargeableKwh: tenant.isNegative() ? d(0) : tenant,
     iceStoreKwh,
     source: 'MODELLED',
     totalBasis:

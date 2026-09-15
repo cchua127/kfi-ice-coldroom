@@ -19,7 +19,8 @@
  */
 import { describe, it, expect } from 'vitest'
 import { coldroomSplit, type ColdroomRegisterRow } from '@/lib/site-energy'
-import { isOwnUseTenant, CONVENTIONAL_OWN_USE_ROOMS } from '@/lib/import/parsers'
+import { coldroomRecovery } from '@/lib/analytics'
+import { isOwnUseTenant, isRentInclusive, CONVENTIONAL_OWN_USE_ROOMS } from '@/lib/import/parsers'
 import { carryForward } from '@/lib/coldroom-entry'
 import { validateRegister, validateRegisterRow, hasBlocking, isOwnUseLabel } from '@/lib/validation'
 import fixture from './fixtures/coldroom-register.json'
@@ -414,5 +415,81 @@ describe('where this system deliberately departs from the workbook', () => {
     expect(dec.sheetOwnUseLines).toEqual(['LOT A3', 'LOT D12', 'LOT 11', 'LOT D10'])
     // It still totals correctly, because the extra line is zero.
     expect(dec.sheetOwnUseKwh).toBe(dec.ownUseKwh)
+  })
+})
+
+describe('rooms whose rent covers the power', () => {
+  it.each([
+    ['Dim Loong (10 days-sewa including elec)', true],
+    ['Intelligent Hub (17/3/26 - 23/3/26)include elec', true],
+    ['Peladang Mart (sewa including elec)', true],
+    ['The chicken factory (sewa including elec)', true],
+    ['Huzainy (16/2/26 - 20/3/26)include elec', true],
+    ['RB meat', false],
+    ['Sin Min Agro (M) Sdn Bhd (start 16/6/20)', false],
+    ['KFI', false],
+    [null, false],
+    // Must not fire on an unrelated word containing the letters.
+    ['Electra Foods', false],
+  ])('reads %s as rent-inclusive = %s', (label, expected) => {
+    expect(isRentInclusive(label)).toBe(expected)
+  })
+
+  it('takes them out of what bills, but leaves them in what was consumed', () => {
+    const split = coldroomSplit(
+      {
+        register: [
+          { roomCode: 'D10', ownUse: true, openingKwh: 0, closingKwh: 1000 },
+          { roomCode: 'B1', ownUse: false, openingKwh: 0, closingKwh: 5000 },
+          { roomCode: 'D3', ownUse: false, rentInclusive: true, openingKwh: 0, closingKwh: 3000 },
+        ],
+      },
+      LEGACY,
+      TENANT
+    )
+    // The power was consumed whoever paid for it, so the bridge still sees it.
+    expect(split.totalKwh.toString()).toBe('9000')
+    expect(split.tenantKwh.toString()).toBe('8000')
+    // Only 5,000 of that earns a recharge.
+    expect(split.rentInclusiveKwh.toString()).toBe('3000')
+    expect(split.rechargeableKwh.toString()).toBe('5000')
+  })
+
+  it('never counts a KFI room as rent-inclusive', () => {
+    const split = coldroomSplit(
+      {
+        register: [
+          { roomCode: 'D10', ownUse: true, rentInclusive: true, openingKwh: 0, closingKwh: 1000 },
+        ],
+      },
+      LEGACY,
+      TENANT
+    )
+    expect(split.iceStoreKwh.toString()).toBe('1000')
+    expect(split.rentInclusiveKwh.toString()).toBe('0')
+  })
+
+  it('bills only the rechargeable part while costing the whole estate', () => {
+    // 10,000 kWh let, 4,000 of it rent-inclusive, bought at 0.50 and sold at 0.543.
+    const r = coldroomRecovery('10000', '0.50', '0.543', '4000')
+    expect(r.costRm.toString()).toBe('5000')         // all 10,000 cost money
+    expect(r.billedRm.toString()).toBe('3258')       // only 6,000 bills
+    expect(r.marginRm.toString()).toBe('-1742')      // and it does not cover the cost
+    expect(r.underwater).toBe(true)
+  })
+
+  it('agrees with the old two-bucket answer when nothing is rent-inclusive', () => {
+    const r = coldroomRecovery('10000', '0.50', '0.543')
+    expect(r.billedRm.toString()).toBe('5430')
+    expect(r.marginRm.toString()).toBe('430')
+    expect(r.marginPerKwh.toString()).toBe('0.043')
+    expect(r.underwater).toBe(false)
+  })
+
+  it('is what March 2026 actually turns on', () => {
+    // B4 1,308 kWh and D3 3,265 kWh were let on rent-inclusive terms. Counting
+    // them at the tenant rate books RM2,483 of recharge nobody invoiced.
+    const kwh = 1308 + 3265
+    expect(Math.round(kwh * fixture.tenantRate)).toBe(2483)
   })
 })

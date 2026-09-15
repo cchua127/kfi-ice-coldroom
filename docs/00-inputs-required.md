@@ -975,6 +975,83 @@ next month it would simply have stopped being read. Two rows on one code have
 two opposite causes and continuity is what distinguishes them, so `carryForward`
 is a pure function with that distinction under test.
 
+### 11.10 CORRECTION: rooms whose rent includes the electricity
+
+Found by the completeness pass of the same audit, and it moves a published
+figure.
+
+Five room-months across the nine on file are let "sewa including elec" — the
+rent covers the power:
+
+| Month | Room | kWh | Occupant |
+|---|---|---|---|
+| Feb 2026 | C4 | 1,376 | Dim Loong (10 days-sewa including elec) |
+| Mar 2026 | B4 | 1,308 | Intelligent Hub (17/3/26 - 23/3/26)include elec |
+| Mar 2026 | D3 | 3,265 | Huzainy (16/2/26 - 20/3/26)include elec |
+| Aug 2026 | C7 | 0 | Peladang Mart (sewa including elec) |
+| Aug 2026 | D3 | 0 | The chicken factory (sewa including elec) |
+
+This is a **third state**, and without it the margin lies. Such a room is not
+KFI's own use, so its power is not cost of ice; and it earns no recharge, so
+counting its kWh at RM0.543 books revenue nobody invoiced. The coldroom recovery
+report was doing exactly that: **5,949 kWh, RM3,230 of margin across the nine
+months that does not exist.**
+
+March is where it bites — RM2,483 of the RM30,597 previously shown as billed was
+never raised. The report now reads:
+
+```
+Tenant rooms              56,349 kWh   billed RM28,114.37
+  of which rent-inclusive  4,573 kWh   billed RM      0.00
+Rooms KFI occupies         6,140 kWh
+```
+
+August is unaffected: both its rent-inclusive rooms drew nothing.
+
+Note what does NOT change. `tenantKwh` stays the whole let estate, because the
+power was consumed whoever paid for it and the site bridge has to account for
+it. The margin is now **billed less the cost of the whole estate**, not
+`rechargeable × spread` — a rent-inclusive room costs the landlord exactly what
+any other room costs.
+
+Only the register can see this. The whole-meter and back-inferred paths report
+`rentInclusiveKwh` as zero because it is *unknown* on those paths, not absent.
+
+### 11.11 Smaller things the audit surfaced, verified but not acted on
+
+- **There is not one meter-read date anywhere in the workbook.** The only
+  date-typed cells are the nine `Month :` headers, each the 1st. Every monthly
+  figure is therefore an assumption about the reading interval, not a
+  measurement of one. Storing them as calendar months asserts something the
+  source never recorded.
+
+- **A deferred reading that no arithmetic check can catch.** D3 reads 0 kWh in
+  February (tenant started 16/2) and 3,265 kWh in March, labelled
+  "(16/2/26 - 20/3/26)" — a 33-day two-month reading booked wholly to March.
+  February is understated and March overstated by roughly a month of that room.
+  The chain is continuous and every sum ties, so nothing flags it. Only a read
+  date would settle it.
+
+- **D12 collapses from February.** KFI's own use of it runs 893, 833, (let out),
+  76, **0**, 168, 199, 607, 501 kWh. April is a literal zero for a room meant to
+  hold -18C. Partly explained by the Zaidah tenancy and a re-commissioning, but
+  the April zero is exactly the zero-as-measurement the monthly sheets cannot
+  distinguish from "not read".
+
+- **The monthly sheets cannot record "not read" at all** — every meter cell is
+  numeric, where the `ave` sheet can and does leave blanks. Six occupied rooms
+  show zero usage; most are explainable (a meter replaced, a tenancy starting
+  late in the month), but the file cannot prove it either way.
+
+- **Tenant-period labels are stale and are not tenancy dates.** C4 carries
+  "(start 18/4/26 - 17/5/26)" unchanged across five consecutive sheets while
+  billing normally throughout. Nothing in this system parses dates out of the
+  occupant string, and nothing should.
+
+- **No figure here ties to an invoice or a TNB bill.** The "Inv No" column is a
+  header and nothing else; there is no account number, bill reference or meter
+  serial anywhere in the file.
+
 ### 11.9 Still open
 
 - **The `ave` sheet holds per-room figures for calendar 2025** and is not loaded.

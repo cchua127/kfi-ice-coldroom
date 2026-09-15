@@ -663,6 +663,16 @@ model ColdroomReading {
   /// March 2026 while the owner's template still charged it to ice (§11.3).
   ownUse Boolean @map("own_use")
 
+  /// True when the tenancy is "sewa including elec" — the rent covers the
+  /// power, so the room is let but NOT separately recharged.
+  ///
+  /// A third state, and without it there is no honest answer. Such a room is
+  /// not KFI's own use, so it is not cost of ice; and it earns no recharge, so
+  /// counting its kWh at the tenant rate overstates what the coldroom actually
+  /// billed. Across the nine months on file that is 5,949 kWh — RM3,230 of
+  /// margin that was never invoiced (§11.10).
+  rentInclusive Boolean @default(false) @map("rent_inclusive")
+
   /// Register at the start and end of the month. The opening is stored here,
   /// unlike the daily meters, because this register is read monthly and the
   /// first month on file has no predecessor to derive it from.
