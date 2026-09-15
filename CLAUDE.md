@@ -17,7 +17,7 @@ system working, not a bug.
 ## Commands
 
 ```bash
-npm test                    # 434 tests, vitest — the real gate
+npm test                    # 437 tests, vitest — the real gate
 npm run typecheck           # tsc --noEmit, must be silent
 npm run build               # next build (output: standalone)
 npm run dev                 # next dev
@@ -80,11 +80,14 @@ it. Don't relax one without understanding which.
   basis opens `BACK-INFERRED:`, a check flags it and the entry screen warns. It
   exists so a month nobody read is not absent from the bridge, not because it is
   trustworthy. Dec 2025 – Aug 2026 are on the register and need none of it.
-- **Own use follows the occupant, not the room number.** D10-D12 are KFI's rooms
-  *by convention*; `isOwnUseTenant()` asks who was actually in them. The owner's
-  cost template used the convention and charged a tenant 1,577 kWh of March
-  2026's refrigeration to the cost of ice (§11.3). `CONVENTIONAL_OWN_USE_ROOMS`
-  is kept only so the importer can report where the two part company.
+- **Own use follows the occupant, not the room number — and that is a DEPARTURE
+  from the source workbook, not a reading of it.** The workbook decides by lot
+  code, in a hand-maintained `Less : Own Use` footer resolved positionally; in
+  March 2026 its `LOT D12` line points at a tenant's row and KFI's own row is
+  referenced by nothing. `isOwnUseTenant()` asks who was actually in the room:
+  it agrees with that footer in eight of the nine months on file and corrects
+  the ninth (§11.3). Don't "fix" it back to the room code — a test pins the
+  difference so it reads as chosen.
 - **A coldroom row is keyed by position, never by room code.** Two different
   rooms are both labelled `D5`, and a room re-let mid-month appears twice with a
   continuous register across the handover. Keying on the code silently drops one
@@ -168,7 +171,12 @@ both must survive). Collapsing the second case loses a room and it silently
 stops being read.
 
 `Usage 1` / `Usage 2` are the two TNB accounts (owner-confirmed). Which group is
-which account is NOT known and is not guessed — see §11.8.
+which is NOT known and is not guessed. The lead: the cost template's "Yemint"
+and "Ratono" columns are exactly Usage 1 and Usage 2 times RM0.484, so naming
+which account each of those belongs to settles it — see §11.9.
+
+December's sheet hides the column that shifts its layout, so a mis-shifted
+import cannot be caught by looking at the sheet. Columns are resolved by label.
 
 ## Monthly inputs are a separate screen, deliberately
 

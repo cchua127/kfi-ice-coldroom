@@ -378,3 +378,41 @@ describe('the two copies of the own-use rule agree', () => {
     expect(isOwnUseLabel(label)).toBe(isOwnUseTenant(label))
   })
 })
+
+describe('where this system deliberately departs from the workbook', () => {
+  // The adversarial audit killed a claim worth recording the death of. The
+  // workbook does NOT identify KFI's own use by the tenant column: every sheet
+  // carries a "Less : Own Use" footer labelled by LOT CODE — LOT D10, LOT D11,
+  // LOT D12 — and resolves those labels POSITIONALLY. In March 2026 the cell
+  // labelled "LOT D12" points at the Zaidah Ibrahim row, and the row whose
+  // tenant column actually reads KFI is referenced by nothing.
+  //
+  // So the occupant rule is this system's decision, not the workbook's, and it
+  // disagrees with the workbook in exactly one month. That is worth pinning:
+  // a future reader finding the difference should see it was chosen.
+  it('agrees with the workbook’s own footer on eight of the nine months', () => {
+    const agreeing = fixture.months.filter((m) => m.ownUseKwh === m.sheetOwnUseKwh)
+    expect(agreeing).toHaveLength(8)
+  })
+
+  it('differs in March, and only in March, by the tenant’s consumption', () => {
+    const differing = fixture.months.filter((m) => m.ownUseKwh !== m.sheetOwnUseKwh)
+    expect(differing.map((m) => m.month)).toEqual(['2026-03'])
+    const mar = differing[0]
+    expect(mar.sheetOwnUseKwh - mar.ownUseKwh).toBe(1577)
+    // At the tenant rate this is what was mis-recharged; at the site blended
+    // rate it is what reached cost of ice. Both matter, to different people.
+    expect(Math.round((mar.sheetOwnUseKwh - mar.ownUseKwh) * fixture.tenantRate)).toBe(856)
+  })
+
+  it('shows the footer is hand-maintained rather than derived', () => {
+    // December's block has FOUR lines, one of them a room with no tenant at all
+    // (A3, at RM0.00) and one of them mistyped as "LOT 11" for D11. A block
+    // that can be mistyped is a block that can point at the wrong row — which
+    // is precisely what it does in March.
+    const dec = fixture.months.find((m) => m.month === '2025-12')!
+    expect(dec.sheetOwnUseLines).toEqual(['LOT A3', 'LOT D12', 'LOT 11', 'LOT D10'])
+    // It still totals correctly, because the extra line is zero.
+    expect(dec.sheetOwnUseKwh).toBe(dec.ownUseKwh)
+  })
+})

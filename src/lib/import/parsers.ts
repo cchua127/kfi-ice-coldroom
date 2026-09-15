@@ -672,16 +672,28 @@ function coldroomColumns(sheet: Sheet): ColdroomCols | null {
  * Whether a register row is KFI's own consumption rather than a tenant's.
  *
  * Exported and named because it is the single rule that decides whether a
- * roomful of electricity is cost of ice or a recharge, and because the obvious
- * alternative — "the room code is D10, D11 or D12" — is WRONG. Those three are
- * KFI's rooms by convention, but D12 was let to a tenant for most of March 2026
- * while KFI kept 76 kWh of it. Keying on the room code charges that tenant's
- * 1,653 kWh to the cost of ice; keying on the occupant does not. See §11.3.
+ * roomful of electricity is cost of ice or a recharge — and because it is a
+ * DEPARTURE from the source workbook, not a reading of it.
+ *
+ * The workbook decides own use by LOT CODE. Every sheet carries a "Less : Own
+ * Use" footer labelled LOT D10 / LOT D11 / LOT D12, resolved positionally. That
+ * works until a room changes hands: in March 2026 the cell labelled "LOT D12"
+ * points at the Zaidah Ibrahim row (1,653 kWh) and the row whose tenant column
+ * reads KFI (76 kWh) is referenced by nothing. The footer is hand-maintained —
+ * December's has four lines, one for a room with no tenant and one mistyped
+ * "LOT 11" — so pointing at the wrong row is a thing it can do.
+ *
+ * Asking who occupied the room agrees with that footer in eight of the nine
+ * months on file and corrects it in the ninth. See docs §11.3.
  */
 export const isOwnUseTenant = (label: string | null): boolean =>
   /^kfi\b/i.test((label ?? '').trim())
 
-/** Room codes KFI occupies by convention — reported against, never relied on. */
+/**
+ * The rooms the workbook's own-use footer names. Reported against, never relied
+ * on: this is the convention the footer encodes, and the point of keeping it is
+ * to be able to say where the convention and the occupant disagree.
+ */
 export const CONVENTIONAL_OWN_USE_ROOMS = ['D10', 'D11', 'D12']
 
 export function parseColdroomMeter(wb: Workbook, defaultYear = 2026): ParseResult {

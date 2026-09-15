@@ -10,6 +10,14 @@
    "byRoomCodeKwh": 7025,
    "duplicatedRoomCodes": [
     "D5"
+   ],
+   "sheetOwnUseRm": 3814.575,
+   "sheetOwnUseKwh": 7025,
+   "sheetOwnUseLines": [
+    "LOT A3",
+    "LOT D12",
+    "LOT 11",
+    "LOT D10"
    ]
   },
   {
@@ -21,6 +29,13 @@
    "duplicatedRoomCodes": [
     "D3",
     "D5"
+   ],
+   "sheetOwnUseRm": 3397.008,
+   "sheetOwnUseKwh": 6256,
+   "sheetOwnUseLines": [
+    "LOT D10",
+    "LOT D11",
+    "LOT D12"
    ]
   },
   {
@@ -31,6 +46,13 @@
    "byRoomCodeKwh": 5267,
    "duplicatedRoomCodes": [
     "D5"
+   ],
+   "sheetOwnUseRm": 2859.981,
+   "sheetOwnUseKwh": 5267,
+   "sheetOwnUseLines": [
+    "LOT D10",
+    "LOT D11",
+    "LOT D12"
    ]
   },
   {
@@ -43,6 +65,13 @@
     "C4",
     "D12",
     "D5"
+   ],
+   "sheetOwnUseRm": 4190.331,
+   "sheetOwnUseKwh": 7717,
+   "sheetOwnUseLines": [
+    "LOT D10",
+    "LOT D11",
+    "LOT D12"
    ]
   },
   {
@@ -53,6 +82,13 @@
    "byRoomCodeKwh": 5449,
    "duplicatedRoomCodes": [
     "D5"
+   ],
+   "sheetOwnUseRm": 2958.807,
+   "sheetOwnUseKwh": 5449,
+   "sheetOwnUseLines": [
+    "LOT D10",
+    "LOT D11",
+    "LOT D12"
    ]
   },
   {
@@ -63,6 +99,13 @@
    "byRoomCodeKwh": 6306,
    "duplicatedRoomCodes": [
     "D5"
+   ],
+   "sheetOwnUseRm": 3424.158,
+   "sheetOwnUseKwh": 6306,
+   "sheetOwnUseLines": [
+    "LOT D10",
+    "LOT D11",
+    "LOT D12"
    ]
   },
   {
@@ -73,6 +116,13 @@
    "byRoomCodeKwh": 5808,
    "duplicatedRoomCodes": [
     "D5"
+   ],
+   "sheetOwnUseRm": 3153.744,
+   "sheetOwnUseKwh": 5808,
+   "sheetOwnUseLines": [
+    "LOT D10",
+    "LOT D11",
+    "LOT D12"
    ]
   },
   {
@@ -83,6 +133,13 @@
    "byRoomCodeKwh": 7044,
    "duplicatedRoomCodes": [
     "D5"
+   ],
+   "sheetOwnUseRm": 3824.892,
+   "sheetOwnUseKwh": 7044,
+   "sheetOwnUseLines": [
+    "LOT D10",
+    "LOT D11",
+    "LOT D12"
    ]
   },
   {
@@ -93,6 +150,13 @@
    "byRoomCodeKwh": 6710,
    "duplicatedRoomCodes": [
     "D5"
+   ],
+   "sheetOwnUseRm": 3643.53,
+   "sheetOwnUseKwh": 6710,
+   "sheetOwnUseLines": [
+    "LOT D10",
+    "LOT D11",
+    "LOT D12"
    ]
   }
  ],
@@ -168,5 +232,6 @@
    "closingKwh": 421363,
    "rateRmPerKwh": 0.543
   }
- ]
+ ],
+ "tenantRate": 0.543
 }

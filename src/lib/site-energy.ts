@@ -157,10 +157,10 @@ export function coldroomSplit(
   }
 
   // Best path: the register itself. Every room read, and own use decided by who
-  // occupied the room rather than by which room it is — the two disagree, and
-  // the room-code convention is the one that is wrong. March 2026 let D12 to a
-  // tenant for 1,653 kWh while KFI used 76 of it; the convention charges the
-  // tenant's ice to the plant's cost of ice. See docs §11.3.
+  // occupied the room rather than by which room it is. That is a departure from
+  // the source workbook, which decides by lot code: it agrees in eight of the
+  // nine months on file and corrects the ninth, where D12 was let to a tenant
+  // for 1,653 kWh while KFI used 76 of it. See docs §11.3.
   if (input.register && input.register.length) {
     const usage = (r: ColdroomRegisterRow) => d(r.closingKwh).minus(d(r.openingKwh))
     const total = input.register.reduce<Decimal>((a, r) => a.plus(usage(r)), d(0))

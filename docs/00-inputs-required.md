@@ -811,11 +811,35 @@ and `COLDROOM_AMOUNT_MISMATCH` fire if anyone overtypes the sheet's arithmetic.
 
 ### 11.3 CORRECTION: own use follows the occupant, not the room number
 
-**The owner's cost template charged a tenant's refrigeration to the cost of ice
-in March 2026.**
+**Both the cost template and the meter workbook itself charged a tenant's
+refrigeration to the cost of ice in March 2026.**
 
-D10, D11 and D12 are KFI's own rooms *by convention*. The template took that
-convention as the rule. The register shows what actually happened:
+An earlier draft of this section said the workbook identifies own use by the
+tenant column. **That was wrong, and an adversarial re-reading of the file
+refuted it three times over.** The workbook decides own use by LOT CODE: every
+sheet carries a `Less : Own Use` footer whose lines are labelled `LOT D10`,
+`LOT D11`, `LOT D12` — never by tenant name — and the 2025 `ave` sheet titles
+the rooms `D10 - KFI`, `D11 - KFI`, `D12 - KFI` outright.
+
+Worse, the footer resolves those labels **positionally**. Decoding March's
+formulas: the cell labelled `LOT D12` is `=I35`, which is the *Zaidah Ibrahim*
+row (RM897.579). The row whose tenant column actually reads KFI (RM41.268) is
+referenced by nothing. The template's D10-D12 figure came straight from this
+footer, which is how the error travelled.
+
+The footer is hand-maintained and shows it: December's block has **four** lines
+— `LOT A3`, `LOT D12`, `LOT 11`, `LOT D10` — one for a room with no tenant at
+all, and one mistyped. A block that can be mistyped is a block that can point at
+the wrong row.
+
+So **the occupant rule is this system's decision, not the workbook's.** It
+agrees with the workbook's own footer in eight of the nine months and corrects
+it in the ninth. `tests/coldroom-register.test.ts` pins exactly that, so a
+future reader finding the difference can see it was chosen rather than drifted
+into.
+
+D10, D11 and D12 are KFI's own rooms *by convention*. The register shows what
+actually happened:
 
 | Room | March 2026 | Occupant |
 |---|---|---|
@@ -832,8 +856,10 @@ real and neither is a duplicate to discard.
 - The template's own ice-storage line: **7,717 kWh**
 - Actually consumed by KFI: **6,140 kWh**
 
-About **1,577 kWh** of a tenant's consumption was in cost of ice. At March's
-blended rate that is roughly **RM746**.
+About **1,577 kWh** of a tenant's consumption was in cost of ice. That is
+roughly **RM746** at March's blended site rate — what reached cost of ice — and
+**RM856** at the RM0.543 tenant rate, which is what was mis-recharged. Two
+figures for two different readers; neither replaces the other.
 
 The rule now lives in one named, exported, tested predicate — `isOwnUseTenant`
 in `src/lib/import/parsers.ts` — and `CONVENTIONAL_OWN_USE_ROOMS` is kept
@@ -852,15 +878,32 @@ March, either the tenant's 1,653 kWh or KFI's 76.
 
 Room counts by month: 29, 30, 29, **31**, 29, 29, 29, 29, 29.
 
-### 11.5 December's columns are shifted
+### 11.5 December's columns are shifted, and the shift is HIDDEN
 
 `dec25` carries an extra "Inv No" column, putting its meters at D/E where every
 other sheet has C/D, and shifting rate, usage and amount with them. This is §8.2
 again in a new file.
 
+**That column is hidden in Excel.** It is the only hidden row or column anywhere
+in the workbook. Anyone eyeballing December against another month sees the same
+layout and cannot see the shift — so a mis-shifted import cannot be caught by
+looking at the sheet. It has to be caught by the importer.
+
+Applying the standard map to December produces a plausible wrong answer rather
+than an error: it reads the Usage-2 kWh column as ringgit and returns a December
+total of **RM34,888.00** against the true **RM33,054.04** — 5.5% high, the right
+order of magnitude, and it would pass a smell test.
+
 Columns are resolved by **label** — "Current meter", "Last meter", "Rate",
-"Tenants" — per the rule in `src/lib/import/layout.ts`. A positional map would
-have read December's tenant column as a meter reading.
+"Tenants" — per the rule in `src/lib/import/layout.ts`.
+
+One latent trap found and left alone deliberately: December has **two** amount
+columns, `J` "Amt (RM)" and `L` "Amt  (RM)" (one space against two), with an
+unlabelled `K` between them where `L = J + K`. `K` is zero on every row today,
+so both columns agree and the choice is invisible. This system never reads
+either — amount is derived as usage × rate — so the trap cannot reach a stored
+figure. It is recorded because an importer that *did* read the amount column
+would be choosing between them by accident.
 
 ### 11.6 The coldroom letting business is nearly underwater
 
@@ -956,6 +999,21 @@ is a pure function with that distinction under test.
   mappings are arithmetically possible — each group fits inside either account's
   August consumption — so it cannot be inferred from the figures and has not
   been guessed.
+
+  **A strong lead on which is which.** The cost template's two coldroom columns,
+  "Ratono RM @0.484" and "Yemint RM @0.484", are not two compilations at all —
+  they are **this register's two usage groups**, multiplied by RM0.484 and
+  rounded to the cent. Verified on all twelve cells:
+
+  | Month | Usage 1 × 0.484 | = Yemint | Usage 2 × 0.484 | = Ratono |
+  |---|---|---|---|---|
+  | Jan | 18,622 → 9,013.05 | 9,013.05 | 34,675 → 16,782.70 | 16,782.70 |
+  | Jun | 26,056 → 12,611.10 | 12,611.10 | 28,979 → 14,025.84 | 14,025.84 |
+
+  So **Yemint is Usage 1 and Ratono is Usage 2**. If Ratono and Yemint name the
+  two account holders — which the labels suggest — then naming which of them
+  holds which TNB account settles the mapping without anyone reading a meter.
+  **For the owner: which account is Ratono's and which is Yemint's?**
 
   **What confirming it would unlock:** the site bridge could reconcile per
   account rather than against the sum of both. Today a load misattributed
