@@ -156,6 +156,20 @@ Business dates are `date`. Instants are `timestamptz`.
   9,000 kg, sheets labelled Oct/Nov that are 2025, a June price rise the sheet
   applied from January.
 
+## The coldroom register
+
+`/monthly/[month]/coldroom` is where the office keys ~29 room meters once a
+month. Rooms and openings carry forward from the previous month; only the
+closing column is typed. `carryForward()` in `src/lib/coldroom-entry.ts` is pure
+and has one job worth understanding: two rows sharing a room code mean either a
+room re-let mid-month (the register runs CONTINUOUSLY across the handover —
+collapse to the final closing) or two different meters under one label (D5 —
+both must survive). Collapsing the second case loses a room and it silently
+stops being read.
+
+`Usage 1` / `Usage 2` are the two TNB accounts (owner-confirmed). Which group is
+which account is NOT known and is not guessed — see §11.8.
+
 ## Monthly inputs are a separate screen, deliberately
 
 Almost everything is keyed daily, which is right for a plant that runs daily.

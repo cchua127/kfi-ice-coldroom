@@ -903,7 +903,36 @@ Found by loading the register, not by a unit test:
    while the residual is struck at one — is worth hundreds of ringgit and clears
    either bound by orders of magnitude.
 
-### 11.8 Still open
+### 11.8 The register is now keyed in the app, not only imported
+
+Importing nine months made the register a history file. `/monthly/[month]/coldroom`
+makes it a system: the rooms carry forward from the previous month, each opening
+is that room's last closing, and the only column actually keyed is the closings.
+Live totals — whole coldroom, KFI's own rooms, tenant rooms, recharge — build as
+the column is typed, because that is what the office checks before invoicing.
+
+Three rules in the entry validation are worth knowing, each from something in
+the nine months on file:
+
+- **A closing below its opening is a hard stop** until somebody ticks "meter
+  replaced". A2 in January 2026 is the real case: December closed at 96,670 and
+  January opened at 799 on a new register. The legacy sheets resolved exactly
+  this by subtracting from zero.
+- **An opening that no longer joins last month's closing is flagged**, in the
+  field and in the row, saying which way it breaks: consumption that nothing
+  records, or consumption billed twice.
+- **Two rows reading one room from the SAME opening are refused.** A genuine
+  mid-month re-let runs continuously — the first row's closing IS the second's
+  opening — so a shared opening is a duplicated row, and it would double-count
+  the room.
+
+The carry-forward had a defect the real data caught before any user did:
+collapsing last month's rows by room code dropped one of the two D5 rooms, and
+next month it would simply have stopped being read. Two rows on one code have
+two opposite causes and continuity is what distinguishes them, so `carryForward`
+is a pure function with that distinction under test.
+
+### 11.9 Still open
 
 - **The `ave` sheet holds per-room figures for calendar 2025** and is not loaded.
   It would extend the register back twelve months. Not done because it is a
@@ -912,13 +941,28 @@ Found by loading the register, not by a unit test:
   accident, for the same reason the master workbook is skipped: loading it
   alongside `dec25` would double-count December.
 
-- **"Usage 1" and "Usage 2"** split the rooms into two disjoint groups —
-  A1–A3, B1–B3, C3–C7 against B4–B6, C1, C8, D1–D12. Almost certainly two
-  feeders or two TNB accounts. The grouping is stable across all nine months
-  except C1, which is sometimes unassigned. Captured on the reading row; nothing
-  depends on it. **For the owner: what are the two groups?** If they map to the
-  two TNB accounts, the site bridge could be reconciled per account rather than
-  in aggregate.
+- **"Usage 1" and "Usage 2" ARE the two TNB accounts** — owner-confirmed,
+  15 September 2026. Which group is which account is **not yet known**, and the
+  owner was not sure, so nothing is mapped: the group is stored on each reading
+  row exactly as the sheet writes it, and the site bridge continues to
+  reconcile in aggregate across both accounts.
+
+  | Group | Rooms | Aug 2026 |
+  |---|---|---|
+  | Usage 1 | A1–A3, B1–B3, C3–C7 (11) | 28,533 kWh |
+  | Usage 2 | B4–B6, C1, C8, D1–D12 (18) | 34,876 kWh |
+
+  Stable across all nine months except C1, which is sometimes unassigned. Both
+  mappings are arithmetically possible — each group fits inside either account's
+  August consumption — so it cannot be inferred from the figures and has not
+  been guessed.
+
+  **What confirming it would unlock:** the site bridge could reconcile per
+  account rather than against the sum of both. Today a load misattributed
+  between the two accounts is invisible, because only the total has to tie.
+  Per-account reconciliation would also let the Lot 41597 declared-load question
+  (80.50 kW declared against 375 kW recorded, §1) be examined against the loads
+  actually on that account. One sentence from the office settles it.
 
 - **Eleven rooms recorded no consumption at all in March**, and similar counts in
   other months. Vacant, or a meter nobody read — the register cannot tell those
